@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PageController;
+use App\Http\Controllers\Api\DashboardController;
 
 Route::get('/test', function () {
     return response()->json([
@@ -23,3 +24,5 @@ Route::middleware('auth:sanctum')->group(function () {
         'index', 'show', 'store', 'update', 'destroy'
     ]);
 });
+
+Route::middleware('auth:sanctum')->get('/dashboard', [DashboardController::class, 'index']);
