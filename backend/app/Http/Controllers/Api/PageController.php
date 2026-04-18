@@ -12,21 +12,79 @@ use Illuminate\Http\Request;
 class PageController extends Controller
 {
     /**
-     *  Liste des pages (pagination)
+     *  LISTE DES PAGES
+     * Search + Filters + Sorting + Pagination
      */
     public function index(Request $request)
     {
+        //  Authorization (Policy)
         $this->authorize('viewAny', Page::class);
 
-        // Multi-tenant via global scope
-        $pages = Page::latest()->paginate(15);
+        $query = Page::query();
 
-        //  Resource collection 
+        /**
+         *  SEARCH (title + slug)
+         */
+        $search = trim($request->input('search', ''));
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhere('slug', 'like', "%{$search}%");
+            });
+        }
+
+        /**
+         *  FILTER BY STATUS
+         */
+        if (
+            $request->filled('status') &&
+            in_array($request->status, ['draft', 'published'])
+        ) {
+            $query->where('status', $request->status);
+        }
+
+        /**
+         *  FILTER BY DATE
+         */
+        if ($request->filled('from_date') && strtotime($request->from_date)) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date') && strtotime($request->to_date)) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        /**
+         *  SORTING
+         */
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+
+        if (!in_array($sortBy, ['title', 'created_at', 'status'])) {
+            $sortBy = 'created_at';
+        }
+
+        if (!in_array($sortDir, ['asc', 'desc'])) {
+            $sortDir = 'desc';
+        }
+
+        $query->orderBy($sortBy, $sortDir);
+
+        /**
+         *  PAGINATION
+         */
+        $perPage = max(1, min($request->input('per_page', 15), 100));
+
+        $pages = $query
+            ->paginate($perPage)
+            ->appends($request->query());
+
         return PageResource::collection($pages);
     }
 
     /**
-     *  Afficher une page
+     *  SHOW ONE PAGE
      */
     public function show(Page $page)
     {
@@ -36,7 +94,7 @@ class PageController extends Controller
     }
 
     /**
-     *  Créer une page
+     *  CREATE PAGE
      */
     public function store(StorePageRequest $request)
     {
@@ -44,13 +102,12 @@ class PageController extends Controller
 
         $agencyId = $request->user()->agency_id;
 
-        // Données validées
         $data = $request->validated();
 
-        //  Protection
+        //  Prevent injection
         unset($data['agency_id']);
 
-        // Force agency côté serveur
+        // Force agency from auth user
         $data['agency_id'] = $agencyId;
 
         $page = Page::create($data);
@@ -61,7 +118,7 @@ class PageController extends Controller
     }
 
     /**
-     *  Mettre à jour une page
+     *  UPDATE PAGE
      */
     public function update(UpdatePageRequest $request, Page $page)
     {
@@ -69,7 +126,7 @@ class PageController extends Controller
 
         $data = $request->validated();
 
-        //  Nettoyage
+        //  Remove sensitive fields
         unset(
             $data['agency_id'],
             $data['id'],
@@ -83,7 +140,7 @@ class PageController extends Controller
     }
 
     /**
-     *  Supprimer une page
+     *  DELETE PAGE
      */
     public function destroy(Page $page)
     {
