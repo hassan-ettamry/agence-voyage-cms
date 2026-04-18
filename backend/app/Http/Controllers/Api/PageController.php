@@ -12,40 +12,47 @@ use Illuminate\Http\Request;
 class PageController extends Controller
 {
     /**
-     * Liste des pages (pagination)
+     *  Liste des pages (pagination)
      */
     public function index(Request $request): JsonResponse
     {
-        // Global scope applique automatiquement agency_id
+        $this->authorize('viewAny', Page::class);
+
+        // Multi-tenant via global scope
         $pages = Page::latest()->paginate(15);
 
         return response()->json($pages);
     }
 
     /**
-     * Récupérer une page
+     *  Afficher une page
      */
     public function show(Request $request, string $id): JsonResponse
     {
         $page = Page::findOrFail($id);
 
+        $this->authorize('view', $page);
+
         return response()->json($page);
     }
 
     /**
-     * Créer une page
+     *  Créer une page
      */
     public function store(StorePageRequest $request): JsonResponse
     {
+
+        $this->authorize('create', Page::class);
+
         $agencyId = $request->user()->agency_id;
 
-        // Données validées
+        // Données validées uniquement
         $data = $request->validated();
 
-        // Sécurité : empêcher injection agency_id
+        //  Protection contre injection
         unset($data['agency_id']);
 
-        // On force l'agence côté serveur
+        // On force agency côté serveur
         $data['agency_id'] = $agencyId;
 
         $page = Page::create($data);
@@ -54,15 +61,17 @@ class PageController extends Controller
     }
 
     /**
-     * Mettre à jour une page
+     *  Mettre à jour une page
      */
     public function update(UpdatePageRequest $request, string $id): JsonResponse
     {
         $page = Page::findOrFail($id);
 
+        $this->authorize('update', $page);
+
         $data = $request->validated();
 
-        // Nettoyage des champs sensibles
+        //  Nettoyage des champs sensibles
         unset(
             $data['agency_id'],
             $data['id'],
@@ -76,11 +85,13 @@ class PageController extends Controller
     }
 
     /**
-     * Supprimer une page
+     *  Supprimer une page
      */
     public function destroy(Request $request, string $id): JsonResponse
     {
         $page = Page::findOrFail($id);
+
+        $this->authorize('delete', $page);
 
         $page->delete();
 
