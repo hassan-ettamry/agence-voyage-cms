@@ -20,10 +20,14 @@ class StoreComponentRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
-    public function rules(): array
+    public function rules()
     {
         return [
-            //
+            'type' => 'required|string|unique:components|max:255',
+            'name' => 'required|string|max:255',
+            'category' => 'required|string|max:255',
+            'schema_json' => 'required|array',
+            'preview_image' => 'nullable|string|url'
         ];
     }
 }
