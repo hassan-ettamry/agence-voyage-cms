@@ -48,6 +48,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/pages/{page}/versions', [PageController::class, 'versions']);
 
     /**
+     * Restore version (rollback)
+     */
+    Route::post('/pages/{page}/versions/{version}/restore', [PageController::class, 'restore']);
+
+    /**
      * Publish page
      */
     Route::patch('/pages/{page}/publish', [PageController::class, 'publish']);

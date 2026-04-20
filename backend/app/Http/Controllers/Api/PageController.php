@@ -7,14 +7,14 @@ use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
-use Illuminate\Http\Request;
 use App\Models\PageVersion;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PageController extends Controller
 {
     /**
      * LISTE DES PAGES
-     * Search + Filters + Sorting + Pagination
      */
     public function index(Request $request)
     {
@@ -22,7 +22,6 @@ class PageController extends Controller
 
         $query = Page::query();
 
-        // SEARCH (title + slug)
         $search = trim($request->input('search', ''));
 
         if ($search !== '') {
@@ -32,7 +31,6 @@ class PageController extends Controller
             });
         }
 
-        // FILTER BY STATUS
         if (
             $request->filled('status') &&
             in_array($request->status, ['draft', 'published'])
@@ -40,7 +38,6 @@ class PageController extends Controller
             $query->where('status', $request->status);
         }
 
-        // FILTER BY DATE
         if ($request->filled('from_date') && strtotime($request->from_date)) {
             $query->whereDate('created_at', '>=', $request->from_date);
         }
@@ -49,7 +46,6 @@ class PageController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        // SORTING
         $sortBy = $request->input('sort_by', 'created_at');
         $sortDir = $request->input('sort_dir', 'desc');
 
@@ -63,12 +59,9 @@ class PageController extends Controller
 
         $query->orderBy($sortBy, $sortDir);
 
-        // PAGINATION
         $perPage = max(1, min($request->input('per_page', 15), 100));
 
-        $pages = $query
-            ->paginate($perPage)
-            ->appends($request->query());
+        $pages = $query->paginate($perPage)->appends($request->query());
 
         return PageResource::collection($pages);
     }
@@ -90,17 +83,12 @@ class PageController extends Controller
     {
         $this->authorize('create', Page::class);
 
-        $agencyId = $request->user()->agency_id;
-
         $data = $request->validated();
 
-        // Prevent injection
         unset($data['agency_id']);
 
-        // Force agency from auth user
-        $data['agency_id'] = $agencyId;
+        $data['agency_id'] = $request->user()->agency_id;
 
-        // Ensure structure exists
         if (!isset($data['structure'])) {
             $data['structure'] = [
                 'type' => 'page',
@@ -121,40 +109,48 @@ class PageController extends Controller
     public function update(UpdatePageRequest $request, Page $page)
     {
         $this->authorize('update', $page);
-    
+
         $data = $request->validated();
-    
-        // Validate structure format
+
         if (isset($data['structure']) && !is_array($data['structure'])) {
             return response()->json([
                 'message' => 'Invalid structure format'
             ], 422);
         }
-    
-        // Remove sensitive fields
+
         unset(
             $data['agency_id'],
             $data['id'],
             $data['created_at'],
             $data['updated_at']
         );
-    
-        // Get last version number
-        $lastVersion = $page->versions()->max('version') ?? 0;
-    
-        //  Store current version BEFORE update
-        PageVersion::create([
-            'page_id' => $page->id,
-            'structure' => $page->structure,
-            'meta' => $page->meta,
-            'version' => $lastVersion + 1,
-            'created_by' => $request->user()->id,
-        ]);
-    
-        // Update page
-        $page->update($data);
-    
-        return new PageResource($page);
+
+        return DB::transaction(function () use ($page, $data, $request) {
+
+            // Only version if something changed
+            $shouldVersion =
+                (isset($data['structure']) && $data['structure'] !== $page->structure) ||
+                (isset($data['meta']) && $data['meta'] !== $page->meta);
+
+            if ($shouldVersion) {
+
+                $lastVersion = $page->versions()
+                    ->lockForUpdate()
+                    ->max('version') ?? 0;
+
+                PageVersion::create([
+                    'page_id' => $page->id,
+                    'structure' => $page->structure,
+                    'meta' => $page->meta,
+                    'version' => $lastVersion + 1,
+                    'created_by' => $request->user()->id,
+                ]);
+            }
+
+            $page->update($data);
+
+            return new PageResource($page);
+        });
     }
 
     /**
@@ -173,9 +169,7 @@ class PageController extends Controller
     }
 
     /**
-     * Liste des versions d'une page
-     * Retourne l'historique complet trié par version (desc)
-     * Inclut l'auteur de chaque modification
+     * LISTE DES VERSIONS
      */
     public function versions(Page $page)
     {
@@ -187,6 +181,42 @@ class PageController extends Controller
                 ->orderByDesc('version')
                 ->get()
         ]);
+    }
+
+    /**
+     * RESTORE VERSION
+     */
+    public function restore(Page $page, PageVersion $version)
+    {
+        $this->authorize('update', $page);
+
+        if ($version->page_id !== $page->id) {
+            return response()->json([
+                'message' => 'Invalid version'
+            ], 400);
+        }
+
+        return DB::transaction(function () use ($page, $version) {
+
+            $lastVersion = $page->versions()
+                ->lockForUpdate()
+                ->max('version') ?? 0;
+
+            PageVersion::create([
+                'page_id' => $page->id,
+                'structure' => $page->structure,
+                'meta' => $page->meta,
+                'version' => $lastVersion + 1,
+                'created_by' => auth()->id(),
+            ]);
+
+            $page->update([
+                'structure' => $version->structure,
+                'meta' => $version->meta,
+            ]);
+
+            return new PageResource($page);
+        });
     }
 
     /**
