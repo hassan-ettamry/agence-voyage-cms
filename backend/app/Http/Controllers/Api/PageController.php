@@ -12,19 +12,16 @@ use Illuminate\Http\Request;
 class PageController extends Controller
 {
     /**
-     *  LISTE DES PAGES
+     * LISTE DES PAGES
      * Search + Filters + Sorting + Pagination
      */
     public function index(Request $request)
     {
-        //  Authorization (Policy)
         $this->authorize('viewAny', Page::class);
 
         $query = Page::query();
 
-        /**
-         *  SEARCH (title + slug)
-         */
+        // SEARCH (title + slug)
         $search = trim($request->input('search', ''));
 
         if ($search !== '') {
@@ -34,9 +31,7 @@ class PageController extends Controller
             });
         }
 
-        /**
-         *  FILTER BY STATUS
-         */
+        // FILTER BY STATUS
         if (
             $request->filled('status') &&
             in_array($request->status, ['draft', 'published'])
@@ -44,9 +39,7 @@ class PageController extends Controller
             $query->where('status', $request->status);
         }
 
-        /**
-         *  FILTER BY DATE
-         */
+        // FILTER BY DATE
         if ($request->filled('from_date') && strtotime($request->from_date)) {
             $query->whereDate('created_at', '>=', $request->from_date);
         }
@@ -55,9 +48,7 @@ class PageController extends Controller
             $query->whereDate('created_at', '<=', $request->to_date);
         }
 
-        /**
-         *  SORTING
-         */
+        // SORTING
         $sortBy = $request->input('sort_by', 'created_at');
         $sortDir = $request->input('sort_dir', 'desc');
 
@@ -71,9 +62,7 @@ class PageController extends Controller
 
         $query->orderBy($sortBy, $sortDir);
 
-        /**
-         *  PAGINATION
-         */
+        // PAGINATION
         $perPage = max(1, min($request->input('per_page', 15), 100));
 
         $pages = $query
@@ -84,7 +73,7 @@ class PageController extends Controller
     }
 
     /**
-     *  SHOW ONE PAGE
+     * SHOW ONE PAGE
      */
     public function show(Page $page)
     {
@@ -94,7 +83,7 @@ class PageController extends Controller
     }
 
     /**
-     *  CREATE PAGE
+     * CREATE PAGE
      */
     public function store(StorePageRequest $request)
     {
@@ -104,11 +93,19 @@ class PageController extends Controller
 
         $data = $request->validated();
 
-        //  Prevent injection
+        // Prevent injection
         unset($data['agency_id']);
 
         // Force agency from auth user
         $data['agency_id'] = $agencyId;
+
+        // Ensure structure exists
+        if (!isset($data['structure'])) {
+            $data['structure'] = [
+                'type' => 'page',
+                'children' => []
+            ];
+        }
 
         $page = Page::create($data);
 
@@ -118,7 +115,7 @@ class PageController extends Controller
     }
 
     /**
-     *  UPDATE PAGE
+     * UPDATE PAGE
      */
     public function update(UpdatePageRequest $request, Page $page)
     {
@@ -126,7 +123,14 @@ class PageController extends Controller
 
         $data = $request->validated();
 
-        //  Remove sensitive fields
+        // Validate structure format
+        if (isset($data['structure']) && !is_array($data['structure'])) {
+            return response()->json([
+                'message' => 'Invalid structure format'
+            ], 422);
+        }
+
+        // Remove sensitive fields
         unset(
             $data['agency_id'],
             $data['id'],
@@ -140,7 +144,7 @@ class PageController extends Controller
     }
 
     /**
-     *  DELETE PAGE
+     * DELETE PAGE
      */
     public function destroy(Page $page)
     {
