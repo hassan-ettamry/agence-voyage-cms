@@ -77,16 +77,33 @@ namespace App\Swagger;
  * @OA\Post(
  *     path="/pages",
  *     summary="Créer une nouvelle page",
- *     description="Crée une nouvelle page de contenu pour l'agence. Le slug doit être unique par agence.",
+ *     description="Crée une nouvelle page avec l'éditeur visuel (structure JSON). Le slug doit être unique par agence.",
  *     tags={"Pages"},
  *     security={{"sanctum":{}}},
  *     @OA\RequestBody(
  *         required=true,
  *         @OA\JsonContent(
- *             required={"title", "slug", "content"},
+ *             required={"title", "slug", "structure"},
  *             @OA\Property(property="title", type="string", maxLength=255, example="Nos Meilleures Destinations 2026"),
  *             @OA\Property(property="slug", type="string", pattern="^[a-z0-9-]+$", example="meilleures-destinations-2026", description="Slug unique par agence"),
- *             @OA\Property(property="content", type="string", example="<h1>Top 10 destinations 2026</h1><p>Sélection des meilleures destinations...</p>"),
+ *             @OA\Property(
+ *                 property="structure", 
+ *                 type="object",
+ *                 description="Structure JSON générée par l'éditeur visuel",
+ *                 example={
+ *                     "type": "page",
+ *                     "children": {
+ *                         {
+ *                             "type": "heading",
+ *                             "props": {"level": 1, "text": "Nos Meilleures Destinations 2026"}
+ *                         },
+ *                         {
+ *                             "type": "paragraph",
+ *                             "props": {"text": "Découvrez notre sélection exclusive..."}
+ *                         }
+ *                     }
+ *                 }
+ *             ),
  *             @OA\Property(property="status", type="string", enum={"draft", "published"}, default="draft", example="published"),
  *             @OA\Property(property="meta", ref="#/components/schemas/MetaSEO")
  *         )
@@ -104,6 +121,35 @@ namespace App\Swagger;
  *     @OA\Response(response=401, description="Non authentifié", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
  *     @OA\Response(response=403, description="Non autorisé"),
  *     @OA\Response(response=422, description="Erreur de validation", @OA\JsonContent(ref="#/components/schemas/ValidationError"))
+ * )
+ *
+ * @OA\Post(
+ *     path="/pages/{id}/publish",
+ *     summary="Publier une page",
+ *     description="Publie une page en définissant son statut à 'published' et sa date de publication à maintenant.",
+ *     tags={"Pages"},
+ *     security={{"sanctum":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="UUID de la page",
+ *         @OA\Schema(type="string", format="uuid", example="770e8400-e29b-41d4-a716-446655440002")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Page publiée avec succès",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="Page publiée avec succès."),
+ *             @OA\Property(property="data", ref="#/components/schemas/Page"),
+ *             @OA\Property(property="published_at", type="string", format="date-time", example="2026-04-20T10:00:00Z")
+ *         )
+ *     ),
+ *     @OA\Response(response=401, description="Non authentifié", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+ *     @OA\Response(response=403, description="Non autorisé"),
+ *     @OA\Response(response=404, description="Page non trouvée", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
  * )
  *
  * @OA\Get(
@@ -150,7 +196,20 @@ namespace App\Swagger;
  *         @OA\JsonContent(
  *             @OA\Property(property="title", type="string", maxLength=255, example="Nos Circuits accompagnés - Été 2026"),
  *             @OA\Property(property="slug", type="string", pattern="^[a-z0-9-]+$", example="circuits-accompagnes-ete-2026"),
- *             @OA\Property(property="content", type="string", example="<h1>Nouveautés été 2026</h1><p>Découvrez nos nouveaux circuits...</p>"),
+ *             @OA\Property(
+ *                 property="structure", 
+ *                 type="object",
+ *                 description="Structure JSON générée par l'éditeur visuel",
+ *                 example={
+ *                     "type": "page",
+ *                     "children": {
+ *                         {
+ *                             "type": "heading",
+ *                             "props": {"level": 1, "text": "Nos Circuits accompagnés - Été 2026"}
+ *                         }
+ *                     }
+ *                 }
+ *             ),
  *             @OA\Property(property="status", type="string", enum={"draft", "published"}, example="published"),
  *             @OA\Property(property="meta", ref="#/components/schemas/MetaSEO")
  *         )
