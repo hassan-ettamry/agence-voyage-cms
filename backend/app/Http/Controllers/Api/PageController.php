@@ -8,6 +8,7 @@ use App\Http\Requests\UpdatePageRequest;
 use App\Http\Resources\PageResource;
 use App\Models\Page;
 use Illuminate\Http\Request;
+use App\Models\PageVersion;
 
 class PageController extends Controller
 {
@@ -120,16 +121,16 @@ class PageController extends Controller
     public function update(UpdatePageRequest $request, Page $page)
     {
         $this->authorize('update', $page);
-
+    
         $data = $request->validated();
-
+    
         // Validate structure format
         if (isset($data['structure']) && !is_array($data['structure'])) {
             return response()->json([
                 'message' => 'Invalid structure format'
             ], 422);
         }
-
+    
         // Remove sensitive fields
         unset(
             $data['agency_id'],
@@ -137,9 +138,22 @@ class PageController extends Controller
             $data['created_at'],
             $data['updated_at']
         );
-
+    
+        // Get last version number
+        $lastVersion = $page->versions()->max('version') ?? 0;
+    
+        //  Store current version BEFORE update
+        PageVersion::create([
+            'page_id' => $page->id,
+            'structure' => $page->structure,
+            'meta' => $page->meta,
+            'version' => $lastVersion + 1,
+            'created_by' => $request->user()->id,
+        ]);
+    
+        // Update page
         $page->update($data);
-
+    
         return new PageResource($page);
     }
 
