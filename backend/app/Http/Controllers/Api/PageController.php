@@ -173,6 +173,23 @@ class PageController extends Controller
     }
 
     /**
+     * Liste des versions d'une page
+     * Retourne l'historique complet trié par version (desc)
+     * Inclut l'auteur de chaque modification
+     */
+    public function versions(Page $page)
+    {
+        $this->authorize('view', $page);
+
+        return response()->json([
+            'data' => $page->versions()
+                ->with('author')
+                ->orderByDesc('version')
+                ->get()
+        ]);
+    }
+
+    /**
      * DELETE PAGE
      */
     public function destroy(Page $page)

@@ -43,6 +43,11 @@ Route::middleware('auth:sanctum')->group(function () {
     ]);
 
     /**
+     * Page versions (history)
+     */
+    Route::get('/pages/{page}/versions', [PageController::class, 'versions']);
+
+    /**
      * Publish page
      */
     Route::patch('/pages/{page}/publish', [PageController::class, 'publish']);
