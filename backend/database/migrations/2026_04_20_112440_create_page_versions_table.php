@@ -13,12 +13,22 @@ return new class extends Migration
     {
         Schema::create('page_versions', function (Blueprint $table) {
             $table->id();
+
             $table->uuid('page_id');
+
             $table->json('structure');
+            $table->json('meta')->nullable();
+
+            $table->integer('version');
+
             $table->uuid('created_by')->nullable();
+
             $table->timestamps();
-        
-            $table->foreign('page_id')->references('id')->on('pages')->cascadeOnDelete();
+
+            $table->foreign('page_id')
+                ->references('id')
+                ->on('pages')
+                ->cascadeOnDelete();
         });
     }
 
