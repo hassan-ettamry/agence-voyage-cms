@@ -71,8 +71,9 @@ namespace App\Swagger;
  *         @OA\Property(property="id", type="string", format="uuid", example="770e8400-e29b-41d4-a716-446655440002"),
  *         @OA\Property(property="title", type="string", example="Nos Circuits accompagnés"),
  *         @OA\Property(property="slug", type="string", pattern="^[a-z0-9-]+$", example="circuits-accompagnes"),
- *         @OA\Property(property="content", type="string", example="<h1>Découvrez nos circuits</h1><p>Contenu...</p>"),
+ *         @OA\Property(property="structure", type="object", description="Structure JSON générée par l'éditeur visuel"),
  *         @OA\Property(property="status", type="string", enum={"draft", "published"}, default="draft"),
+ *         @OA\Property(property="published_at", type="string", format="date-time", nullable=true),
  *         @OA\Property(property="meta", ref="#/components/schemas/MetaSEO"),
  *         @OA\Property(property="agency_id", type="string", format="uuid"),
  *         @OA\Property(property="created_at", type="string", format="date-time"),
@@ -120,6 +121,27 @@ namespace App\Swagger;
  *         @OA\Property(property="success", type="boolean", example=false),
  *         @OA\Property(property="message", type="string", example="Resource not found"),
  *         @OA\Property(property="code", type="string", example="NOT_FOUND")
+ *     ),
+ *     @OA\Schema(
+ *         schema="PageVersion",
+ *         type="object",
+ *         title="PageVersion",
+ *         description="Version d'une page pour l'historique",
+ *         @OA\Property(property="id", type="integer", example=42, description="ID unique de la version"),
+ *         @OA\Property(property="page_id", type="string", format="uuid", example="770e8400-e29b-41d4-a716-446655440002"),
+ *         @OA\Property(property="structure", type="object", description="Structure JSON de la page à ce moment"),
+ *         @OA\Property(property="meta", type="object", nullable=true, description="Meta SEO à ce moment"),
+ *         @OA\Property(property="version", type="integer", description="Numéro de version", example=3),
+ *         @OA\Property(property="created_by", type="string", format="uuid", nullable=true, description="UUID de l'utilisateur qui a créé cette version"),
+ *         @OA\Property(
+ *             property="author",
+ *             type="object",
+ *             nullable=true,
+ *             @OA\Property(property="id", type="string", format="uuid"),
+ *             @OA\Property(property="name", type="string")
+ *         ),
+ *         @OA\Property(property="created_at", type="string", format="date-time"),
+ *         @OA\Property(property="updated_at", type="string", format="date-time")
  *     )
  * )
  */

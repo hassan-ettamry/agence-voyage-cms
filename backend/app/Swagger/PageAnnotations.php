@@ -123,35 +123,6 @@ namespace App\Swagger;
  *     @OA\Response(response=422, description="Erreur de validation", @OA\JsonContent(ref="#/components/schemas/ValidationError"))
  * )
  *
- * @OA\Post(
- *     path="/pages/{id}/publish",
- *     summary="Publier une page",
- *     description="Publie une page en définissant son statut à 'published' et sa date de publication à maintenant.",
- *     tags={"Pages"},
- *     security={{"sanctum":{}}},
- *     @OA\Parameter(
- *         name="id",
- *         in="path",
- *         required=true,
- *         description="UUID de la page",
- *         @OA\Schema(type="string", format="uuid", example="770e8400-e29b-41d4-a716-446655440002")
- *     ),
- *     @OA\Response(
- *         response=200,
- *         description="Page publiée avec succès",
- *         @OA\JsonContent(
- *             type="object",
- *             @OA\Property(property="success", type="boolean", example=true),
- *             @OA\Property(property="message", type="string", example="Page publiée avec succès."),
- *             @OA\Property(property="data", ref="#/components/schemas/Page"),
- *             @OA\Property(property="published_at", type="string", format="date-time", example="2026-04-20T10:00:00Z")
- *         )
- *     ),
- *     @OA\Response(response=401, description="Non authentifié", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
- *     @OA\Response(response=403, description="Non autorisé"),
- *     @OA\Response(response=404, description="Page non trouvée", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
- * )
- *
  * @OA\Get(
  *     path="/pages/{id}",
  *     summary="Détails d'une page",
@@ -182,7 +153,7 @@ namespace App\Swagger;
  * @OA\Put(
  *     path="/pages/{id}",
  *     summary="Modifier une page",
- *     description="Met à jour une page existante. Tous les champs sont optionnels.",
+ *     description="Met à jour une page existante. Tous les champs sont optionnels. Crée automatiquement une nouvelle version si la structure ou le meta change.",
  *     tags={"Pages"},
  *     security={{"sanctum":{}}},
  *     @OA\Parameter(
@@ -230,6 +201,34 @@ namespace App\Swagger;
  *     @OA\Response(response=422, description="Erreur de validation", @OA\JsonContent(ref="#/components/schemas/ValidationError"))
  * )
  *
+ * @OA\Patch(
+ *     path="/pages/{id}/publish",
+ *     summary="Publier une page",
+ *     description="Publie une page en définissant son statut à 'published' et sa date de publication à maintenant.",
+ *     tags={"Pages"},
+ *     security={{"sanctum":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="UUID de la page",
+ *         @OA\Schema(type="string", format="uuid", example="770e8400-e29b-41d4-a716-446655440002")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Page publiée avec succès",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="Page publiée avec succès."),
+ *             @OA\Property(property="data", ref="#/components/schemas/Page")
+ *         )
+ *     ),
+ *     @OA\Response(response=401, description="Non authentifié", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+ *     @OA\Response(response=403, description="Non autorisé"),
+ *     @OA\Response(response=404, description="Page non trouvée", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+ * )
+ *
  * @OA\Delete(
  *     path="/pages/{id}",
  *     summary="Supprimer une page",
@@ -255,6 +254,68 @@ namespace App\Swagger;
  *     @OA\Response(response=401, description="Non authentifié", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
  *     @OA\Response(response=403, description="Non autorisé"),
  *     @OA\Response(response=404, description="Page non trouvée", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+ * )
+ *
+ * @OA\Get(
+ *     path="/pages/{id}/versions",
+ *     summary="Historique des versions d'une page",
+ *     description="Récupère toutes les versions sauvegardées d'une page, triées par numéro de version décroissant.",
+ *     tags={"Pages", "Versions"},
+ *     security={{"sanctum":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="UUID de la page",
+ *         @OA\Schema(type="string", format="uuid", example="770e8400-e29b-41d4-a716-446655440002")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Liste des versions",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="data", type="array", @OA\Items(ref="#/components/schemas/PageVersion"))
+ *         )
+ *     ),
+ *     @OA\Response(response=401, description="Non authentifié", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+ *     @OA\Response(response=403, description="Non autorisé"),
+ *     @OA\Response(response=404, description="Page non trouvée", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
+ * )
+ *
+ * @OA\Post(
+ *     path="/pages/{id}/versions/{version_id}/restore",
+ *     summary="Restaurer une version antérieure",
+ *     description="Restaure une version antérieure d'une page. L'état actuel est automatiquement sauvegardé comme nouvelle version avant restauration.",
+ *     tags={"Pages", "Versions"},
+ *     security={{"sanctum":{}}},
+ *     @OA\Parameter(
+ *         name="id",
+ *         in="path",
+ *         required=true,
+ *         description="UUID de la page",
+ *         @OA\Schema(type="string", format="uuid", example="770e8400-e29b-41d4-a716-446655440002")
+ *     ),
+ *     @OA\Parameter(
+ *         name="version_id",
+ *         in="path",
+ *         required=true,
+ *         description="ID de la version à restaurer",
+ *         @OA\Schema(type="integer", example="5")
+ *     ),
+ *     @OA\Response(
+ *         response=200,
+ *         description="Version restaurée avec succès",
+ *         @OA\JsonContent(
+ *             type="object",
+ *             @OA\Property(property="success", type="boolean", example=true),
+ *             @OA\Property(property="message", type="string", example="Version restaurée avec succès."),
+ *             @OA\Property(property="data", ref="#/components/schemas/Page")
+ *         )
+ *     ),
+ *     @OA\Response(response=400, description="Version invalide pour cette page"),
+ *     @OA\Response(response=401, description="Non authentifié", @OA\JsonContent(ref="#/components/schemas/UnauthorizedResponse")),
+ *     @OA\Response(response=403, description="Non autorisé"),
+ *     @OA\Response(response=404, description="Page ou version non trouvée", @OA\JsonContent(ref="#/components/schemas/NotFoundResponse"))
  * )
  */
 class PageAnnotations
