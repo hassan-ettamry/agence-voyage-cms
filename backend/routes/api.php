@@ -5,24 +5,50 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PageController;
 use App\Http\Controllers\Api\DashboardController;
 
+/**
+ * Test route
+ */
 Route::get('/test', function () {
     return response()->json([
         'message' => 'API OK'
     ]);
 });
 
+/**
+ * Auth routes (public)
+ */
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
+/**
+ * Protected routes (auth:sanctum)
+ */
 Route::middleware('auth:sanctum')->group(function () {
+
+    /**
+     * User
+     */
     Route::get('/me', [AuthController::class, 'me']);
     Route::post('/logout', [AuthController::class, 'logout']);
-});
 
-Route::middleware('auth:sanctum')->group(function () {
+    /**
+     * Pages CRUD
+     */
     Route::apiResource('pages', PageController::class)->only([
-        'index', 'show', 'store', 'update', 'destroy'
+        'index',
+        'show',
+        'store',
+        'update',
+        'destroy'
     ]);
-});
 
-Route::middleware('auth:sanctum')->get('/dashboard', [DashboardController::class, 'index']);
+    /**
+     * Publish page
+     */
+    Route::patch('/pages/{page}/publish', [PageController::class, 'publish']);
+
+    /**
+     * Dashboard
+     */
+    Route::get('/dashboard', [DashboardController::class, 'index']);
+});

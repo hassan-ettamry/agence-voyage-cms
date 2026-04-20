@@ -144,6 +144,21 @@ class PageController extends Controller
     }
 
     /**
+     * PUBLISH PAGE
+     */
+    public function publish(Page $page)
+    {
+        $this->authorize('update', $page);
+
+        $page->update([
+            'status' => Page::STATUS_PUBLISHED,
+            'published_at' => now(),
+        ]);
+
+        return new PageResource($page);
+    }
+
+    /**
      * DELETE PAGE
      */
     public function destroy(Page $page)
