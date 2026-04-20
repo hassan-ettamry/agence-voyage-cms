@@ -15,17 +15,20 @@ class Page extends Model
 
     // Champs remplissables
     protected $fillable = [
-        'agency_id',   // clé multi-tenant
-        'title',       // titre de la page
-        'slug',        // URL unique par agence
-        'content',     // contenu HTML / texte
-        'structure',   // JSON (page builder)
-        'status'       // draft / published
+        'agency_id',    // clé multi-tenant
+        'title',        // titre de la page
+        'slug',         // URL unique par agence
+        'structure',    // JSON (page builder)
+        'meta',         // JSON (SEO / metadata)
+        'status',       // draft / published
+        'published_at', // date de publication
     ];
 
-    // Cast JSON → array
+    // Casts
     protected $casts = [
         'structure' => 'array',
+        'meta' => 'array',
+        'published_at' => 'datetime',
     ];
 
     // Constantes pour status
@@ -56,6 +59,11 @@ class Page extends Model
                 $model->status = self::STATUS_DRAFT;
             }
 
+            // Définir published_at si publication directe
+            if ($model->status === self::STATUS_PUBLISHED && !$model->published_at) {
+                $model->published_at = now();
+            }
+
             /**
              * Génération slug UNIQUE PAR AGENCY
              * + bypass du global scope
@@ -76,6 +84,16 @@ class Page extends Model
                 }
 
                 $model->slug = $slug;
+            }
+        });
+
+        // Gestion mise à jour (ex: publication après création)
+        static::updating(function ($model) {
+            if (
+                $model->status === self::STATUS_PUBLISHED &&
+                !$model->published_at
+            ) {
+                $model->published_at = now();
             }
         });
     }
