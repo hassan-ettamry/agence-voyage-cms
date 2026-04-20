@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use App\Models\PageVersion;
 
 class Page extends Model
 {
@@ -124,6 +125,22 @@ class Page extends Model
     public function agency()
     {
         return $this->belongsTo(Agency::class);
+    }
+
+    /**
+     * Relation : page → versions
+     */
+    public function versions()
+    {
+        return $this->hasMany(PageVersion::class);
+    }
+
+    /**
+     * Relation : dernière version basée sur le numéro de version
+     */
+    public function latestVersion()
+    {
+        return $this->hasOne(PageVersion::class)->ofMany('version', 'max');
     }
 
     /**
