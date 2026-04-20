@@ -16,6 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api([
             EnsureFrontendRequestsAreStateful::class,
         ]);
+        
+        // Exclure les routes API du CSRF
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
+            'sanctum/csrf-cookie'
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

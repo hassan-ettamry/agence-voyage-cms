@@ -18,8 +18,10 @@ Route::get('/test', function () {
 /**
  * Auth routes (public)
  */
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/login', [AuthController::class, 'login']);
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+});
 
 /**
  * Protected routes (auth:sanctum)
@@ -27,45 +29,32 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
 
     /**
-     * User
+     * User 
      */
-    Route::get('/me', [AuthController::class, 'me']);
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::prefix('auth')->group(function () {
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+    });
 
     /**
      * Components
      */
     Route::apiResource('components', ComponentController::class)->only([
-        'index',
-        'store',
-        'update',
-        'destroy'
+        'index', 'store', 'update', 'destroy'
     ]);
 
     /**
      * Pages CRUD
      */
     Route::apiResource('pages', PageController::class)->only([
-        'index',
-        'show',
-        'store',
-        'update',
-        'destroy'
+        'index', 'show', 'store', 'update', 'destroy'
     ]);
 
     /**
      * Page versions (history)
      */
     Route::get('/pages/{page}/versions', [PageController::class, 'versions']);
-
-    /**
-     * Restore version (rollback)
-     */
     Route::post('/pages/{page}/versions/{version}/restore', [PageController::class, 'restore']);
-
-    /**
-     * Publish page
-     */
     Route::patch('/pages/{page}/publish', [PageController::class, 'publish']);
 
     /**
