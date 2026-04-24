@@ -13,11 +13,17 @@ return new class extends Migration
     {
         Schema::create('components', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->string('type')->unique();
+        
+            $table->string('type');
             $table->string('name');
             $table->string('category')->index();
-            $table->json('schema_json');
+        
+            $table->json('schema_json')->nullable();
+        
             $table->string('preview_image')->nullable();
+        
+            $table->boolean('is_active')->default(true); 
+        
             $table->timestamps();
         });
     }

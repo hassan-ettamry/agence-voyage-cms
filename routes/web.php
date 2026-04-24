@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\PageController;
 use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\ComponentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,4 +53,16 @@ Route::middleware(['auth'])->group(function () {
         Route::post('{page}/versions/{version}/restore', [PageController::class, 'restore'])->name('versions.restore');
         Route::post('{page}/duplicate', [PageController::class, 'duplicate'])->name('duplicate');
     });
+
+    // COMPONENTS MODULE
+    Route::prefix('components')->name('components.')->group(function () {
+
+        Route::get('/', [ComponentController::class, 'index'])->name('index');
+
+        Route::get('/builder', [ComponentController::class, 'builder'])->name('builder');
+
+        Route::get('/grouped', [ComponentController::class, 'grouped'])->name('grouped');
+
+    });
+
 });
