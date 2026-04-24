@@ -6,15 +6,26 @@ use App\Models\Page;
 use App\Models\PageVersion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use App\Services\PageStructureValidator;
 
 class PageService
 {
+    private PageStructureValidator $validator;
+
+    public function __construct(PageStructureValidator $validator)
+    {
+        $this->validator = $validator;
+    }
+
     /**
      * Créer une nouvelle page
      */
     public function create(array $data, $user): Page
     {
         return DB::transaction(function () use ($data, $user) {
+
+            // Validation structure
+            $this->validator->validate($data['structure'] ?? null);
 
             // Associer la page à l'agence de l'utilisateur
             $data['agency_id'] = $user->agency_id;
@@ -41,6 +52,11 @@ class PageService
     public function update(Page $page, array $data, $user): Page
     {
         return DB::transaction(function () use ($page, $data, $user) {
+
+            // Validation structure
+            if (isset($data['structure'])) {
+                $this->validator->validate($data['structure']);
+            }
 
             // Vérifier si la structure a changé
             $structureChanged = isset($data['structure']) &&
