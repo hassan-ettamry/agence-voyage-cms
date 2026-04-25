@@ -8,61 +8,47 @@ use App\Http\Requests\Page\UpdatePageRequest;
 use App\Models\Page;
 use App\Models\PageVersion;
 use App\Services\PageService;
+use App\Services\Renderer\PageRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class PageController extends Controller
 {
-    /**
-     * Service métier pour gérer la logique des pages
-     */
     private PageService $pageService;
 
     public function __construct(PageService $pageService)
     {
-        // Middleware : utilisateur connecté obligatoire
-        $this->middleware('auth');
+        $this->middleware('auth')->except(['show']);
 
-        // Vérification email obligatoire pour créer/modifier
         $this->middleware('verified')->only(['create', 'store', 'edit', 'update']);
 
         $this->pageService = $pageService;
     }
 
     /**
-     * Liste des pages avec filtres (recherche + statut)
+     * Liste des pages
      */
     public function index(Request $request)
     {
         $pages = Page::query()
-
-            // Filtre par recherche (titre ou slug)
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
                     $sq->where('title', 'like', "%{$search}%")
                        ->orWhere('slug', 'like', "%{$search}%");
                 });
             })
-
-            // Filtre par statut (draft, published...)
             ->when($request->status, function ($q, $status) {
                 $q->where('status', $status);
             })
-
-            // Tri par date de création (plus récent en premier)
             ->latest()
-
-            // Pagination (15 par défaut)
             ->paginate($request->integer('per_page', 15))
-
-            // Conserver les paramètres dans la pagination
             ->withQueryString();
 
         return view('pages.index', compact('pages'));
     }
 
     /**
-     * Formulaire de création
+     * Create form
      */
     public function create()
     {
@@ -70,7 +56,7 @@ class PageController extends Controller
     }
 
     /**
-     * Enregistrer une nouvelle page
+     * Store page
      */
     public function store(StorePageRequest $request)
     {
@@ -79,7 +65,6 @@ class PageController extends Controller
             $request->user()
         );
 
-        // Nettoyage du cache du dashboard
         Cache::forget('dashboard_stats_' . auth()->id());
 
         return redirect()
@@ -88,23 +73,32 @@ class PageController extends Controller
     }
 
     /**
-     * Affichage public d'une page (via slug)
-     * Mise en cache pour performance
+     *  PUBLIC PAGE 
      */
-    public function show(string $slug)
+    public function show(string $slug, PageRenderer $renderer)
     {
         $page = Cache::remember("page_{$slug}", 3600, function () use ($slug) {
-            return Page::with('author')
+
+            $query = Page::query();
+
+            if (!auth()->check()) {
+                $query->withoutGlobalScopes();
+            }
+
+            return $query
                 ->where('slug', $slug)
                 ->where('status', Page::STATUS_PUBLISHED)
                 ->firstOrFail();
         });
 
-        return view('pages.show', compact('page'));
+        // render JSON → HTML
+        $html = $renderer->render($page->structure ?? []);
+
+        return view('pages.show', compact('page', 'html'));
     }
 
     /**
-     * Formulaire d'édition
+     * Edit form
      */
     public function edit(Page $page)
     {
@@ -114,13 +108,12 @@ class PageController extends Controller
     }
 
     /**
-     * Mise à jour d'une page
+     * Update page
      */
     public function update(UpdatePageRequest $request, Page $page)
     {
         $this->authorize('update', $page);
 
-        // Sauvegarde de l'ancien slug (important si modifié)
         $oldSlug = $page->slug;
 
         $this->pageService->update(
@@ -129,18 +122,15 @@ class PageController extends Controller
             $request->user()
         );
 
-        // Nettoyage du cache (ancien + nouveau slug)
         Cache::forget("page_{$oldSlug}");
         Cache::forget("page_{$page->slug}");
-
-        // Nettoyage du dashboard
         Cache::forget('dashboard_stats_' . auth()->id());
 
         return back()->with('success', 'Page mise à jour.');
     }
 
     /**
-     * Publication d'une page
+     * Publish page
      */
     public function publish(Page $page)
     {
@@ -148,14 +138,13 @@ class PageController extends Controller
 
         $this->pageService->publish($page);
 
-        // Nettoyage du cache public
         Cache::forget("page_{$page->slug}");
 
         return back()->with('success', 'Page publiée.');
     }
 
     /**
-     * Suppression d'une page
+     * Delete page
      */
     public function destroy(Page $page)
     {
@@ -165,7 +154,6 @@ class PageController extends Controller
 
         $page->delete();
 
-        // Nettoyage cache
         Cache::forget("page_{$slug}");
         Cache::forget('dashboard_stats_' . auth()->id());
 
@@ -175,14 +163,13 @@ class PageController extends Controller
     }
 
     /**
-     * Liste des versions d'une page
+     * Versions
      */
     public function versions(Page $page)
     {
         $this->authorize('view', $page);
 
         $versions = $page->versions()
-            ->with('author')
             ->latest('version')
             ->paginate(20);
 
@@ -190,13 +177,12 @@ class PageController extends Controller
     }
 
     /**
-     * Restaurer une version précédente
+     * Restore version
      */
     public function restore(Page $page, PageVersion $version)
     {
         $this->authorize('update', $page);
 
-        // Sécurité : vérifier que la version appartient à la page
         abort_unless($version->page_id === $page->id, 404);
 
         $this->pageService->restore($page, $version, auth()->user());
@@ -209,7 +195,7 @@ class PageController extends Controller
     }
 
     /**
-     * Dupliquer une page
+     * Duplicate page
      */
     public function duplicate(Page $page)
     {
