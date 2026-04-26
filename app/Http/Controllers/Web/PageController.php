@@ -11,6 +11,7 @@ use App\Services\PageService;
 use App\Services\Renderer\PageRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use App\Scopes\AgencyScope;
 
 class PageController extends Controller
 {
@@ -19,7 +20,6 @@ class PageController extends Controller
     public function __construct(PageService $pageService)
     {
         $this->middleware('auth')->except(['show']);
-
         $this->middleware('verified')->only(['create', 'store', 'edit', 'update']);
 
         $this->pageService = $pageService;
@@ -73,25 +73,18 @@ class PageController extends Controller
     }
 
     /**
-     *  PUBLIC PAGE 
+     * PUBLIC PAGE
      */
     public function show(string $slug, PageRenderer $renderer)
     {
         $page = Cache::remember("page_{$slug}", 3600, function () use ($slug) {
 
-            $query = Page::query();
-
-            if (!auth()->check()) {
-                $query->withoutGlobalScopes();
-            }
-
-            return $query
+            return Page::withoutGlobalScope(AgencyScope::class)
                 ->where('slug', $slug)
                 ->where('status', Page::STATUS_PUBLISHED)
                 ->firstOrFail();
         });
 
-        // render JSON → HTML
         $html = $renderer->render($page->structure ?? []);
 
         return view('pages.show', compact('page', 'html'));
