@@ -12,46 +12,62 @@ use Illuminate\Support\Facades\Hash;
 
 class User extends Authenticatable
 {
-    // Traits Laravel utilisés pour les fonctionnalités supplémentaires
+    /**
+     * Traits Laravel utilisés pour les fonctionnalités supplémentaires
+     * - HasApiTokens : gestion des tokens API (Sanctum)
+     * - HasFactory : support des factories pour les tests
+     * - Notifiable : gestion des notifications
+     */
     use HasApiTokens, HasFactory, Notifiable;
 
-    // Désactive l'auto-incrémentation de l'ID (car on utilise UUID)
+    /**
+     * Désactiver l'auto-incrément (UUID utilisé comme clé primaire)
+     */
     public $incrementing = false;
 
-    // Définit le type de clé primaire comme string
+    /**
+     * Type de la clé primaire
+     */
     protected $keyType = 'string';
 
-    // Champs autorisés pour le mass assignment
+    /**
+     * Champs assignables en masse
+     */
     protected $fillable = [
         'name',
         'email',
         'password',
         'agency_id',
-        'role',
+        'role_id',
     ];
 
-    // Champs cachés lors de la sérialisation (ex: API)
+    /**
+     * Champs masqués lors de la sérialisation (API, JSON)
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    // Cast des attributs (conversion automatique)
+    /**
+     * Cast automatique des attributs
+     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
     /**
-     * Méthode boot : exécutée automatiquement au démarrage du modèle
+     * Configuration du modèle au démarrage
      */
     protected static function boot()
     {
         parent::boot();
 
-        // Événement déclenché lors de la création d'un utilisateur
+        /**
+         * Lors de la création :
+         * Génération automatique d'un identifiant UUID si absent
+         */
         static::creating(function ($model) {
-
-            // Si aucun ID n'est défini, on génère un UUID
             if (!$model->id) {
                 $model->id = (string) Str::uuid();
             }
@@ -60,7 +76,8 @@ class User extends Authenticatable
 
     /**
      * Mutateur pour le mot de passe
-     * Hash automatiquement le mot de passe avant de le sauvegarder
+     *
+     * Hash automatiquement le mot de passe avant sauvegarde
      */
     public function setPasswordAttribute($value)
     {
@@ -68,8 +85,7 @@ class User extends Authenticatable
     }
 
     /**
-     * Relation avec le modèle Agency
-     * Un utilisateur appartient à une agence
+     * Relation : un utilisateur appartient à une agence
      */
     public function agency()
     {
@@ -77,10 +93,51 @@ class User extends Authenticatable
     }
 
     /**
-     * Vérifie si l'utilisateur est un admin
+     * Vérifier si l'utilisateur est administrateur
      */
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        return $this->role?->slug === 'admin';
+    }
+
+    /**
+     * Relation : un utilisateur appartient à un rôle
+     */
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    /**
+     * Vérifier si l'utilisateur possède une permission donnée
+     *
+     * @param string $permission
+     * @return bool
+     */
+    public function hasPermission(string $permission): bool
+    {
+        if (!$this->role) return false;
+
+        return in_array($permission, $this->getPermissions());
+    }
+
+    /**
+     * Récupérer la liste des permissions de l'utilisateur
+     *
+     * Utilise un cache pour améliorer les performances
+     * et éviter les requêtes répétées
+     *
+     * @return array
+     */
+    public function getPermissions(): array
+    {
+        // Charger la relation si elle n'est pas déjà chargée
+        $this->loadMissing('role.permissions');
+
+        return \Cache::remember(
+            "user_permissions_v1_{$this->id}",
+            3600,
+            fn() => $this->role?->permissions->pluck('slug')->toArray() ?? []
+        );
     }
 }

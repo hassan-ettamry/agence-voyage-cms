@@ -30,6 +30,8 @@ class PageController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorize('viewAny', Page::class);
+
         $pages = Page::query()
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
@@ -52,6 +54,8 @@ class PageController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Page::class);
+
         return view('pages.create');
     }
 
@@ -60,6 +64,8 @@ class PageController extends Controller
      */
     public function store(StorePageRequest $request)
     {
+        $this->authorize('create', Page::class);
+
         $page = $this->pageService->create(
             $request->validated(),
             $request->user()
@@ -82,6 +88,7 @@ class PageController extends Controller
             return Page::withoutGlobalScope(AgencyScope::class)
                 ->where('slug', $slug)
                 ->where('status', Page::STATUS_PUBLISHED)
+                ->whereNotNull('published_at')
                 ->firstOrFail();
         });
 

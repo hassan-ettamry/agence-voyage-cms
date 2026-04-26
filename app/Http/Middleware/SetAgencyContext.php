@@ -22,6 +22,8 @@ class SetAgencyContext
          */
         if (auth()->check()) {
             AgencyContext::set(auth()->user()->agency_id);
+        } else {
+            AgencyContext::clear();
         }
 
         /**

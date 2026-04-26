@@ -8,42 +8,52 @@ use App\Models\Page;
 class PagePolicy
 {
     /**
-     *  Voir une page
-     * Autorisé seulement si même agence
+     * Voir une page
      */
     public function view(User $user, Page $page): bool
     {
-        return $user->agency_id === $page->agency_id;
+        return $this->sameAgency($user, $page)
+            && $user->hasPermission('page.view');
     }
 
     /**
-     *  Voir la liste des pages
+     * Liste des pages
      */
     public function viewAny(User $user): bool
     {
-        return true; // filtré automatiquement par global scope
+        return $user->hasPermission('page.view');
     }
 
     /**
-     *  Créer une page
+     * Créer
      */
     public function create(User $user): bool
     {
-        return true;
+        return $user->hasPermission('page.create');
     }
 
     /**
-     *  Modifier une page
+     * Modifier
      */
     public function update(User $user, Page $page): bool
     {
-        return $user->agency_id === $page->agency_id;
+        return $this->sameAgency($user, $page)
+            && $user->hasPermission('page.update');
     }
 
     /**
-     *  Supprimer une page
+     * Supprimer
      */
     public function delete(User $user, Page $page): bool
+    {
+        return $this->sameAgency($user, $page)
+            && $user->hasPermission('page.delete');
+    }
+
+    /**
+     * helper
+     */
+    protected function sameAgency(User $user, Page $page): bool
     {
         return $user->agency_id === $page->agency_id;
     }
