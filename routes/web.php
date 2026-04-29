@@ -12,7 +12,7 @@ use App\Http\Controllers\Web\ComponentController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', function () {
-    return view('welcome');
+    return view('public.welcome');
 })->name('home');
 
 // Pages publiques

@@ -1,13 +1,11 @@
+
+/* imports */
+@import './components/button.css';
+@import './components/card.css';
+@import './components/form1.css';
+@import './utilities/scrollbar.css';
+
+/* TAILWIND */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-@layer components {
-    .btn-primary {
-        @apply bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition duration-200;
-    }
-    
-    .btn-secondary {
-        @apply bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition duration-200;
-    }
-}

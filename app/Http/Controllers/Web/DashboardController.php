@@ -23,8 +23,10 @@ class DashboardController extends Controller
      */
     public function index(Request $request)
     {
-        // Utiliser le cache pour optimiser
-        $stats = Cache::remember('dashboard_stats_' . auth()->id(), 300, function () {
+        $user = $request->user();
+        $agencyId = $user->agency_id;
+    
+        $stats = Cache::remember("dashboard_stats_v1_{$user->id}", 300, function () use ($agencyId) {
             return [
                 'pages' => [
                     'total' => Page::count(),
@@ -40,22 +42,22 @@ class DashboardController extends Controller
                     'special' => Offer::where('is_special', true)->count(),
                 ],
                 'users' => [
-                    'total' => User::where('agency_id', auth()->user()->agency_id)->count(),
-                    'admins' => User::where('agency_id', auth()->user()->agency_id)
-                                   ->where('role', 'admin')->count(),
+                    'total' => User::where('agency_id', $agencyId)->count(),
+    
+                    'admins' => User::where('agency_id', $agencyId)
+                        ->whereHas('role', fn($q) => $q->where('slug', 'admin'))
+                        ->count(),
                 ],
             ];
         });
-
-        // Récupérer les dernières pages modifiées
+    
         $recentPages = Page::latest('updated_at')->limit(5)->get();
-
-        // Récupérer les activités récentes (si vous avez une table d'activités)
+    
         $recentActivities = $this->getRecentActivities();
-
-        return view('dashboard', compact('stats', 'recentPages', 'recentActivities'));
+    
+        return view('dashboard.index', compact('stats', 'recentPages', 'recentActivities'));
     }
-
+    
     /**
      * Récupérer les activités récentes
      */
