@@ -1,5 +1,32 @@
 @extends('layouts.admin')
 
+@section('topbar')
+
+<x-layout.topbar searchPlaceholder="Search pages...">
+
+    {{-- LEFT SIDE --}}
+    <x-slot name="left">
+        <button class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm">
+            Gallery
+        </button>
+
+        <button class="inline-flex items-center gap-1.5 border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-sm">
+            Visit site
+        </button>
+    </x-slot>
+
+    {{-- RIGHT SIDE --}}
+    <x-slot name="right">
+        <button onclick="openModal('createPageModal')"
+                class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm shadow-sm">
+            + New Page
+        </button>
+    </x-slot>
+
+</x-layout.topbar>
+
+@endsection
+
 @section('content')
 
 {{-- ================= STATS ================= --}}
@@ -154,7 +181,7 @@
                         {{ \Carbon\Carbon::parse($page->created_at)->format('Y-m-d H:i') }}
                     </td>
 
-                    {{-- Actions — toujours visibles --}}
+                    {{-- Actions --}}
                     <td class="px-5 py-3.5">
                         <div class="flex items-center justify-center gap-1">
 
@@ -200,97 +227,42 @@
 
     {{-- FOOTER --}}
     <x-slot name="footer">
-
-        <div class="flex items-center justify-between w-full">
-
-            {{-- LEFT: INFO --}}
-            <span class="text-xs text-gray-500" id="pagination-info">
-                Showing
-                <span class="font-semibold text-gray-700">
-                    {{ $pages->firstItem() ?? 0 }}–{{ $pages->lastItem() ?? 0 }}
-                </span>
-                of
-                <span class="font-semibold text-gray-700">
-                    {{ $pages->total() }}
-                </span>
-                pages
-            </span>
-
-            {{-- RIGHT: CONTROLS --}}
-            <div class="flex items-center gap-2">
-
-                {{-- Rows per page --}}
-                <div class="flex items-center gap-1 text-xs text-gray-500">
-                    <span>Rows:</span>
-                    <select
-                        class="border border-gray-200 rounded-md px-2 py-1 text-xs bg-white"
-                        onchange="window.location.href='?per_page='+this.value+'&page=1'">
-
-                        <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
-                        <option value="25" {{ request('per_page') == 25 ? 'selected' : '' }}>25</option>
-                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
-                    </select>
-                </div>
-
-                <div class="h-4 w-px bg-gray-200"></div>
-
-                {{-- Pagination --}}
-                <div class="flex items-center gap-1">
-
-                    {{-- Prev --}}
-                    @if($pages->onFirstPage())
-                        <span class="w-7 h-7 flex items-center justify-center text-gray-300 cursor-not-allowed">
-                            ‹
-                        </span>
-                    @else
-                        <a href="{{ $pages->previousPageUrl() }}"
-                        class="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-md hover:bg-gray-100 text-gray-500">
-                            ‹
-                        </a>
-                    @endif
-
-                    {{-- Page Numbers --}}
-                    @foreach($pages->getUrlRange(1, $pages->lastPage()) as $page => $url)
-
-                        @if($page == $pages->currentPage())
-                            <span class="w-7 h-7 flex items-center justify-center bg-indigo-600 text-white text-xs rounded-md font-semibold">
-                                {{ $page }}
-                            </span>
-
-                        @elseif($page <= 3 || $page == $pages->lastPage() || abs($page - $pages->currentPage()) <= 1)
-                            <a href="{{ $url }}"
-                            class="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-md text-xs hover:bg-gray-100 text-gray-600">
-                                {{ $page }}
-                            </a>
-
-                        @elseif($page == 4)
-                            <span class="w-7 h-7 flex items-center justify-center text-gray-400 text-xs">
-                                …
-                            </span>
-                        @endif
-
-                    @endforeach
-
-                    {{-- Next --}}
-                    @if($pages->hasMorePages())
-                        <a href="{{ $pages->nextPageUrl() }}"
-                        class="w-7 h-7 flex items-center justify-center border border-gray-200 rounded-md hover:bg-gray-100 text-gray-500">
-                            ›
-                        </a>
-                    @else
-                        <span class="w-7 h-7 flex items-center justify-center text-gray-300 cursor-not-allowed">
-                            ›
-                        </span>
-                    @endif
-
-                </div>
-
-            </div>
-
-        </div>
-
+        <x-ui.pagination :paginator="$pages" />
     </x-slot>
 
 </x-ui.table-layout>
+
+<x-ui.modal id="createPageModal" title="Create new page">
+
+<form method="POST" action="{{ route('pages.store') }}">
+    @csrf
+
+    <div class="mb-4">
+        <label class="text-sm text-gray-600">Page name</label>
+        <input name="title" class="w-full border rounded-lg px-3 py-2 mt-1">
+    </div>
+
+    <div class="mb-4">
+        <label class="text-sm text-gray-600">Menu</label>
+        <select name="menu" class="w-full border rounded-lg px-3 py-2 mt-1">
+            <option>Primary Menu</option>
+        </select>
+    </div>
+
+    <div class="flex justify-end gap-2">
+        <button type="button"
+                onclick="closeModal('createPageModal')"
+                class="px-4 py-2 border rounded-lg">
+            Cancel
+        </button>
+
+        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
+            Create
+        </button>
+    </div>
+
+</form>
+
+</x-ui.modal>
 
 @endsection
