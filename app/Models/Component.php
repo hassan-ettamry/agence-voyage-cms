@@ -24,6 +24,7 @@ class Component extends Model
         'type',
         'name',
         'category',
+        'icon',
         'schema_json',
         'preview_image',
         'is_active'

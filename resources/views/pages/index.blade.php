@@ -30,38 +30,7 @@
 @section('content')
 
 {{-- ================= STATS ================= --}}
-<x-ui.stats-cards>
-
-    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Total Pages</p>
-        <p class="text-3xl font-bold text-gray-900">{{ $totalPages ?? $pages->total() }}</p>
-        <p class="mt-1.5 text-xs text-emerald-500 font-medium flex items-center gap-1">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-            </svg>
-            4 this month
-        </p>
-    </div>
-
-    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Published</p>
-        <p class="text-3xl font-bold text-gray-900">{{ $publishedCount ?? '—' }}</p>
-        <p class="mt-1.5 text-xs text-gray-400">92% of total</p>
-    </div>
-
-    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Custom Pages</p>
-        <p class="text-3xl font-bold text-gray-900">{{ $customCount ?? '—' }}</p>
-        <p class="mt-1.5 text-xs text-gray-400">Template based</p>
-    </div>
-
-    <div class="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">Default Pages</p>
-        <p class="text-3xl font-bold text-gray-900">{{ $defaultCount ?? '—' }}</p>
-        <p class="mt-1.5 text-xs text-gray-400">System generated</p>
-    </div>
-
-</x-ui.stats-cards>
+<x-ui.stats-cards :stats="$stats" />
 
 
 {{-- ================= TABLE ================= --}}
@@ -181,40 +150,14 @@
                         {{ \Carbon\Carbon::parse($page->created_at)->format('Y-m-d H:i') }}
                     </td>
 
-                    {{-- Actions --}}
+                    {{-- ACTIONS USING GLOBAL COMPONENT --}}
                     <td class="px-5 py-3.5">
-                        <div class="flex items-center justify-center gap-1">
-
-                            {{-- Edit --}}
-                            <a href="{{ route('pages.edit', $page) }}" title="Edit"
-                               class="w-7 h-7 flex items-center justify-center border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 rounded-md text-gray-400 hover:text-indigo-600 transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                </svg>
-                            </a>
-
-                            {{-- Preview --}}
-                            <a href="#" title="Preview"
-                               class="w-7 h-7 flex items-center justify-center border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 rounded-md text-gray-400 hover:text-indigo-600 transition-colors">
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
-                                </svg>
-                            </a>
-
-                            {{-- Delete --}}
-                            <form method="POST" action="{{ route('pages.destroy', $page) }}" class="inline"
-                                  onsubmit="return confirm('Delete this page?')">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" title="Delete"
-                                        class="w-7 h-7 flex items-center justify-center border border-gray-200 hover:border-red-300 hover:bg-red-50 rounded-md text-gray-400 hover:text-red-500 transition-colors">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                                    </svg>
-                                </button>
-                            </form>
-
-                        </div>
+                        <x-ui.actions
+                            :edit="route('pages.edit', $page)"
+                            :delete="route('pages.destroy', $page)"
+                            :preview="'#'"
+                            confirm="Delete this page?"
+                        />
                     </td>
 
                 </tr>
@@ -232,37 +175,7 @@
 
 </x-ui.table-layout>
 
-<x-ui.modal id="createPageModal" title="Create new page">
-
-<form method="POST" action="{{ route('pages.store') }}">
-    @csrf
-
-    <div class="mb-4">
-        <label class="text-sm text-gray-600">Page name</label>
-        <input name="title" class="w-full border rounded-lg px-3 py-2 mt-1">
-    </div>
-
-    <div class="mb-4">
-        <label class="text-sm text-gray-600">Menu</label>
-        <select name="menu" class="w-full border rounded-lg px-3 py-2 mt-1">
-            <option>Primary Menu</option>
-        </select>
-    </div>
-
-    <div class="flex justify-end gap-2">
-        <button type="button"
-                onclick="closeModal('createPageModal')"
-                class="px-4 py-2 border rounded-lg">
-            Cancel
-        </button>
-
-        <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg">
-            Create
-        </button>
-    </div>
-
-</form>
-
-</x-ui.modal>
+{{-- ================= MODAL ================= --}}
+@include('pages.partials.create')
 
 @endsection

@@ -46,10 +46,21 @@ class UpdatePageRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+
         if ($this->filled('title') && !$this->filled('slug')) {
+    
             $this->merge([
                 'slug' => \Illuminate\Support\Str::slug($this->title)
             ]);
+    
+        }
+    
+        if ($this->filled('structure') && is_string($this->structure)) {
+    
+            $this->merge([
+                'structure' => json_decode($this->structure, true)
+            ]);
+    
         }
     }
 }

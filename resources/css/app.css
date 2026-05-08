@@ -5,7 +5,43 @@
 @import './components/form1.css';
 @import './utilities/scrollbar.css';
 
+
+@import './base/reset.css';
+
+
 /* TAILWIND */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+
+
+
+
+.canvas-section {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.canvas-section:hover {
+    border-color: #93c5fd;
+}
+
+.canvas-section.selected {
+    border-color: #2563eb;
+}
+
+.canvas-section:hover .section-toolbar {
+    display: flex;
+}
+
+.section-toolbar {
+    z-index: 50;
+}
+
+.viewport-btn.active {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+}

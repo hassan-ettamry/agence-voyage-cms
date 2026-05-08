@@ -12,6 +12,7 @@ use App\Services\Renderer\PageRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Scopes\AgencyScope;
+use App\Models\Component;
 
 class PageController extends Controller
 {
@@ -31,8 +32,10 @@ class PageController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', Page::class);
-
-        $pages = Page::query()
+    
+        $baseQuery = Page::query();
+    
+        $query = (clone $baseQuery)
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
                     $sq->where('title', 'like', "%{$search}%")
@@ -41,12 +44,37 @@ class PageController extends Controller
             })
             ->when($request->status, function ($q, $status) {
                 $q->where('status', $status);
-            })
-            ->latest()
-            ->paginate($request->integer('per_page', 15))
+            });
+    
+        $pages = $query->latest()
+            ->paginate($request->integer('per_page', 10))
             ->withQueryString();
-
-        return view('pages.index', compact('pages'));
+    
+        $stats = [
+            [
+                'label' => 'Total Pages',
+                'value' => (clone $baseQuery)->count(),
+                'note'  => 'All pages',
+            ],
+            [
+                'label' => 'Published',
+                'value' => (clone $baseQuery)->where('status', Page::STATUS_PUBLISHED)->count(),
+                'note'  => 'Live pages',
+                'color' => 'text-emerald-500',
+            ],
+            [
+                'label' => 'Draft',
+                'value' => (clone $baseQuery)->where('status', Page::STATUS_DRAFT)->count(),
+                'note'  => 'Not published',
+            ],
+            [
+                'label' => 'Recently Created',
+                'value' => (clone $baseQuery)->where('created_at', '>=', now()->subMonth())->count(),
+                'note'  => 'Last 30 days',
+            ],
+        ];
+    
+        return view('pages.index', compact('pages', 'stats'));
     }
 
     /**
@@ -81,20 +109,17 @@ class PageController extends Controller
     /**
      * PUBLIC PAGE
      */
-    public function show(string $slug, PageRenderer $renderer)
+    public function show(string $slug, PageRenderer $renderer, MenuService $menuService)
     {
-        $page = Cache::remember("page_{$slug}", 3600, function () use ($slug) {
-
-            return Page::withoutGlobalScope(AgencyScope::class)
-                ->where('slug', $slug)
-                ->where('status', Page::STATUS_PUBLISHED)
-                ->whereNotNull('published_at')
-                ->firstOrFail();
-        });
-
+        $page = Page::where('slug', $slug)
+            ->where('status', Page::STATUS_PUBLISHED)
+            ->firstOrFail();
+    
         $html = $renderer->render($page->structure ?? []);
-
-        return view('pages.show', compact('page', 'html'));
+    
+        $menuItems = $menuService->getMenu('main');
+    
+        return view('frontend.page', compact('page', 'html', 'menuItems'));
     }
 
     /**
@@ -103,8 +128,15 @@ class PageController extends Controller
     public function edit(Page $page)
     {
         $this->authorize('update', $page);
-
-        return view('pages.edit', compact('page'));
+    
+        $widgets = Component::where('is_active', true)
+            ->orderBy('category')
+            ->get();
+    
+        return view('pages.edit', compact(
+            'page',
+            'widgets'
+        ));
     }
 
     /**
@@ -114,18 +146,32 @@ class PageController extends Controller
     {
         $this->authorize('update', $page);
 
+        if ($request->expectsJson()) {
+    
+            $page->update([
+                'structure' => $request->validated()['structure'] ?? []
+            ]);
+    
+            Cache::forget("page_{$page->slug}");
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Page saved successfully'
+            ]);
+        }
+    
         $oldSlug = $page->slug;
-
+    
         $this->pageService->update(
             $page,
             $request->validated(),
             $request->user()
         );
-
+    
         Cache::forget("page_{$oldSlug}");
         Cache::forget("page_{$page->slug}");
         Cache::forget('dashboard_stats_' . auth()->id());
-
+    
         return back()->with('success', 'Page mise à jour.');
     }
 

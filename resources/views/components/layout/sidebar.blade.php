@@ -2,7 +2,19 @@
 $menu = config('menu');
 @endphp
 
-<aside class="w-64 h-screen bg-[#1a2744] text-white flex flex-col">
+<aside id="sidebar"
+    class="
+    fixed md:static
+    top-0 left-0
+    z-50
+    w-64
+    h-full md:h-screen
+    bg-[#1a2744]
+    text-white
+    flex flex-col
+    transform -translate-x-full md:translate-x-0
+    transition-transform duration-200
+">
 
     <!-- LOGO -->
     <div class="flex items-center gap-3 px-6 py-5 border-b border-white/10">

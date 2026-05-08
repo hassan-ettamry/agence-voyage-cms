@@ -52,9 +52,9 @@ return [
     'label' => 'Users & Roles',
     'icon'  => 'users',
     'children' => [
-        ['label' => 'Users', 'route' => '#'],
-        ['label' => 'Roles', 'route' => '#'],
-        ['label' => 'Permissions', 'route' => '#'],
+        ['label' => 'Users', 'route' => 'users.index'],
+        ['label' => 'Roles', 'route' => 'roles.index'],
+        ['label' => 'Permissions', 'route' => 'permissions.index'],
     ],
 ],
 

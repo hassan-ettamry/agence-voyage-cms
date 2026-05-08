@@ -6,14 +6,14 @@
 
 <body class="bg-gray-100 h-full">
 
-<div class="flex h-full">
+<div class="flex h-full flex-col md:flex-row">
 
     {{-- SIDEBAR --}}
     <x-layout.sidebar />
 
     <div class="flex-1 flex flex-col min-w-0">
 
-        {{-- ✅ DYNAMIC TOPBAR --}}
+        {{-- TOPBAR --}}
         @if(View::hasSection('topbar'))
             @yield('topbar')
         @else
@@ -25,6 +25,10 @@
             @yield('content')
         </main>
 
+    </div>
+    <div id="sidebar-overlay"
+     class="fixed inset-0 bg-black/40 z-40 hidden md:hidden"
+     onclick="toggleSidebar()">
     </div>
 </div>
 

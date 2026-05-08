@@ -1,36 +1,45 @@
 @props([
-    'searchPlaceholder' => 'Search...',
+    'searchPlaceholder' => null,
 ])
 
 <header class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-6 gap-4">
 
     {{-- LEFT --}}
     <div class="flex items-center gap-3">
+
+        {{-- MOBILE SIDEBAR TOGGLE --}}
+        <button onclick="toggleSidebar()"
+            class="md:hidden w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg">
+            ☰
+        </button>
+
         {{ $left ?? '' }}
+
     </div>
 
     {{-- SEARCH --}}
-    <div class="flex-1 max-w-md">
-        <div class="relative group">
+    @if($searchPlaceholder)
+        <form method="GET" action="{{ url()->current() }}" class="hidden md:block flex-1 max-w-md">
+            <div class="relative group">
 
-            {{-- ICON --}}
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition"
-                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-width="2"
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
+                <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-indigo-500 transition"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-width="2"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
 
-            {{-- INPUT --}}
-            <input type="text"
-                   placeholder="{{ $searchPlaceholder }}"
-                   class="w-full bg-gray-100 hover:bg-gray-200 focus:bg-white
-                          border border-transparent focus:border-indigo-500
-                          focus:ring-2 focus:ring-indigo-100
-                          pl-9 pr-4 py-2 rounded-lg text-sm
-                          text-gray-700 placeholder-gray-400
-                          transition-all duration-200 outline-none">
-        </div>
-    </div>
+                <input
+                    type="text"
+                    name="search"
+                    value="{{ request('search') }}"
+                    placeholder="{{ $searchPlaceholder }}"
+                    class="w-full bg-gray-100 hover:bg-gray-200 focus:bg-white
+                        border border-transparent focus:border-indigo-500
+                        focus:ring-2 focus:ring-indigo-100
+                        pl-9 pr-4 py-2 rounded-lg text-sm">
+            </div>
+        </form>
+    @endif
 
     {{-- RIGHT --}}
     <div class="flex items-center gap-3">

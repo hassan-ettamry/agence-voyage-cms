@@ -40,8 +40,7 @@ class ComponentRegistry
             return $this->views[$type];
         }
 
-        $view = "components.".$type;
-
+        $view = "components.builder.".$type;
         return $this->views[$type] = View::exists($view) ? $view : null;
     }
 }
