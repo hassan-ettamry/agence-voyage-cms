@@ -51,8 +51,27 @@
     </div>
 
     {{-- Controls Tab --}}
-    <div id="tab-controls" class="left-tab-content hidden flex-1 overflow-y-auto p-4">
-        <p class="text-xs text-gray-400">Select an element to see its controls.</p>
+    <div
+        id="tab-controls"
+        class="
+            left-tab-content
+            hidden
+            flex-1
+            overflow-y-auto
+            bg-gray-50
+        "
+    >
+
+        <div id="settings-panel">
+
+            <div class="p-4 text-sm text-gray-400">
+
+                Select an element to edit settings
+
+            </div>
+
+        </div>
+
     </div>
 
     {{-- Page Tab --}}

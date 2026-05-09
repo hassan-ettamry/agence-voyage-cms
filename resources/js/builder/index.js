@@ -7,3 +7,5 @@ import './storage';
 import './components';
 import './sidebar';
 import './right-sidebar';
+import './schema';
+import './settings-panel';

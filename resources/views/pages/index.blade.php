@@ -179,3 +179,11 @@
 @include('pages.partials.create')
 
 @endsection
+
+@if(!empty($openCreateModal))
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        openModal('createPageModal');
+    });
+</script>
+@endif

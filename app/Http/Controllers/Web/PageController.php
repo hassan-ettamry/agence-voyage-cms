@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Scopes\AgencyScope;
 use App\Models\Component;
+use App\Services\MenuService;
 
 class PageController extends Controller
 {
@@ -83,8 +84,40 @@ class PageController extends Controller
     public function create()
     {
         $this->authorize('create', Page::class);
-
-        return view('pages.create');
+    
+        $baseQuery = Page::query();
+    
+        $pages = $baseQuery->latest()
+            ->paginate(10);
+    
+        $stats = [
+            [
+                'label' => 'Total Pages',
+                'value' => (clone $baseQuery)->count(),
+                'note'  => 'All pages',
+            ],
+            [
+                'label' => 'Published',
+                'value' => (clone $baseQuery)
+                    ->where('status', Page::STATUS_PUBLISHED)
+                    ->count(),
+                'note'  => 'Live pages',
+                'color' => 'text-emerald-500',
+            ],
+            [
+                'label' => 'Draft',
+                'value' => (clone $baseQuery)
+                    ->where('status', Page::STATUS_DRAFT)
+                    ->count(),
+                'note'  => 'Not published',
+            ],
+        ];
+    
+        return view('pages.index', [
+            'pages' => $pages,
+            'stats' => $stats,
+            'openCreateModal' => true,
+        ]);
     }
 
     /**

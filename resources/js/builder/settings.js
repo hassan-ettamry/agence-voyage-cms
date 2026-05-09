@@ -2,7 +2,9 @@ window.BuilderSettings = {
 
     selected: null,
 
-    select(element, type = 'Element') {
+    selectedIndex: null,
+
+    select(element) {
 
         if (this.selected) {
             this.selected.classList.remove('selected');
@@ -12,9 +14,30 @@ window.BuilderSettings = {
 
         element.classList.add('selected');
 
-        document.getElementById('settings-empty')?.classList.add('hidden');
+        const index =
+            parseInt(element.dataset.index);
 
-        document.getElementById('settings-content')?.classList.remove('hidden');
+        this.selectedIndex = index;
+
+        const node =
+            Builder.structure[index];
+
+        if (!node) return;
+
+        const component =
+            window.builderComponents.find(
+                c => c.type === node.type
+            );
+
+        if (!component) return;
+
+        BuilderSidebar.switchTab('controls');
+
+        BuilderSettingsPanel.render(
+            node,
+            component.schema_json,
+            index
+        );
     },
 
     clear() {
@@ -25,35 +48,23 @@ window.BuilderSettings = {
 
         this.selected = null;
 
-        document.getElementById('settings-empty')?.classList.remove('hidden');
+        this.selectedIndex = null;
 
-        document.getElementById('settings-content')?.classList.add('hidden');
-    },
-
-    applyStyle(property, value) {
-
-        if (!this.selected) return;
-
-        this.selected.style[property] = value;
-    },
-
-    remove(element) {
-
-        element.remove();
-
-        this.clear();
-
-        BuilderCanvas.refresh();
+        document.getElementById(
+            'settings-panel'
+        ).innerHTML = '';
     },
 
     deleteSelected() {
 
-        if (!this.selected) return;
+        if (this.selectedIndex === null) return;
 
-        this.selected.remove();
+        Builder.removeComponent(
+            this.selectedIndex
+        );
+
+        BuilderCanvas.render();
 
         this.clear();
-
-        BuilderCanvas.refresh();
     }
 };

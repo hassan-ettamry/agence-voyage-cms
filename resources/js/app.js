@@ -2,7 +2,6 @@ import './bootstrap';
 
 import { initSidebar } from './modules/sidebar';
 import { initTableFilter } from './modules/tableFilter';
-import './modules/builder.js';
 import './modules/modal';
 
 import './bootstrap';

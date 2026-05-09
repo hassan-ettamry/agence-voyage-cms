@@ -23,10 +23,6 @@ Route::get('/', function () {
     return view('public.welcome');
 })->name('home');
 
-// Public Pages
-Route::get('/pages/{slug}', [PageController::class, 'show'])
-    ->name('pages.show');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -36,20 +32,37 @@ Route::get('/pages/{slug}', [PageController::class, 'show'])
 
 Route::middleware('guest')->group(function () {
 
-    // Login
+    /*
+    |--------------------------------------------------------------------------
+    | Login
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/login', [AuthController::class, 'showLoginForm'])
         ->name('login');
 
     Route::post('/login', [AuthController::class, 'login']);
 
-    // Register
+
+    /*
+    |--------------------------------------------------------------------------
+    | Register
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('/register', [AuthController::class, 'showRegisterForm'])
         ->name('register');
 
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-// Logout
+
+/*
+|--------------------------------------------------------------------------
+| Logout
+|--------------------------------------------------------------------------
+*/
+
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
@@ -89,14 +102,34 @@ Route::middleware(['auth'])->group(function () {
         ->name('pages.')
         ->group(function () {
 
+            /*
+            |--------------------------------------------------------------------------
+            | Publish
+            |--------------------------------------------------------------------------
+            */
+
             Route::post('{page}/publish', [PageController::class, 'publish'])
                 ->name('publish');
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Versions
+            |--------------------------------------------------------------------------
+            */
 
             Route::get('{page}/versions', [PageController::class, 'versions'])
                 ->name('versions');
 
             Route::post('{page}/versions/{version}/restore', [PageController::class, 'restore'])
                 ->name('versions.restore');
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Duplicate
+            |--------------------------------------------------------------------------
+            */
 
             Route::post('{page}/duplicate', [PageController::class, 'duplicate'])
                 ->name('duplicate');
@@ -147,6 +180,20 @@ Route::middleware(['auth'])->group(function () {
         Request $request,
         PageRenderer $renderer
     ) {
-        return $renderer->render($request->all());
+    
+        $structure = $request->input('structure', []);
+    
+        return $renderer->render($structure);
+    
     });
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| Public Pages
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/pages/{slug}', [PageController::class, 'show'])
+    ->name('pages.show');
