@@ -18,34 +18,34 @@ class PageRenderer
      */
     public function render(array $structure): string
     {
-        $index = 0;
-
         if (isset($structure[0])) {
+
             $html = '';
 
             foreach ($structure as $node) {
-                $html .= $this->renderNode($node, 0, $index);
+                $html .= $this->renderNode($node);
             }
 
             return $html;
         }
 
-        return $this->renderNode($structure, 0, $index);
+        return $this->renderNode($structure);
     }
 
     /**
      * Recursive render
      */
-    private function renderNode(array $node, int $depth = 0, int &$index = 0): string
+    private function renderNode(array $node, int $depth = 0): string
     {
         if ($depth > self::MAX_DEPTH) return '';
 
-        // generate unique index
-        $currentIndex = $index++;
-
         $type = $node['type'] ?? null;
+
         $props = $node['props'] ?? [];
+
         $children = $node['children'] ?? [];
+
+        $nodeId = $node['id'] ?? null;
 
         // vérifier composant
         if (!$type || !$this->registry->exists($type)) {
@@ -54,13 +54,17 @@ class PageRenderer
 
         // validation props
         try {
+
             $this->validator->validate(
                 $type,
                 $props,
                 $this->registry->getSchema($type)
             );
+
         } catch (\Throwable $e) {
+
             return $this->debug($e->getMessage());
+
         }
 
         // sanitize
@@ -73,21 +77,36 @@ class PageRenderer
             return $this->debug("Missing view ".$type);
         }
 
-        // render children (IMPORTANT: pass index)
+        // render children
         $childrenHtml = '';
+
         foreach ($children as $child) {
-            $childrenHtml .= $this->renderNode($child, $depth + 1, $index);
+
+            $childrenHtml .= $this->renderNode(
+                $child,
+                $depth + 1
+            );
+
         }
 
         try {
+
             return View::make($view, [
+
                 'props' => $props,
+
                 'children' => $childrenHtml,
+
                 'type' => $type,
-                'index' => $currentIndex
+
+                'nodeId' => $nodeId
+
             ])->render();
+
         } catch (\Throwable $e) {
+
             return $this->debug($e->getMessage());
+
         }
     }
 
@@ -115,6 +134,8 @@ class PageRenderer
      */
     private function debug(string $msg): string
     {
-        return app()->environment('local') ? "<!-- ".$msg." -->" : '';
+        return app()->environment('local')
+            ? "<!-- ".$msg." -->"
+            : '';
     }
 }

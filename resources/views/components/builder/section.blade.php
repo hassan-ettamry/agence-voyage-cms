@@ -2,7 +2,17 @@
 
     data-type="section"
 
-    data-index="{{ $index ?? 0 }}"
+    data-node-id="{{ $nodeId }}"
+
+    data-dropzone="true"
+
+    ondragover="
+        BuilderDragDrop.allowDrop(event)
+    "
+
+    ondrop="
+        BuilderDragDrop.drop(event)
+    "
 
     class="
         relative

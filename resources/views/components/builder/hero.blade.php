@@ -2,7 +2,7 @@
 
     data-type="hero"
 
-    data-index="{{ $index ?? 0 }}"
+    data-node-id="{{ $nodeId }}"
 
     class="px-16 py-20"
 

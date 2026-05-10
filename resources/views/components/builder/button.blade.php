@@ -1,6 +1,6 @@
 <div
     data-type="button"
-    data-index="{{ $index ?? 0 }}"
+    data-node-id="{{ $nodeId }}"
     class="p-4"
 >
 

@@ -2,7 +2,7 @@
 
     data-type="text"
 
-    data-index="{{ $index ?? 0 }}"
+    data-node-id="{{ $nodeId }}"
 
     contenteditable="true"
 

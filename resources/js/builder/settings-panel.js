@@ -1,11 +1,25 @@
 window.BuilderSettingsPanel = {
 
-    render(node, schema, index) {
+    /*
+    |------------------------------------------------------------------
+    | Render Panel
+    |------------------------------------------------------------------
+    */
+
+    render(node, schema, nodeId) {
 
         const panel =
-            document.getElementById('settings-panel');
+            document.getElementById(
+                'settings-panel'
+            );
 
         if (!panel) return;
+
+        /*
+        |--------------------------------------------------------------
+        | Empty State
+        |--------------------------------------------------------------
+        */
 
         if (!schema?.tabs) {
 
@@ -18,6 +32,12 @@ window.BuilderSettingsPanel = {
             return;
         }
 
+        /*
+        |--------------------------------------------------------------
+        | Build HTML
+        |--------------------------------------------------------------
+        */
+
         let html = '';
 
         Object.entries(schema.tabs).forEach(
@@ -25,6 +45,7 @@ window.BuilderSettingsPanel = {
             ([tabKey, tab]) => {
 
                 html += `
+
                     <div class="border-b border-gray-200">
 
                         <div class="
@@ -40,7 +61,14 @@ window.BuilderSettingsPanel = {
                         </div>
 
                         <div class="p-4 space-y-4">
+
                 `;
+
+                /*
+                |------------------------------------------------------
+                | Fields
+                |------------------------------------------------------
+                */
 
                 Object.entries(tab.fields).forEach(
 
@@ -52,10 +80,12 @@ window.BuilderSettingsPanel = {
                             ?? '';
 
                         html += this.renderField(
+
                             fieldKey,
                             field,
                             value,
-                            index
+                            nodeId
+
                         );
 
                     }
@@ -66,16 +96,35 @@ window.BuilderSettingsPanel = {
                         </div>
                     </div>
                 `;
+
             }
 
         );
 
         panel.innerHTML = html;
+
     },
 
-    renderField(key, field, value, index) {
+    /*
+    |------------------------------------------------------------------
+    | Render Field
+    |------------------------------------------------------------------
+    */
+
+    renderField(
+        key,
+        field,
+        value,
+        nodeId
+    ) {
 
         switch (field.type) {
+
+            /*
+            |----------------------------------------------------------
+            | TEXT
+            |----------------------------------------------------------
+            */
 
             case 'text':
 
@@ -91,11 +140,12 @@ window.BuilderSettingsPanel = {
 
                         <input
                             type="text"
+
                             value="${value}"
 
                             oninput="
                                 BuilderSettingsPanel.updateField(
-                                    ${index},
+                                    '${nodeId}',
                                     '${key}',
                                     this.value
                                 )
@@ -109,6 +159,12 @@ window.BuilderSettingsPanel = {
 
                     </div>
                 `;
+
+            /*
+            |----------------------------------------------------------
+            | TEXTAREA
+            |----------------------------------------------------------
+            */
 
             case 'textarea':
 
@@ -126,7 +182,7 @@ window.BuilderSettingsPanel = {
 
                             oninput="
                                 BuilderSettingsPanel.updateField(
-                                    ${index},
+                                    '${nodeId}',
                                     '${key}',
                                     this.value
                                 )
@@ -142,6 +198,12 @@ window.BuilderSettingsPanel = {
                     </div>
                 `;
 
+            /*
+            |----------------------------------------------------------
+            | COLOR
+            |----------------------------------------------------------
+            */
+
             case 'color':
 
                 return `
@@ -156,11 +218,12 @@ window.BuilderSettingsPanel = {
 
                         <input
                             type="color"
+
                             value="${value}"
 
                             oninput="
                                 BuilderSettingsPanel.updateField(
-                                    ${index},
+                                    '${nodeId}',
                                     '${key}',
                                     this.value
                                 )
@@ -169,6 +232,12 @@ window.BuilderSettingsPanel = {
 
                     </div>
                 `;
+
+            /*
+            |----------------------------------------------------------
+            | RANGE
+            |----------------------------------------------------------
+            */
 
             case 'range':
 
@@ -192,7 +261,7 @@ window.BuilderSettingsPanel = {
 
                             oninput="
                                 BuilderSettingsPanel.updateField(
-                                    ${index},
+                                    '${nodeId}',
                                     '${key}',
                                     this.value
                                 )
@@ -207,15 +276,142 @@ window.BuilderSettingsPanel = {
             default:
 
                 return '';
+
         }
+
     },
 
-    updateField(index, key, value) {
+    /*
+    |------------------------------------------------------------------
+    | Update Field
+    |------------------------------------------------------------------
+    */
 
-        if (!Builder.structure[index]) return;
+    updateField(
+        nodeId,
+        key,
+        value
+    ) {
 
-        Builder.structure[index].props[key] = value;
+        /*
+        |--------------------------------------------------------------
+        | Find Node
+        |--------------------------------------------------------------
+        */
+
+        const node =
+            Builder.findNodeById(
+                nodeId
+            );
+
+        if (!node) return;
+
+        /*
+        |--------------------------------------------------------------
+        | Ensure Props
+        |--------------------------------------------------------------
+        */
+
+        if (!node.props) {
+            node.props = {};
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Update Prop
+        |--------------------------------------------------------------
+        */
+
+        node.props[key] = value;
+
+        /*
+        |--------------------------------------------------------------
+        | Row Columns Sync
+        |--------------------------------------------------------------
+        */
+
+        if (
+
+            node.type === 'row'
+            &&
+
+            key === 'columns'
+
+        ) {
+
+            const columns =
+                parseInt(value);
+
+            /*
+            |----------------------------------------------------------
+            | Ensure Children
+            |----------------------------------------------------------
+            */
+
+            if (!node.children) {
+                node.children = [];
+            }
+
+            /*
+            |----------------------------------------------------------
+            | Add Missing Columns
+            |----------------------------------------------------------
+            */
+
+            while (
+                node.children.length < columns
+            ) {
+
+                node.children.push({
+
+                    id:
+                        BuilderComponents.generateId(),
+
+                    type: 'column',
+
+                    accepts: [
+                        'text',
+                        'heading',
+                        'button',
+                        'image',
+                        'container',
+                        'section',
+                        'row',
+                        'hero'
+                    ],
+
+                    props: {},
+
+                    children: []
+
+                });
+
+            }
+
+            /*
+            |----------------------------------------------------------
+            | Remove Extra Columns
+            |----------------------------------------------------------
+            */
+
+            while (
+                node.children.length > columns
+            ) {
+
+                node.children.pop();
+
+            }
+
+        }
+
+        /*
+        |--------------------------------------------------------------
+        | Re-render
+        |--------------------------------------------------------------
+        */
 
         BuilderCanvas.render();
+
     }
+
 };

@@ -1,6 +1,6 @@
 <div
     data-type="image"
-    data-index="{{ $index ?? 0 }}"
+    data-node-id="{{ $nodeId }}"
     class="p-4"
 >
 
