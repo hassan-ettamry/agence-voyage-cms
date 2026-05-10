@@ -8,9 +8,13 @@
         <div
             id="canvas"
 
-            ondragover="BuilderDragDrop.allowDrop(event)"
+            ondragover="
+                BuilderDragDrop.allowDrop(event)
+            "
 
-            ondrop="BuilderDragDrop.drop(event)"
+            ondrop="
+                BuilderDragDrop.drop(event)
+            "
 
             class="
                 bg-white

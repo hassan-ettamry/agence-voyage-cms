@@ -23,7 +23,5 @@
 
 </div>
 
-{{-- Global Builder Modals --}}
-@include('builder.partials.modals')
 
 @endsection

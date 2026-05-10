@@ -2,7 +2,7 @@ window.BuilderRightSidebar = {
 
     /*
     |--------------------------------------------------------------
-    | Render Layers
+    | Render
     |--------------------------------------------------------------
     */
 
@@ -22,22 +22,11 @@ window.BuilderRightSidebar = {
 
         /*
         |----------------------------------------------------------
-        | Get Canvas Elements
-        |----------------------------------------------------------
-        */
-
-        const elements =
-            document.querySelectorAll(
-                '#canvas [data-index]'
-            );
-
-        /*
-        |----------------------------------------------------------
         | Empty State
         |----------------------------------------------------------
         */
 
-        if (!elements.length) {
+        if (!Builder.structure.length) {
 
             tree.innerHTML = '';
 
@@ -54,93 +43,179 @@ window.BuilderRightSidebar = {
 
         /*
         |----------------------------------------------------------
-        | Build Layers
+        | Recursive Render
         |----------------------------------------------------------
         */
 
-        let html = '';
+        tree.innerHTML =
+            this.renderTree(
+                Builder.structure
+            );
 
-        elements.forEach(element => {
-
-            const index =
-                element.dataset.index;
-
-            const type =
-                element.dataset.type
-                || 'element';
-
-            html += `
-
-                <div
-
-                    data-layer-index="${index}"
-
-                    class="
-                        layer-item
-                        flex
-                        items-center
-                        justify-between
-                        gap-2
-                        px-3
-                        py-2
-                        border-b
-                        border-gray-100
-                        cursor-pointer
-                        hover:bg-gray-50
-                        text-xs
-                        transition-all
-                    "
-
-                    onclick="
-                        BuilderRightSidebar.select(
-                            ${index}
-                        )
-                    "
-                >
-
-                    <div class="
-                        flex
-                        items-center
-                        gap-2
-                    ">
-
-                        <span class="
-                            uppercase
-                            text-gray-400
-                            font-bold
-                            text-[10px]
-                        ">
-                            ${type}
-                        </span>
-
-                    </div>
-
-                </div>
-
-            `;
-        });
-
-        tree.innerHTML = html;
     },
 
     /*
     |--------------------------------------------------------------
-    | Select Layer
+    | Recursive Tree Renderer
     |--------------------------------------------------------------
     */
 
-    select(index) {
+    renderTree(nodes, depth = 0) {
+
+        let html = '';
+
+        nodes.forEach(node => {
+
+            const selected =
+                Builder.selectedNodeId === node.id;
+
+            html += `
+
+                <div>
+
+                    <div
+
+                        class="
+                            layer-item
+                            flex
+                            items-center
+                            gap-2
+                            px-3
+                            py-2
+                            text-xs
+                            cursor-pointer
+                            border-b
+                            border-gray-100
+                            hover:bg-gray-50
+                            transition-all
+
+                            ${selected
+                                ? 'bg-blue-50 text-blue-600'
+                                : 'text-gray-700'
+                            }
+                        "
+
+                        data-layer-node="${node.id}"
+
+                        style="
+                            padding-left:
+                            ${(depth * 20) + 12}px
+                        "
+
+                        onclick="
+                            BuilderRightSidebar.select(
+                                '${node.id}'
+                            )
+                        "
+                    >
+
+                        <!-- ICON -->
+
+                        <span class="
+                            uppercase
+                            text-[10px]
+                            text-gray-400
+                            font-bold
+                            shrink-0
+                        ">
+                            ${node.type}
+                        </span>
+
+                        <!-- LABEL -->
+
+                        <span class="truncate">
+
+                            ${this.getLabel(node)}
+
+                        </span>
+
+                    </div>
+
+            `;
+
+            /*
+            |------------------------------------------------------
+            | Children
+            |------------------------------------------------------
+            */
+
+            if (
+                node.children &&
+                node.children.length
+            ) {
+
+                html += this.renderTree(
+                    node.children,
+                    depth + 1
+                );
+
+            }
+
+            html += `</div>`;
+
+        });
+
+        return html;
+
+    },
+
+    /*
+    |--------------------------------------------------------------
+    | Highlight Node
+    |--------------------------------------------------------------
+    */
+
+    highlightNode(nodeId) {
+
+        document
+            .querySelectorAll('.layer-item')
+            .forEach(item => {
+
+                item.classList.remove(
+                    'bg-blue-50',
+                    'text-blue-600'
+                );
+
+            });
+
+        const layer =
+            document.querySelector(
+                `[data-layer-node="${nodeId}"]`
+            );
+
+        if (!layer) return;
+
+        layer.classList.add(
+            'bg-blue-50',
+            'text-blue-600'
+        );
+
+    },
+
+    /*
+    |--------------------------------------------------------------
+    | Select Node
+    |--------------------------------------------------------------
+    */
+
+    select(nodeId) {
+
+        /*
+        |----------------------------------------------------------
+        | Find Canvas Element
+        |----------------------------------------------------------
+        */
 
         const element =
             document.querySelector(
-                `[data-index="${index}"]`
+                `[data-node-id="${nodeId}"]`
             );
 
         if (!element) return;
 
         /*
         |----------------------------------------------------------
-        | Trigger Element Click
+        | Trigger Selection
         |----------------------------------------------------------
         */
 
@@ -164,39 +239,39 @@ window.BuilderRightSidebar = {
 
     /*
     |--------------------------------------------------------------
-    | Highlight Active Layer
+    | Get Label
     |--------------------------------------------------------------
     */
 
-    highlightElement(element) {
+    getLabel(node) {
 
-        document
-            .querySelectorAll('.layer-item')
-            .forEach(item => {
+        switch (node.type) {
 
-                item.classList.remove(
-                    'bg-blue-50',
-                    'text-blue-600'
+            case 'heading':
+                return node.props?.text
+                    || 'Heading';
+
+            case 'text':
+                return node.props?.text
+                    || 'Text';
+
+            case 'button':
+                return node.props?.text
+                    || 'Button';
+
+            case 'hero':
+                return node.props?.title
+                    || 'Hero';
+
+            default:
+
+                return (
+                    node.type.charAt(0)
+                        .toUpperCase()
+                    +
+                    node.type.slice(1)
                 );
-
-            });
-
-        if (!element) return;
-
-        const index =
-            element.dataset.index;
-
-        const layer =
-            document.querySelector(
-                `[data-layer-index="${index}"]`
-            );
-
-        if (!layer) return;
-
-        layer.classList.add(
-            'bg-blue-50',
-            'text-blue-600'
-        );
+        }
 
     },
 
@@ -209,8 +284,12 @@ window.BuilderRightSidebar = {
     toggle() {
 
         document
-            .getElementById('right-panel')
-            ?.classList.toggle('hidden');
+            .getElementById(
+                'right-panel'
+            )
+            ?.classList.toggle(
+                'hidden'
+            );
 
     }
 

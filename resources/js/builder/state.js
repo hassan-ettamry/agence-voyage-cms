@@ -8,7 +8,7 @@ window.Builder = {
 
     selectedElement: null,
 
-    selectedIndex: null,
+    selectedNodeId: null,
 
     viewport: 'desktop',
 
@@ -79,6 +79,27 @@ window.Builder = {
 
     /*
     |--------------------------------------------------------------------------
+    | Add Child Component
+    |--------------------------------------------------------------------------
+    */
+
+    addChild(parentId, child) {
+
+        const parent =
+            this.findNodeById(parentId);
+
+        if (!parent) return;
+
+        if (!parent.children) {
+            parent.children = [];
+        }
+
+        parent.children.push(child);
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Remove Component
     |--------------------------------------------------------------------------
     */
@@ -103,6 +124,65 @@ window.Builder = {
             ...this.structure[index],
             ...data
         };
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Find Node By ID
+    |--------------------------------------------------------------------------
+    */
+
+    findNodeById(id, nodes = this.structure) {
+
+        for (const node of nodes) {
+
+            if (node.id === id) {
+                return node;
+            }
+
+            if (node.children?.length) {
+
+                const found =
+                    this.findNodeById(
+                        id,
+                        node.children
+                    );
+
+                if (found) {
+                    return found;
+                }
+
+            }
+
+        }
+
+        return null;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recursive Walker
+    |--------------------------------------------------------------------------
+    */
+
+    walk(nodes = this.structure, callback) {
+
+        nodes.forEach(node => {
+
+            callback(node);
+
+            if (node.children?.length) {
+
+                this.walk(
+                    node.children,
+                    callback
+                );
+
+            }
+
+        });
 
     },
 

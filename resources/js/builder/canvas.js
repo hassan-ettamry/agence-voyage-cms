@@ -107,6 +107,7 @@ window.BuilderCanvas = {
             */
 
             this.bindEvents();
+
             BuilderRightSidebar.render();
 
         } catch (error) {
@@ -128,121 +129,177 @@ window.BuilderCanvas = {
 
     bindEvents() {
 
+        const canvas =
+            document.getElementById('canvas');
+    
+        if (!canvas) return;
+    
         /*
         |--------------------------------------------------------------
-        | Element Selection
+        | Prevent Multiple Bindings
         |--------------------------------------------------------------
         */
-
-        document
-            .querySelectorAll('[data-index]')
-            .forEach(element => {
-
-                element.addEventListener(
-                    'click',
-                    (event) => {
-
-                        event.stopPropagation();
-
-                        const index =
-                            parseInt(
-                                element.dataset.index
-                            );
-
-                        Builder.selectedIndex =
-                            index;
-
-                        Builder.selectedElement =
-                            element;
-
-                        /*
-                        |--------------------------------------------------
-                        | Highlight
-                        |--------------------------------------------------
-                        */
-
-                        document
-                            .querySelectorAll(
-                                '[data-index]'
-                            )
-                            .forEach(el => {
-
-                                el.classList.remove(
-                                    'ring-2',
-                                    'ring-blue-500'
-                                );
-
-                            });
-
-                        element.classList.add(
+    
+        if (canvas.dataset.eventsBound) {
+            return;
+        }
+    
+        canvas.dataset.eventsBound = 'true';
+    
+        /*
+        |--------------------------------------------------------------
+        | Canvas Click Delegation
+        |--------------------------------------------------------------
+        */
+    
+        canvas.addEventListener(
+    
+            'click',
+    
+            (event) => {
+    
+                /*
+                |------------------------------------------------------
+                | Find Node Element
+                |------------------------------------------------------
+                */
+    
+                const element =
+                    event.target.closest(
+                        '[data-node-id]'
+                    );
+    
+                if (!element) return;
+    
+                event.stopPropagation();
+    
+                /*
+                |------------------------------------------------------
+                | Node ID
+                |------------------------------------------------------
+                */
+    
+                const nodeId =
+                    element.dataset.nodeId;
+    
+                if (!nodeId) return;
+    
+                /*
+                |------------------------------------------------------
+                | Find Node
+                |------------------------------------------------------
+                */
+    
+                const node =
+                    Builder.findNodeById(
+                        nodeId
+                    );
+    
+                if (!node) return;
+    
+                /*
+                |------------------------------------------------------
+                | Save Selection
+                |------------------------------------------------------
+                */
+    
+                Builder.selectedNodeId =
+                    nodeId;
+    
+                Builder.selectedElement =
+                    element;
+    
+                /*
+                |------------------------------------------------------
+                | Remove Old Highlights
+                |------------------------------------------------------
+                */
+    
+                document
+                    .querySelectorAll(
+                        '[data-node-id]'
+                    )
+                    .forEach(el => {
+    
+                        el.classList.remove(
                             'ring-2',
                             'ring-blue-500'
                         );
-
-                        /*
-                        |--------------------------------------------------
-                        | Open Controls Tab
-                        |--------------------------------------------------
-                        */
-
-                        BuilderSidebar.switchTab(
-                            'controls'
-                        );
-
-                        /*
-                        |--------------------------------------------------
-                        | Settings Panel
-                        |--------------------------------------------------
-                        */
-
-                        BuilderSettings.select(
-                            element
-                        );
-                        const node =
-                            Builder.structure[index];
-                    
-                        const schema =
-                            BuilderSchema.get(
-                                node.type
-                            );
-                        
-                        BuilderSettingsPanel.render(
-                            node,
-                            schema,
-                            index
-                        );                       
-
-                        /*
-                        |--------------------------------------------------
-                        | Sync Layers Panel
-                        |--------------------------------------------------
-                        */
-
-                        if (
-                            typeof BuilderRightSidebar
-                            !== 'undefined'
-                        ) {
-
-                            BuilderRightSidebar
-                                .highlightElement(
-                                    element
-                                );
-
-                        }
-
-                    }
+    
+                    });
+    
+                /*
+                |------------------------------------------------------
+                | Highlight Selected
+                |------------------------------------------------------
+                */
+    
+                element.classList.add(
+                    'ring-2',
+                    'ring-blue-500'
                 );
-
-            });
-
+    
+                /*
+                |------------------------------------------------------
+                | Open Controls
+                |------------------------------------------------------
+                */
+    
+                BuilderSidebar.switchTab(
+                    'controls'
+                );
+    
+                /*
+                |------------------------------------------------------
+                | Settings
+                |------------------------------------------------------
+                */
+    
+                BuilderSettings.select(
+                    element
+                );
+    
+                const schema =
+                    BuilderSchema.get(
+                        node.type
+                    );
+    
+                BuilderSettingsPanel.render(
+                    node,
+                    schema,
+                    nodeId
+                );
+    
+                /*
+                |------------------------------------------------------
+                | Layers Highlight
+                |------------------------------------------------------
+                */
+    
+                if (
+                    typeof BuilderRightSidebar
+                    !== 'undefined'
+                ) {
+    
+                    BuilderRightSidebar
+                        .highlightNode(
+                            nodeId
+                        );
+    
+                }
+    
+            }
+    
+        );
+    
     }
 
 };
 
 /*
-|----------------------------------------------------------------------
+|--------------------------------------------------------------------------
 | Initial Render
-|----------------------------------------------------------------------
+|--------------------------------------------------------------------------
 */
 
 window.addEventListener(
