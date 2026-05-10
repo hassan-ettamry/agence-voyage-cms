@@ -2,6 +2,21 @@ window.BuilderComponents = {
 
     /*
     |--------------------------------------------------------------------------
+    | Generate Node ID
+    |--------------------------------------------------------------------------
+    */
+
+    generateId() {
+
+        return 'node_' +
+            Math.random()
+                .toString(36)
+                .substring(2, 9);
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Component Factory
     |--------------------------------------------------------------------------
     */
@@ -10,8 +25,19 @@ window.BuilderComponents = {
 
         const map = {
 
+            /*
+            |--------------------------------------------------------------------------
+            | Hero
+            |--------------------------------------------------------------------------
+            */
+
             hero: {
+
+                id: this.generateId(),
+
                 type: 'hero',
+
+                accepts: [],
 
                 props: {
                     title: 'Hero Title',
@@ -21,8 +47,19 @@ window.BuilderComponents = {
                 children: []
             },
 
+            /*
+            |--------------------------------------------------------------------------
+            | Text
+            |--------------------------------------------------------------------------
+            */
+
             text: {
+
+                id: this.generateId(),
+
                 type: 'text',
+
+                accepts: [],
 
                 props: {
                     text: 'Your text here.'
@@ -31,8 +68,19 @@ window.BuilderComponents = {
                 children: []
             },
 
+            /*
+            |--------------------------------------------------------------------------
+            | Heading
+            |--------------------------------------------------------------------------
+            */
+
             heading: {
+
+                id: this.generateId(),
+
                 type: 'heading',
+
+                accepts: [],
 
                 props: {
                     text: 'Your Heading Here'
@@ -41,8 +89,19 @@ window.BuilderComponents = {
                 children: []
             },
 
+            /*
+            |--------------------------------------------------------------------------
+            | Button
+            |--------------------------------------------------------------------------
+            */
+
             button: {
+
+                id: this.generateId(),
+
                 type: 'button',
+
+                accepts: [],
 
                 props: {
                     text: 'Click Me'
@@ -51,8 +110,19 @@ window.BuilderComponents = {
                 children: []
             },
 
+            /*
+            |--------------------------------------------------------------------------
+            | Image
+            |--------------------------------------------------------------------------
+            */
+
             image: {
+
+                id: this.generateId(),
+
                 type: 'image',
+
+                accepts: [],
 
                 props: {
                     src: '',
@@ -62,33 +132,161 @@ window.BuilderComponents = {
                 children: []
             },
 
+            /*
+            |--------------------------------------------------------------------------
+            | Section
+            |--------------------------------------------------------------------------
+            */
+
             section: {
+
+                id: this.generateId(),
+
                 type: 'section',
 
+                accepts: [
+                    'text',
+                    'heading',
+                    'button',
+                    'image',
+                    'container',
+                    'section',
+                    'row',
+                    'hero'
+                ],
+
                 props: {},
 
                 children: []
             },
 
-            row: {
-                type: 'row',
-
-                props: {},
-
-                children: []
-            },
+            /*
+            |--------------------------------------------------------------------------
+            | Container
+            |--------------------------------------------------------------------------
+            */
 
             container: {
+
+                id: this.generateId(),
+
                 type: 'container',
+
+                accepts: [
+                    'text',
+                    'heading',
+                    'button',
+                    'image',
+                    'container',
+                    'section',
+                    'row',
+                    'hero'
+                ],
 
                 props: {},
 
                 children: []
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | Column
+            |--------------------------------------------------------------------------
+            */
+
+            column: {
+
+                id: this.generateId(),
+
+                type: 'column',
+
+                accepts: [
+                    'text',
+                    'heading',
+                    'button',
+                    'image',
+                    'container',
+                    'section',
+                    'row',
+                    'hero'
+                ],
+
+                props: {},
+
+                children: []
+            },
+
+            /*
+            |--------------------------------------------------------------------------
+            | Row
+            |--------------------------------------------------------------------------
+            */
+
+            row: {
+
+                id: this.generateId(),
+
+                type: 'row',
+
+                accepts: [
+                    'column'
+                ],
+
+                props: {
+                    columns: 2
+                },
+
+                children: [
+
+                    {
+                        id: this.generateId(),
+
+                        type: 'column',
+
+                        accepts: [
+                            'text',
+                            'heading',
+                            'button',
+                            'image',
+                            'container',
+                            'section',
+                            'row',
+                            'hero'
+                        ],
+
+                        props: {},
+
+                        children: []
+                    },
+
+                    {
+                        id: this.generateId(),
+
+                        type: 'column',
+
+                        accepts: [
+                            'text',
+                            'heading',
+                            'button',
+                            'image',
+                            'container',
+                            'section',
+                            'row',
+                            'hero'
+                        ],
+
+                        props: {},
+
+                        children: []
+                    }
+
+                ]
             }
 
         };
 
         return map[type] || null;
+
     },
 
     /*
@@ -99,7 +297,8 @@ window.BuilderComponents = {
 
     add(type) {
 
-        const component = this.factory(type);
+        const component =
+            this.factory(type);
 
         if (!component) return;
 
@@ -109,7 +308,9 @@ window.BuilderComponents = {
         |--------------------------------------------------------------------------
         */
 
-        Builder.addComponent(component);
+        Builder.addComponent(
+            component
+        );
 
         /*
         |--------------------------------------------------------------------------
@@ -118,6 +319,7 @@ window.BuilderComponents = {
         */
 
         BuilderCanvas.render();
+
     }
 
 };

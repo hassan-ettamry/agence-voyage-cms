@@ -2,7 +2,7 @@
 
     data-type="row"
 
-    data-index="{{ $index ?? 0 }}"
+    data-node-id="{{ $nodeId }}"
 
     class="grid p-4"
 
