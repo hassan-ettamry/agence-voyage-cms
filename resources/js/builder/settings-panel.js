@@ -409,7 +409,7 @@ window.BuilderSettingsPanel = {
         | Re-render
         |--------------------------------------------------------------
         */
-
+        BuilderHistory.push();
         BuilderCanvas.render();
 
     }

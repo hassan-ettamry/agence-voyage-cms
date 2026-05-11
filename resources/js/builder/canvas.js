@@ -131,167 +131,163 @@ window.BuilderCanvas = {
 
         const canvas =
             document.getElementById('canvas');
-    
+
         if (!canvas) return;
-    
+
         /*
         |--------------------------------------------------------------
         | Prevent Multiple Bindings
         |--------------------------------------------------------------
         */
-    
+
         if (canvas.dataset.eventsBound) {
             return;
         }
-    
+
         canvas.dataset.eventsBound = 'true';
-    
+
         /*
         |--------------------------------------------------------------
         | Canvas Click Delegation
         |--------------------------------------------------------------
         */
-    
+
         canvas.addEventListener(
-    
+
             'click',
-    
+
             (event) => {
-    
+
                 /*
                 |------------------------------------------------------
                 | Find Node Element
                 |------------------------------------------------------
                 */
-    
+
                 const element =
                     event.target.closest(
                         '[data-node-id]'
                     );
-    
+
                 if (!element) return;
-    
+
                 event.stopPropagation();
-    
+
                 /*
                 |------------------------------------------------------
                 | Node ID
                 |------------------------------------------------------
                 */
-    
+
                 const nodeId =
                     element.dataset.nodeId;
-    
+
                 if (!nodeId) return;
-    
+
                 /*
                 |------------------------------------------------------
                 | Find Node
                 |------------------------------------------------------
                 */
-    
+
                 const node =
                     Builder.findNodeById(
                         nodeId
                     );
-    
+
                 if (!node) return;
-    
+
                 /*
                 |------------------------------------------------------
                 | Save Selection
                 |------------------------------------------------------
                 */
-    
+
                 Builder.selectedNodeId =
                     nodeId;
-    
+
                 Builder.selectedElement =
                     element;
-    
+
                 /*
                 |------------------------------------------------------
                 | Remove Old Highlights
                 |------------------------------------------------------
                 */
-    
+
                 document
                     .querySelectorAll(
                         '[data-node-id]'
                     )
                     .forEach(el => {
-    
+
                         el.classList.remove(
                             'ring-2',
                             'ring-blue-500'
                         );
-    
+
                     });
-    
+
                 /*
                 |------------------------------------------------------
                 | Highlight Selected
                 |------------------------------------------------------
                 */
-    
+
                 element.classList.add(
                     'ring-2',
                     'ring-blue-500'
                 );
-    
+
                 /*
                 |------------------------------------------------------
                 | Open Controls
                 |------------------------------------------------------
                 */
-    
+
                 BuilderSidebar.switchTab(
                     'controls'
                 );
-    
+
                 /*
                 |------------------------------------------------------
-                | Settings
+                | Render Settings Panel
                 |------------------------------------------------------
                 */
-    
-                BuilderSettings.select(
-                    element
-                );
-    
+
                 const schema =
                     BuilderSchema.get(
                         node.type
                     );
-    
+
                 BuilderSettingsPanel.render(
                     node,
                     schema,
                     nodeId
                 );
-    
+
                 /*
                 |------------------------------------------------------
                 | Layers Highlight
                 |------------------------------------------------------
                 */
-    
+
                 if (
                     typeof BuilderRightSidebar
                     !== 'undefined'
                 ) {
-    
+
                     BuilderRightSidebar
                         .highlightNode(
                             nodeId
                         );
-    
+
                 }
-    
+
             }
-    
+
         );
-    
+
     }
 
 };

@@ -51,21 +51,40 @@
             'title' => 'Mobile',
             'active' => false,
         ],
-        [
-            'id' => 'viewport-fullscreen',
-            'onclick' => "BuilderViewport.set('fullscreen')",
-            'icon' => '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>',
-            'label' => 'Fullscreen',
-            'title' => 'Fullscreen',
-            'active' => false,
-        ],
     ];
     @endphp
 
     <div class="flex items-center border border-gray-200 rounded overflow-hidden ml-auto shadow-sm">
         @foreach($viewports as $vp)
-            @include('builder.components.viewport-button', array_merge($vp, ['borderRight' => !$loop->last]))
+            @include('builder.components.viewport-button', array_merge($vp, ['borderRight' => true]))
         @endforeach
+
+        {{-- Divider --}}
+        <div class="w-px h-5 bg-gray-200 mx-0"></div>
+
+        {{-- Undo --}}
+        <button
+            onclick="BuilderHistory.undo()"
+            title="Undo (Ctrl+Z)"
+            class="flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-50 transition-colors border-r border-gray-200 h-full"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h10a5 5 0 015 5v1M3 10l4-4M3 10l4 4"/>
+            </svg>
+            <span class="text-[10px] leading-tight">Undo</span>
+        </button>
+
+        {{-- Redo --}}
+        <button
+            onclick="BuilderHistory.redo()"
+            title="Redo (Ctrl+Shift+Z)"
+            class="flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-50 transition-colors h-full"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 10H11a5 5 0 00-5 5v1M21 10l-4-4M21 10l-4 4"/>
+            </svg>
+            <span class="text-[10px] leading-tight">Redo</span>
+        </button>
     </div>
 
     {{-- Right Actions --}}

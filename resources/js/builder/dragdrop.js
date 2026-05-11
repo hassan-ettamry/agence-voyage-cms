@@ -85,7 +85,7 @@ window.BuilderDragDrop = {
             Builder.addComponent(
                 component
             );
-
+            BuilderHistory.push();
             BuilderCanvas.render();
 
             console.log(
@@ -164,7 +164,7 @@ window.BuilderDragDrop = {
         | Re-render
         |----------------------------------------------------------
         */
-
+        BuilderHistory.push();
         BuilderCanvas.render();
 
         console.log(
