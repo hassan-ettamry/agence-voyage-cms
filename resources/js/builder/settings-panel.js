@@ -322,7 +322,11 @@ window.BuilderSettingsPanel = {
         |--------------------------------------------------------------
         */
 
-        node.props[key] = value;
+        BuilderNodes.updateProps(
+            nodeId,
+            key,
+            value
+        );
 
         /*
         |--------------------------------------------------------------

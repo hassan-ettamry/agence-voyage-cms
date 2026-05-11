@@ -110,8 +110,11 @@ window.BuilderInlineEditing = {
                 |------------------------------------------------------
                 */
 
-                node.props[field] =
-                    editable.innerText;
+                BuilderNodes.updateProps(
+                    nodeId,
+                    field,
+                    editable.innerText
+                );
 
                 /*
                 |------------------------------------------------------

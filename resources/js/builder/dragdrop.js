@@ -154,7 +154,7 @@ window.BuilderDragDrop = {
         |----------------------------------------------------------
         */
 
-        Builder.addChild(
+        BuilderNodes.addChild(
             parentId,
             component
         );

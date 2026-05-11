@@ -1,6 +1,7 @@
 import './state';
 import './viewport';
 import './dragdrop';
+import './nodes';
 import './canvas';
 import './storage';
 import './components';
@@ -10,3 +11,4 @@ import './schema';
 import './settings-panel';
 import './inline-editing';
 import './history';
+import './selection';
