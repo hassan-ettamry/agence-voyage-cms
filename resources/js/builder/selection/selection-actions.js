@@ -36,9 +36,7 @@ window.BuilderSelection = {
         |--------------------------------------------------------------------------
         */
 
-        Builder.selectedNodeId = null;
-
-        Builder.selectedElement = null;
+        BuilderSelectionManager.clear();
 
         /*
         |--------------------------------------------------------------------------
@@ -60,7 +58,9 @@ window.BuilderSelection = {
             );
 
         if (panel) {
+
             panel.innerHTML = '';
+
         }
 
     }

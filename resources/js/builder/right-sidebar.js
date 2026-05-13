@@ -294,25 +294,3 @@ window.BuilderRightSidebar = {
     }
 
 };
-
-/*
-|--------------------------------------------------------------
-| Init
-|--------------------------------------------------------------
-*/
-
-document.addEventListener(
-
-    'DOMContentLoaded',
-
-    () => {
-
-        setTimeout(() => {
-
-            BuilderRightSidebar.render();
-
-        }, 300);
-
-    }
-
-);

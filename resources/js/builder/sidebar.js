@@ -49,9 +49,3 @@ window.BuilderSidebar = {
             ?.classList.toggle('hidden');
     }
 };
-
-document.addEventListener('DOMContentLoaded', () => {
-
-    BuilderSidebar.switchTab('widgets');
-
-});

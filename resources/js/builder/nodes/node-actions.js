@@ -2,53 +2,6 @@ window.BuilderNodes = {
 
     /*
     |--------------------------------------------------------------------------
-    | Find Parent
-    |--------------------------------------------------------------------------
-    */
-
-    findParent(
-
-        nodeId,
-
-        nodes = Builder.structure,
-
-        parent = null
-
-    ) {
-
-        for (const node of nodes) {
-
-            if (node.id === nodeId) {
-                return parent;
-            }
-
-            if (node.children?.length) {
-
-                const found =
-                    this.findParent(
-
-                        nodeId,
-
-                        node.children,
-
-                        node
-
-                    );
-
-                if (found) {
-                    return found;
-                }
-
-            }
-
-        }
-
-        return null;
-
-    },
-
-    /*
-    |--------------------------------------------------------------------------
     | Update Props
     |--------------------------------------------------------------------------
     */
@@ -60,12 +13,19 @@ window.BuilderNodes = {
     ) {
 
         const node =
-            Builder.findNodeById(nodeId);
 
-        if (!node) return;
+            Builder.findNodeById(
+                nodeId
+            );
+
+        if (!node) {
+            return;
+        }
 
         if (!node.props) {
+
             node.props = {};
+
         }
 
         node.props[key] = value;
@@ -81,12 +41,19 @@ window.BuilderNodes = {
     addChild(parentId, child) {
 
         const parent =
-            Builder.findNodeById(parentId);
 
-        if (!parent) return;
+            Builder.findNodeById(
+                parentId
+            );
+
+        if (!parent) {
+            return;
+        }
 
         if (!parent.children) {
+
             parent.children = [];
+
         }
 
         parent.children.push(child);
@@ -117,6 +84,7 @@ window.BuilderNodes = {
     removeRecursive(nodeId, nodes) {
 
         const index =
+
             nodes.findIndex(
                 node => node.id === nodeId
             );
@@ -134,6 +102,7 @@ window.BuilderNodes = {
             if (node.children?.length) {
 
                 const removed =
+
                     this.removeRecursive(
                         nodeId,
                         node.children
@@ -148,23 +117,6 @@ window.BuilderNodes = {
         }
 
         return false;
-
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Clone Node
-    |--------------------------------------------------------------------------
-    */
-
-    clone(nodeId) {
-
-        const node =
-            Builder.findNodeById(nodeId);
-
-        if (!node) return null;
-
-        return structuredClone(node);
 
     }
 
