@@ -26,7 +26,7 @@ window.BuilderRightSidebar = {
         |----------------------------------------------------------
         */
 
-        if (!Builder.structure.length) {
+        if (!BuilderStore.structure.length) {
 
             tree.innerHTML = '';
 
@@ -49,7 +49,7 @@ window.BuilderRightSidebar = {
 
         tree.innerHTML =
             this.renderTree(
-                Builder.structure
+                BuilderStore.structure
             );
 
     },
@@ -67,7 +67,7 @@ window.BuilderRightSidebar = {
         nodes.forEach(node => {
 
             const selected =
-                Builder.selectedNodeId === node.id;
+                BuilderStore.selectedNodeId === node.id;
 
             html += `
 
@@ -294,3 +294,57 @@ window.BuilderRightSidebar = {
     }
 
 };
+
+/*
+|--------------------------------------------------------------------------
+| Sidebar Events
+|--------------------------------------------------------------------------
+*/
+
+document.addEventListener(
+
+    'DOMContentLoaded',
+
+    () => {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Structure Updated
+        |--------------------------------------------------------------------------
+        */
+
+        BuilderEventBus.on(
+
+            'structure.updated',
+
+            () => {
+
+                BuilderRightSidebar.render();
+
+            }
+
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Selection Changed
+        |--------------------------------------------------------------------------
+        */
+
+        BuilderEventBus.on(
+
+            'selection.changed',
+
+            (nodeId) => {
+
+                BuilderRightSidebar.highlightNode(
+                    nodeId
+                );
+
+            }
+
+        );
+
+    }
+
+);

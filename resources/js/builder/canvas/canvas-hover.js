@@ -41,7 +41,7 @@ window.BuilderCanvasHover = {
 
                     element.dataset.nodeId
                     ===
-                    Builder.selectedNodeId
+                    BuilderStore.selectedNodeId
 
                 ) {
 
@@ -101,7 +101,7 @@ window.BuilderCanvasHover = {
 
                     element.dataset.nodeId
                     ===
-                    Builder.selectedNodeId
+                    BuilderStore.selectedNodeId
 
                 ) {
 

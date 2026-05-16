@@ -1,9 +1,9 @@
 window.Builder = {
 
     /*
-    |------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     | Editor State
-    |------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
 
     get selectedElement() {
@@ -49,21 +49,21 @@ window.Builder = {
     },
 
     /*
-    |------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     | Structure
-    |------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
 
     get structure() {
 
-        return BuilderStructureState.structure;
+        return BuilderStore.structure;;
 
     },
 
     /*
-    |------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     | Structure Methods
-    |------------------------------------------------------------------
+    |--------------------------------------------------------------------------
     */
 
     getStructure() {
@@ -74,7 +74,7 @@ window.Builder = {
 
     setStructure(structure = []) {
 
-        BuilderStructureState.setStructure(
+        BuilderStore.updateStructure(
             structure
         );
 
@@ -82,7 +82,7 @@ window.Builder = {
 
     addComponent(node) {
 
-        BuilderStructureState.addComponent(
+        BuilderStore.addRootComponent(
             node
         );
 
@@ -107,19 +107,19 @@ window.Builder = {
 
     clear() {
 
-        BuilderStructureState.clear();
-
+        BuilderStore.clear();
+    
     },
 
     /*
-    |------------------------------------------------------------------
-    | Utils
-    |------------------------------------------------------------------
+    |--------------------------------------------------------------------------
+    | Traversal
+    |--------------------------------------------------------------------------
     */
 
     findNodeById(id, nodes) {
 
-        return BuilderStateUtils.findNodeById(
+        return BuilderNodeTraversal.findNodeById(
             id,
             nodes
         );
@@ -128,7 +128,7 @@ window.Builder = {
 
     walk(nodes, callback) {
 
-        return BuilderStateUtils.walk(
+        return BuilderNodeTraversal.walk(
             nodes,
             callback
         );

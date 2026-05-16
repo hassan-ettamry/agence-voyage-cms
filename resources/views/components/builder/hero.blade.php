@@ -4,7 +4,26 @@
 
     data-node-id="{{ $nodeId }}"
 
-    class="px-16 py-20"
+    draggable="true"
+
+    ondragstart="
+        BuilderDragReorder.start(
+            event,
+            '{{ $nodeId }}'
+        )
+    "
+
+    ondragend="
+        BuilderDragReorder.end(event)
+    "
+
+    class="
+        px-16
+        py-20
+        builder-node
+        transition-all
+        duration-150
+    "
 
     style="
         background-color:

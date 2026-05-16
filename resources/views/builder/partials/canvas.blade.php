@@ -38,7 +38,10 @@
 
         {{-- Canvas --}}
         <div
+
             id="canvas"
+
+            data-root-dropzone="true"
 
             ondragover="
                 BuilderDragDrop.allowDrop(event)

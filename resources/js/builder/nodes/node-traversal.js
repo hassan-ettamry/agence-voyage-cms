@@ -2,6 +2,52 @@ window.BuilderNodeTraversal = {
 
     /*
     |--------------------------------------------------------------------------
+    | Find Node By ID
+    |--------------------------------------------------------------------------
+    */
+
+    findNodeById(
+
+        id,
+
+        nodes = BuilderStore.structure
+
+    ) {
+
+        for (const node of nodes) {
+
+            if (node.id === id) {
+
+                return node;
+
+            }
+
+            if (node.children?.length) {
+
+                const found = this.findNodeById(
+
+                    id,
+
+                    node.children
+
+                );
+
+                if (found) {
+
+                    return found;
+
+                }
+
+            }
+
+        }
+
+        return null;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Find Parent
     |--------------------------------------------------------------------------
     */
@@ -10,7 +56,7 @@ window.BuilderNodeTraversal = {
 
         nodeId,
 
-        nodes = Builder.structure,
+        nodes = BuilderStore.structure,
 
         parent = null
 
@@ -24,17 +70,15 @@ window.BuilderNodeTraversal = {
 
             if (node.children?.length) {
 
-                const found =
+                const found = this.findParent(
 
-                    this.findParent(
+                    nodeId,
 
-                        nodeId,
+                    node.children,
 
-                        node.children,
+                    node
 
-                        node
-
-                    );
+                );
 
                 if (found) {
                     return found;
@@ -50,11 +94,39 @@ window.BuilderNodeTraversal = {
 
     /*
     |--------------------------------------------------------------------------
+    | Find Node Index
+    |--------------------------------------------------------------------------
+    */
+
+    findNodeIndex(
+
+        nodeId,
+
+        nodes
+
+    ) {
+
+        return nodes.findIndex(
+
+            node => node.id === nodeId
+
+        );
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Walk Tree
     |--------------------------------------------------------------------------
     */
 
-    walk(nodes, callback) {
+    walk(
+
+        nodes = BuilderStore.structure,
+
+        callback
+
+    ) {
 
         nodes.forEach(node => {
 
@@ -63,13 +135,80 @@ window.BuilderNodeTraversal = {
             if (node.children?.length) {
 
                 this.walk(
+
                     node.children,
+
                     callback
+
                 );
 
             }
 
         });
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Is Child Of
+    |--------------------------------------------------------------------------
+    */
+
+    isChildOf(
+
+        targetId,
+
+        parentId
+
+    ) {
+
+        const parent =
+
+            this.findNodeById(
+                parentId
+            );
+
+        if (!parent || !parent.children) {
+            return false;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Recursive Search
+        |--------------------------------------------------------------------------
+        */
+
+        const search = (children) => {
+
+            for (const child of children) {
+
+                if (child.id === targetId) {
+                    return true;
+                }
+
+                if (child.children?.length) {
+
+                    const found =
+
+                        search(
+                            child.children
+                        );
+
+                    if (found) {
+                        return true;
+                    }
+
+                }
+
+            }
+
+            return false;
+
+        };
+
+        return search(
+            parent.children
+        );
 
     }
 

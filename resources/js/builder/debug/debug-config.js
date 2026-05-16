@@ -1,29 +1,36 @@
-window.BuilderStateUtils = {
+window.BuilderConfig = {
 
     /*
     |--------------------------------------------------------------------------
-    | Is Selected
+    | Global Debug
     |--------------------------------------------------------------------------
     */
 
-    isSelected(nodeId) {
-
-        return (
-            BuilderStore.selectedNodeId === nodeId
-        );
-
-    },
+    debug: true,
 
     /*
     |--------------------------------------------------------------------------
-    | Has Selection
+    | Feature Logs
     |--------------------------------------------------------------------------
     */
 
-    hasSelection() {
+    renderLogs: false,
 
-        return !!BuilderStore.selectedNodeId;
+    historyLogs: false,
 
-    }
+    selectionLogs: false,
+
+    dragLogs: false,
+
+    moveLogs: false,
+
+    dropLogs: false,
+
+    structureLogs: false,
+
+    validateTree: true
 
 };
+
+BuilderLogger.enabled =
+    BuilderConfig.debug;

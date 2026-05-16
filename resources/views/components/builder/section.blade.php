@@ -1,10 +1,23 @@
-<section
+<div 
 
-    data-type="section"
+    data-type="container"
 
     data-node-id="{{ $nodeId }}"
 
     data-dropzone="true"
+
+    draggable="true"
+
+    ondragstart="
+        BuilderDragReorder.start(
+            event,
+            '{{ $nodeId }}'
+        )
+    "
+
+    ondragend="
+        BuilderDragReorder.end(event)
+    "
 
     ondragover="
         BuilderDragDrop.allowDrop(event)
@@ -15,8 +28,12 @@
     "
 
     class="
-        relative
         w-full
+        mx-auto
+        min-h-[120px]
+        builder-node
+        transition-all
+        duration-150
     "
 
     style="
@@ -70,4 +87,4 @@
 
     </div>
 
-</section>
+</div>

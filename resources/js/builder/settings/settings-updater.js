@@ -125,7 +125,7 @@ window.BuilderSettingsUpdater = {
             node.children.push({
 
                 id:
-                    BuilderComponents.generateId(),
+                    BuilderComponentUtils.generateId(),
 
                 type: 'column',
 

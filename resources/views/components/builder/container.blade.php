@@ -6,6 +6,19 @@
 
     data-dropzone="true"
 
+    draggable="true"
+
+    ondragstart="
+        BuilderDragReorder.start(
+            event,
+            '{{ $nodeId }}'
+        )
+    "
+
+    ondragend="
+        BuilderDragReorder.end(event)
+    "
+
     ondragover="
         BuilderDragDrop.allowDrop(event)
     "
@@ -18,6 +31,9 @@
         w-full
         mx-auto
         min-h-[120px]
+        builder-node
+        transition-all
+        duration-150
     "
 
     style="

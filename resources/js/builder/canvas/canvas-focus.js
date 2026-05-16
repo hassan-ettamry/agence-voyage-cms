@@ -39,11 +39,7 @@ window.BuilderCanvasFocus = {
                 |--------------------------------------------------------------------------
                 */
 
-                Builder.selectedNodeId =
-                    null;
-
-                Builder.selectedElement =
-                    null;
+                BuilderStore.clearSelection();
 
                 /*
                 |--------------------------------------------------------------------------

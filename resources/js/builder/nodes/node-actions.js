@@ -30,6 +30,18 @@ window.BuilderNodes = {
 
         node.props[key] = value;
 
+        BuilderEventBus.emit(
+
+            'node.updated',
+        
+            {
+                nodeId,
+                key,
+                value
+            }
+        
+        );
+
     },
 
     /*
@@ -70,7 +82,7 @@ window.BuilderNodes = {
 
         this.removeRecursive(
             nodeId,
-            Builder.structure
+            BuilderStore.structure
         );
 
     },

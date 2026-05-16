@@ -1,53 +1,56 @@
-window.BuilderComponents = {
+window.BuilderDragHitbox = {
 
     /*
     |--------------------------------------------------------------------------
-    | Add Component
+    | Detect Position
     |--------------------------------------------------------------------------
     */
 
-    add(type) {
+    detect(target, event) {
 
-        const component =
+        const rect =
 
-            BuilderComponentFactory.create(
-                type
-            );
+            target.getBoundingClientRect();
 
-        if (!component) {
-            return;
+        const offsetY =
+
+            event.clientY - rect.top;
+
+        const ratio =
+
+            offsetY / rect.height;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Before
+        |--------------------------------------------------------------------------
+        */
+
+        if (ratio < 0.25) {
+
+            return 'before';
+
         }
 
         /*
         |--------------------------------------------------------------------------
-        | Add To State
+        | After
         |--------------------------------------------------------------------------
         */
 
-        BuilderStore.addRootComponent(
-            component
-        );
+        if (ratio > 0.75) {
 
-        BuilderEventBus.emit(
-            'component.added',
-            component
-        );
+            return 'after';
+
+        }
 
         /*
         |--------------------------------------------------------------------------
-        | History
+        | Inside
         |--------------------------------------------------------------------------
         */
 
-        BuilderHistory.push();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Re-render
-        |--------------------------------------------------------------------------
-        */
-
-        BuilderRenderManager.requestRender();
+        return 'inside';
 
     }
 

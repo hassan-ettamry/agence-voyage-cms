@@ -4,7 +4,26 @@
 
     data-node-id="{{ $nodeId }}"
 
-    class="grid p-4"
+    draggable="true"
+
+    ondragstart="
+        BuilderDragReorder.start(
+            event,
+            '{{ $nodeId }}'
+        )
+    "
+
+    ondragend="
+        BuilderDragReorder.end(event)
+    "
+
+    class="
+        grid
+        p-4
+        builder-node
+        transition-all
+        duration-150
+    "
 
     style="
         grid-template-columns:

@@ -20,14 +20,14 @@ window.BuilderOverlay = {
 
                     this.currentElement
                     &&
-                    Builder.selectedNodeId
+                    BuilderStore.selectedNodeId
 
                 ) {
 
                     this.show(
 
                         this.currentElement,
-                        Builder.selectedNodeId
+                        BuilderStore.selectedNodeId
 
                     );
 

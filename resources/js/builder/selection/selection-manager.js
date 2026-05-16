@@ -18,10 +18,10 @@ window.BuilderSelectionManager = {
         |--------------------------------------------------------------------------
         */
 
-        Builder.selectedNodeId =
+        BuilderStore.selectedNodeId =
             nodeId;
 
-        Builder.selectedElement =
+        BuilderStore.selectedElement =
             element;
 
     },
@@ -34,10 +34,10 @@ window.BuilderSelectionManager = {
 
     clear() {
 
-        Builder.selectedNodeId =
+        BuilderStore.selectedNodeId =
             null;
 
-        Builder.selectedElement =
+        BuilderStore.selectedElement =
             null;
 
         /*

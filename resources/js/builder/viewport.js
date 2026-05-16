@@ -20,6 +20,7 @@ window.BuilderViewport = {
                 wrapper.style.maxWidth = '390px';
                 break;
 
+            case 'tab':       // ← corrigé pour correspondre au topbar
             case 'tablet':
                 wrapper.style.maxWidth = '768px';
                 break;

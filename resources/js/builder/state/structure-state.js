@@ -26,6 +26,16 @@ window.BuilderStructureState = {
 
             : [];
 
+        /*
+        |------------------------------------------------------------------
+        | Sync Store
+        |------------------------------------------------------------------
+        */
+
+        BuilderStore.updateStructure(
+            this.structure
+        );
+
         console.log(
 
             'Builder Structure Initialized:',

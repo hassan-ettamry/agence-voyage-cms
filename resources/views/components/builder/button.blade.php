@@ -1,7 +1,28 @@
 <div
+
     data-type="button"
+
     data-node-id="{{ $nodeId }}"
-    class="p-4"
+
+    draggable="true"
+
+    ondragstart="
+        BuilderDragReorder.start(
+            event,
+            '{{ $nodeId }}'
+        )
+    "
+
+    ondragend="
+        BuilderDragReorder.end(event)
+    "
+
+    class="
+        p-4
+        builder-node
+        transition-all
+        duration-150
+    "
 >
 
     <button

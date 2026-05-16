@@ -88,10 +88,22 @@ window.BuilderHistory = {
 
         this.future = [];
 
-        console.log(
-            'HISTORY PUSH:',
+        BuilderLogger.group(
+            'HISTORY PUSH',
+            BuilderLogger.colors.history
+        );
+
+        BuilderLogger.log(
+            'STACK SIZE',
             this.stack.length
         );
+
+        BuilderLogger.log(
+            'FUTURE SIZE',
+            this.future.length
+        );
+
+        BuilderLogger.end();
 
     },
 
@@ -101,7 +113,11 @@ window.BuilderHistory = {
     |--------------------------------------------------------------------------
     */
 
-    undo() {
+    async undo() {
+
+        BuilderLogger.warn(
+            'UNDO'
+        );
 
         if (this.stack.length <= 1) {
             return;
@@ -155,7 +171,7 @@ window.BuilderHistory = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderCanvas.render();
+        await BuilderCanvas.render();
 
         /*
         |--------------------------------------------------------------------------
@@ -163,11 +179,11 @@ window.BuilderHistory = {
         |--------------------------------------------------------------------------
         */
 
-        if (Builder.selectedNodeId) {
+        if (BuilderStore.selectedNodeId) {
 
             const node =
                 Builder.findNodeById(
-                    Builder.selectedNodeId
+                    BuilderStore.selectedNodeId
                 );
 
             if (node) {
@@ -189,8 +205,6 @@ window.BuilderHistory = {
 
         this.isRestoring = false;
 
-        console.log('UNDO');
-
     },
 
     /*
@@ -199,7 +213,11 @@ window.BuilderHistory = {
     |--------------------------------------------------------------------------
     */
 
-    redo() {
+    async redo() {
+
+        BuilderLogger.warn(
+            'REDO'
+        );
 
         if (!this.future.length) {
             return;
@@ -228,7 +246,7 @@ window.BuilderHistory = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderCanvas.render();
+        await BuilderCanvas.render();
 
         /*
         |--------------------------------------------------------------------------
@@ -236,11 +254,11 @@ window.BuilderHistory = {
         |--------------------------------------------------------------------------
         */
 
-        if (Builder.selectedNodeId) {
+        if (BuilderStore.selectedNodeId) {
 
             const node =
                 Builder.findNodeById(
-                    Builder.selectedNodeId
+                    BuilderStore.selectedNodeId
                 );
 
             if (node) {
@@ -250,7 +268,7 @@ window.BuilderHistory = {
                         node.type
                     );
 
-                BuilderSettingsPanel.render(
+                    BuilderSettingsPanel.render(
                     node,
                     schema,
                     node.id
@@ -261,8 +279,6 @@ window.BuilderHistory = {
         }
 
         this.isRestoring = false;
-
-        console.log('REDO');
 
     }
 

@@ -17,6 +17,17 @@ import './right-sidebar';
 import './schema';
 import './inline-editing';
 
+import './debug/logger';
+import './debug/debug-config';
+import './debug/debug-validator';
+import './debug/debug-render';
+import './debug/debug-snapshot';
+
+import './core/store';
+import './core/render-manager';
+import './core/event-bus';
+import './core/commands/update-node-props';
+
 /*
 |--------------------------------------------------------------------------
 | Canvas Engine
@@ -35,15 +46,25 @@ import './canvas/canvas-renderer';
 |--------------------------------------------------------------------------
 | Drag & Drop Engine
 |--------------------------------------------------------------------------
-| Drag lifecycle, validation, previews, drop handling
+| Drag lifecycle, validation, previews, reorder
 */
 
 import './drag/drag-state';
+
 import './drag/drag-utils';
+
 import './drag/drag-validate';
+
+import './drag/drag-hitbox';
+
 import './drag/drag-preview';
+
 import './drag/drag-start';
+
+import './drag/drag-reorder';
+
 import './drag/drag-drop';
+
 import './drag/drag-engine';
 
 /*
@@ -64,8 +85,8 @@ import './history/history-keyboard';
 */
 
 import './components/component-utils';
-import './components/component-registry';
 import './components/component-factory';
+import './components/component-registry';
 import './components/component-actions';
 
 /*
@@ -82,12 +103,16 @@ import './selection/selection-actions';
 |--------------------------------------------------------------------------
 | Node Operations
 |--------------------------------------------------------------------------
-| Traversal, mutations, cloning
+| Traversal, mutations, cloning, moving
 */
 
 import './nodes/node-traversal';
+
 import './nodes/node-actions';
+
 import './nodes/node-clone';
+
+import './nodes/node-move';
 
 /*
 |--------------------------------------------------------------------------
@@ -126,9 +151,48 @@ document.addEventListener(
     () => {
 
         /*
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
+        | TEMP EVENT TEST
+        |--------------------------------------------------------------------------
+        */
+
+        BuilderEventBus.on(
+
+            'component.added',
+
+            (component) => {
+
+                console.log(
+                    'EVENT: COMPONENT ADDED',
+                    component
+                );
+
+            }
+
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Node Updated
+        |--------------------------------------------------------------------------
+        */
+
+        BuilderEventBus.on(
+
+            'node.updated',
+
+            () => {
+
+                BuilderRenderManager.requestRender();
+
+            }
+
+        );
+
+        /*
+        |--------------------------------------------------------------------------
         | State
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         if (window.BuilderStructureState) {
@@ -138,9 +202,9 @@ document.addEventListener(
         }
 
         /*
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Sidebar
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         if (window.BuilderSidebar) {
@@ -152,9 +216,9 @@ document.addEventListener(
         }
 
         /*
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Right Sidebar
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         if (window.BuilderRightSidebar) {
@@ -164,9 +228,9 @@ document.addEventListener(
         }
 
         /*
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Overlay
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         if (window.BuilderOverlay) {
@@ -176,9 +240,9 @@ document.addEventListener(
         }
 
         /*
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | History
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         if (window.BuilderHistory) {
@@ -188,9 +252,9 @@ document.addEventListener(
         }
 
         /*
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Inline Editing
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         if (window.BuilderInlineEditing) {
@@ -200,9 +264,9 @@ document.addEventListener(
         }
 
         /*
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         | Canvas
-        |--------------------------------------------------------------
+        |--------------------------------------------------------------------------
         */
 
         if (window.BuilderCanvas) {
@@ -210,6 +274,26 @@ document.addEventListener(
             BuilderCanvas.render();
 
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Test Event Bus
+        |--------------------------------------------------------------------------
+        */
+
+        BuilderEventBus.on(
+
+            'test',
+
+            () => {
+
+                console.log(
+                    'EVENT BUS WORKS'
+                );
+
+            }
+
+        );
 
         console.log(
             'Builder Engine Started'

@@ -2,16 +2,55 @@ window.BuilderCanvas = {
 
     /*
     |--------------------------------------------------------------------------
+    | Render Version
+    |--------------------------------------------------------------------------
+    */
+
+    renderVersion: 0,
+
+    /*
+    |--------------------------------------------------------------------------
     | Render Canvas
     |--------------------------------------------------------------------------
     */
 
     async render() {
 
+        const version =
+            ++this.renderVersion;
+
+        if (BuilderLogger.shouldLog('render')) {
+
+            BuilderLogger.group(
+                `RENDER ${version}`,
+                BuilderLogger.colors.render
+            );
+        
+        }
+
         const canvas =
             BuilderCanvasUtils.getCanvas();
 
-        if (!canvas) return;
+        if (!canvas) {
+
+            BuilderLogger.warn(
+                'Canvas not found'
+            );
+
+            BuilderLogger.end();
+
+            return;
+
+        }
+
+        if (BuilderLogger.shouldLog('render')) {
+            BuilderLogger.log(
+                'STRUCTURE BEFORE RENDER',
+                structuredClone(
+                    BuilderStore.structure
+                )
+            );
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -19,7 +58,7 @@ window.BuilderCanvas = {
         |--------------------------------------------------------------------------
         */
 
-        if (!Builder.getStructure().length) {
+        if (!BuilderStore.structure.length) {
 
             canvas.innerHTML = `
 
@@ -41,6 +80,12 @@ window.BuilderCanvas = {
             `;
 
             BuilderOverlay.hide();
+
+            BuilderLogger.success(
+                `RENDER ${version} COMPLETE`
+            );
+
+            BuilderLogger.end();
 
             return;
 
@@ -81,7 +126,9 @@ window.BuilderCanvas = {
                         body: JSON.stringify({
 
                             structure:
-                                Builder.getStructure()
+                                structuredClone(
+                                    BuilderStore.structure
+                                )
 
                         })
 
@@ -97,6 +144,30 @@ window.BuilderCanvas = {
 
             const html =
                 await response.text();
+
+            BuilderLogger.success(
+                'HTML RECEIVED'
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Prevent Old Render
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                version !== this.renderVersion
+            ) {
+
+                BuilderLogger.warn(
+                    'OLD RENDER CANCELLED',
+                    version
+                );
+
+                BuilderLogger.end();
+
+                return;
+            }
 
             /*
             |--------------------------------------------------------------------------
@@ -116,11 +187,13 @@ window.BuilderCanvas = {
 
             /*
             |--------------------------------------------------------------------------
-            | Render Layers
+            | Structure Updated Event
             |--------------------------------------------------------------------------
             */
 
-            BuilderRightSidebar.render();
+            BuilderEventBus.emit(
+                'structure.updated'
+            );
 
             /*
             |--------------------------------------------------------------------------
@@ -130,12 +203,24 @@ window.BuilderCanvas = {
 
             this.restoreSelection();
 
+            BuilderLogger.success(
+                `RENDER ${version} COMPLETE`
+            );
+
+            BuilderLogger.end();
+
         } catch (error) {
 
             console.error(
                 'Canvas render error:',
                 error
             );
+
+            BuilderLogger.error(
+                error
+            );
+
+            BuilderLogger.end();
 
         }
 
@@ -149,28 +234,40 @@ window.BuilderCanvas = {
 
     restoreSelection() {
 
-        if (!Builder.selectedNodeId) {
+        if (!BuilderStore.selectedNodeId) {
             return;
         }
 
         const selected =
             document.querySelector(
 
-                `[data-node-id="${Builder.selectedNodeId}"]`
+                `[data-node-id="${BuilderStore.selectedNodeId}"]`
 
             );
 
         if (!selected) return;
+
+        if (!document.body.contains(selected)) {
+
+            BuilderLogger.warn(
+                'INVALID SELECTION RESTORE'
+            );
+
+            return;
+        }
 
         BuilderCanvasUtils
             .applySelectionStyles(
                 selected
             );
 
+        BuilderStore.selectedElement =
+            selected;
+
         BuilderOverlay.show(
 
             selected,
-            Builder.selectedNodeId
+            BuilderStore.selectedNodeId
 
         );
 

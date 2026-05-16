@@ -4,11 +4,29 @@
 
     data-node-id="{{ $nodeId }}"
 
+    draggable="true"
+
+    ondragstart="
+        BuilderDragReorder.start(
+            event,
+            '{{ $nodeId }}'
+        )
+    "
+
+    ondragend="
+        BuilderDragReorder.end(event)
+    "
+
     contenteditable="true"
 
     data-field="text"
 
-    class="outline-none"
+    class="
+        outline-none
+        builder-node
+        transition-all
+        duration-150
+    "
 
     style="
         color:
@@ -29,7 +47,6 @@
         padding:
             {{ ($props['padding'] ?? 16) . 'px' }};
     "
-
 >
 
     {{ $props['text'] ?? 'Text here' }}

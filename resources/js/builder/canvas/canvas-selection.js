@@ -38,6 +38,16 @@ window.BuilderCanvasSelection = {
 
                 if (!nodeId) return;
 
+                BuilderLogger.group(
+                    'SELECTION',
+                    BuilderLogger.colors.info
+                );
+
+                BuilderLogger.log(
+                    'SELECTED NODE',
+                    nodeId
+                );
+
                 /*
                 |--------------------------------------------------------------------------
                 | Find Node
@@ -49,7 +59,17 @@ window.BuilderCanvasSelection = {
                         nodeId
                     );
 
-                if (!node) return;
+                if (!node) {
+
+                    BuilderLogger.warn(
+                        'NODE NOT FOUND'
+                    );
+
+                    BuilderLogger.end();
+
+                    return;
+
+                }
 
                 /*
                 |--------------------------------------------------------------------------
@@ -57,11 +77,10 @@ window.BuilderCanvasSelection = {
                 |--------------------------------------------------------------------------
                 */
 
-                Builder.selectedNodeId =
-                    nodeId;
-
-                Builder.selectedElement =
-                    element;
+                BuilderStore.setSelection(
+                    nodeId,
+                    element
+                );
 
                 /*
                 |--------------------------------------------------------------------------
@@ -108,20 +127,20 @@ window.BuilderCanvasSelection = {
 
                     node,
                     schema,
-                    nodeId
+                    BuilderStore.selectedNodeId
 
                 );
 
                 /*
                 |--------------------------------------------------------------------------
-                | Highlight Layers
+                | Selection Changed Event
                 |--------------------------------------------------------------------------
                 */
 
-                BuilderRightSidebar
-                    .highlightNode(
-                        nodeId
-                    );
+                BuilderEventBus.emit(
+                    'selection.changed',
+                    nodeId
+                );
 
                 /*
                 |--------------------------------------------------------------------------
@@ -131,8 +150,10 @@ window.BuilderCanvasSelection = {
 
                 BuilderOverlay.show(
                     element,
-                    nodeId
+                    BuilderStore.selectedNodeId
                 );
+
+                BuilderLogger.end();
 
             }
 

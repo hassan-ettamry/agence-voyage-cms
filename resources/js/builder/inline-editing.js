@@ -109,20 +109,11 @@ window.BuilderInlineEditing = {
                 | Update State
                 |------------------------------------------------------
                 */
-
-                BuilderNodes.updateProps(
+                BuilderCommands.updateNodeProps(
                     nodeId,
                     field,
                     editable.innerText
                 );
-
-                /*
-                |------------------------------------------------------
-                | Push History
-                |------------------------------------------------------
-                */
-
-                BuilderHistory.push();
 
                 /*
                 |------------------------------------------------------
@@ -131,7 +122,7 @@ window.BuilderInlineEditing = {
                 */
 
                 if (
-                    Builder.selectedNodeId
+                    BuilderStore.selectedNodeId
                     === nodeId
                 ) {
 
@@ -150,31 +141,13 @@ window.BuilderInlineEditing = {
 
                 /*
                 |------------------------------------------------------
-                | Refresh Layers
-                |------------------------------------------------------
-                */
-
-                BuilderRightSidebar.render();
-
-                /*
-                |------------------------------------------------------
-                | Keep Selection Highlight
-                |------------------------------------------------------
-                */
-
-                BuilderRightSidebar.highlightNode(
-                    nodeId
-                );
-
-                /*
-                |------------------------------------------------------
                 | Debug
                 |------------------------------------------------------
                 */
 
                 console.log(
                     'INLINE STATE UPDATED:',
-                    Builder.structure
+                    BuilderStore.structure
                 );
 
             }
@@ -184,21 +157,3 @@ window.BuilderInlineEditing = {
     }
 
 };
-
-/*
-|----------------------------------------------------------------------
-| Auto Init
-|----------------------------------------------------------------------
-*/
-
-document.addEventListener(
-
-    'DOMContentLoaded',
-
-    () => {
-
-        BuilderInlineEditing.init();
-
-    }
-
-);
