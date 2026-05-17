@@ -98,19 +98,46 @@ $menu = config('menu');
     </nav>
 
     <!-- USER -->
-    <div class="flex items-center gap-3 px-5 py-4 border-t border-white/10">
-        <div class="w-9 h-9 bg-indigo-500 rounded-full flex items-center justify-center font-semibold text-sm">
+    <div class="relative flex items-center gap-3 px-5 py-4 border-t border-white/10">
+        <div class="w-9 h-9 bg-indigo-500 rounded-full flex items-center justify-center font-semibold text-sm shrink-0">
             {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
         </div>
 
-        <div>
-            <div class="text-sm font-semibold">
+        <div class="min-w-0 flex-1">
+            <div class="text-sm font-semibold truncate">
                 {{ auth()->user()->name ?? 'Admin User' }}
             </div>
-            <div class="text-xs text-white/50">
+            <div class="text-xs text-white/50 truncate">
                 {{ auth()->user()->email ?? 'admin@agency.com' }}
             </div>
         </div>
+
+        <button type="button"
+            class="user-menu-toggle w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition"
+            aria-label="User menu"
+            aria-expanded="false">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="1"/>
+                <circle cx="19" cy="12" r="1"/>
+                <circle cx="5" cy="12" r="1"/>
+            </svg>
+        </button>
+
+        <div class="user-menu hidden absolute right-4 bottom-full mb-2 w-40 overflow-hidden rounded-lg bg-white py-1 text-sm text-gray-700 shadow-lg ring-1 ring-black/5">
+            <a href="#" class="block px-4 py-2 hover:bg-gray-100">
+                Profile
+            </a>
+
+            <a href="{{ route('logout') }}"
+               class="block px-4 py-2 text-red-600 hover:bg-red-50"
+               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                Logout
+            </a>
+        </div>
+
+        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+            @csrf
+        </form>
     </div>
 
 </aside>

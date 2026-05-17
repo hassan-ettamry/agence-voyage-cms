@@ -1,4 +1,4 @@
-<div class="h-14 bg-white border-b border-gray-200 text-gray-800 flex items-center px-4 gap-4 z-50 shadow-sm" style="min-width:0;">
+<div id="builder-topbar" class="h-14 bg-white border-b border-gray-200 text-gray-800 flex items-center px-4 gap-4 z-50 shadow-sm" style="min-width:0;">
 
     {{-- Logo / Brand --}}
     <div class="flex items-center gap-2 w-56 shrink-0">

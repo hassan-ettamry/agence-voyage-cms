@@ -181,7 +181,15 @@ document.addEventListener(
 
             'node.updated',
 
-            () => {
+            (payload) => {
+
+                if (
+                    payload?.render === false
+                ) {
+
+                    return;
+
+                }
 
                 BuilderRenderManager.requestRender();
 

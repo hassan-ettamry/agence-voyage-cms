@@ -24,9 +24,28 @@ window.BuilderCanvasFocus = {
                         '#builder-overlay-root'
                     );
 
+                const clickedBuilderUi =
+                    event.target.closest(
+                        [
+                            '#left-panel',
+                            '#right-panel',
+                            '#builder-topbar',
+                            '#settings-panel',
+                            '#layers-panel',
+                            'input',
+                            'textarea',
+                            'select',
+                            'button',
+                            'a',
+                            'label',
+                            '[contenteditable="true"]'
+                        ].join(',')
+                    );
+
                 if (
                     clickedNode ||
-                    clickedOverlay
+                    clickedOverlay ||
+                    clickedBuilderUi
                 ) {
 
                     return;

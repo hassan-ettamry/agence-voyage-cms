@@ -5,8 +5,10 @@ use App\Models\User;
 
 class UserService
 {
-    public function create(array $data): User
+    public function create(array $data, User $creator): User
     {
+        $data['agency_id'] = $creator->agency_id;
+
         // password auto hashed via model mutator
         return User::create($data);
     }

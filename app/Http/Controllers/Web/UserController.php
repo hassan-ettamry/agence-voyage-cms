@@ -15,7 +15,10 @@ class UserController extends Controller
 
     public function index()
     {
+        $this->authorize('viewAny', User::class);
+
         $users = User::with('role')->paginate(10);
+        $roles = Role::orderBy('name')->get();
 
         // Stats
         $stats = [
@@ -42,18 +45,22 @@ class UserController extends Controller
             ],
         ];
 
-        return view('users.index', compact('users', 'stats'));
+        return view('users.index', compact('users', 'roles', 'stats'));
     }
 
     public function store(StoreUserRequest $request)
     {
-        $this->service->create($request->validated());
+        $this->authorize('create', User::class);
+
+        $this->service->create($request->validated(), $request->user());
 
         return back()->with('success', 'User created');
     }
 
     public function update(UpdateUserRequest $request, User $user)
     {
+        $this->authorize('update', $user);
+
         $this->service->update($user, $request->validated());
 
         return back()->with('success', 'User updated');
@@ -61,6 +68,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $this->authorize('delete', $user);
+
         $this->service->delete($user);
 
         return back()->with('success', 'User deleted');

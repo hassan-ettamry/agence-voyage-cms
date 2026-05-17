@@ -112,7 +112,10 @@ window.BuilderInlineEditing = {
                 BuilderCommands.updateNodeProps(
                     nodeId,
                     field,
-                    editable.innerText
+                    editable.innerText,
+                    {
+                        render: false
+                    }
                 );
 
                 /*
@@ -151,6 +154,40 @@ window.BuilderInlineEditing = {
                 );
 
             }
+
+        );
+
+        /*
+        |--------------------------------------------------------------
+        | Render Once After Editing
+        |--------------------------------------------------------------
+        */
+
+        canvas.addEventListener(
+
+            'blur',
+
+            (event) => {
+
+                const editable =
+                    event.target.closest(
+                        '[contenteditable="true"]'
+                    );
+
+                if (!editable) return;
+
+                const nodeElement =
+                    editable.closest(
+                        '[data-node-id]'
+                    );
+
+                if (!nodeElement) return;
+
+                BuilderRenderManager.requestRender();
+
+            },
+
+            true
 
         );
 

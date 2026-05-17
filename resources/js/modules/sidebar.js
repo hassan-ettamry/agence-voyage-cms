@@ -28,9 +28,42 @@ export function initSidebar() {
         });
     });
 
+    // =========================
+    // 2. USER MENU
+    // =========================
+    const userMenuToggle = document.querySelector('.user-menu-toggle');
+    const userMenu = document.querySelector('.user-menu');
+
+    if (userMenuToggle && userMenu) {
+        const closeUserMenu = () => {
+            userMenu.classList.add('hidden');
+            userMenuToggle.setAttribute('aria-expanded', 'false');
+        };
+
+        userMenuToggle.addEventListener('click', (event) => {
+            event.stopPropagation();
+
+            const isOpen = !userMenu.classList.contains('hidden');
+
+            userMenu.classList.toggle('hidden', isOpen);
+            userMenuToggle.setAttribute('aria-expanded', String(!isOpen));
+        });
+
+        userMenu.addEventListener('click', (event) => {
+            event.stopPropagation();
+        });
+
+        document.addEventListener('click', closeUserMenu);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeUserMenu();
+            }
+        });
+    }
 
     // =========================
-    // 2. MOBILE SIDEBAR TOGGLE (NEW)
+    // 3. MOBILE SIDEBAR TOGGLE (NEW)
     // =========================
     window.toggleSidebar = function () {
 

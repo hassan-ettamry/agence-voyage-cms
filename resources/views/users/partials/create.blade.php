@@ -22,7 +22,7 @@
     <div class="mb-4">
         <label class="text-sm text-gray-600">Role</label>
         <select name="role_id" class="w-full border rounded-lg px-3 py-2 mt-1">
-            @foreach(\App\Models\Role::all() as $role)
+            @foreach($roles as $role)
                 <option value="{{ $role->id }}">{{ $role->name }}</option>
             @endforeach
         </select>

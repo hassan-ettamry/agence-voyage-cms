@@ -1,6 +1,15 @@
 window.BuilderCommands = {
 
-    updateNodeProps(nodeId, field, value) {
+    updateNodeProps(
+        nodeId,
+        field,
+        value,
+        options = {}
+    ) {
+
+        const {
+            render = true
+        } = options;
 
         /*
         |--------------------------------------------------------------------------
@@ -44,7 +53,8 @@ window.BuilderCommands = {
             {
                 nodeId,
                 field,
-                value
+                value,
+                render
             }
         );
 
@@ -62,7 +72,11 @@ window.BuilderCommands = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderRenderManager.requestRender();
+        if (render) {
+
+            BuilderRenderManager.requestRender();
+
+        }
 
     }
 

@@ -9,6 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use App\Scopes\AgencyScope;
 
 class User extends Authenticatable
 {
@@ -72,6 +73,11 @@ class User extends Authenticatable
                 $model->id = (string) Str::uuid();
             }
         });
+    }
+
+    protected static function booted()
+    {
+        static::addGlobalScope(new AgencyScope);
     }
 
     /**
