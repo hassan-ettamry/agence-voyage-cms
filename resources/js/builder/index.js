@@ -10,6 +10,7 @@ import './state/structure-state';
 import './state/state-utils';
 import './state/builder-state';
 
+import './utils/html-escape';
 import './viewport';
 import './storage';
 import './sidebar';

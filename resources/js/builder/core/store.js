@@ -18,6 +18,20 @@ window.BuilderStore = {
 
     /*
     |--------------------------------------------------------------------------
+    | Init
+    |--------------------------------------------------------------------------
+    */
+
+    init(structure = window.initialStructure) {
+
+        this.setStructure(
+            structure
+        );
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Structure
     |--------------------------------------------------------------------------
     */
@@ -28,9 +42,11 @@ window.BuilderStore = {
 
     },
 
-    setStructure(structure) {
+    setStructure(structure = []) {
 
-        this.structure = structure;
+        this.structure = Array.isArray(structure)
+            ? structure
+            : [];
 
         BuilderEventBus.emit(
             'structure.updated'
@@ -56,16 +72,60 @@ window.BuilderStore = {
 
     /*
     |--------------------------------------------------------------------------
+    | Remove Root Component
+    |--------------------------------------------------------------------------
+    */
+
+    removeRootComponent(index) {
+
+        if (!this.structure[index]) {
+            return;
+        }
+
+        this.structure.splice(index, 1);
+
+        BuilderEventBus.emit(
+            'structure.updated'
+        );
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Root Component
+    |--------------------------------------------------------------------------
+    */
+
+    updateRootComponent(index, data) {
+
+        if (!this.structure[index]) {
+            return;
+        }
+
+        this.structure[index] = {
+
+            ...this.structure[index],
+
+            ...data
+
+        };
+
+        BuilderEventBus.emit(
+            'structure.updated'
+        );
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Update Structure
     |--------------------------------------------------------------------------
     */
 
-    updateStructure(structure) {
+    updateStructure(structure = []) {
 
-        this.structure = structure;
-
-        BuilderEventBus.emit(
-            'structure.updated'
+        this.setStructure(
+            structure
         );
 
     },

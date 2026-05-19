@@ -72,6 +72,18 @@ window.BuilderSettingsFields = {
         nodeId
     ) {
 
+        const label =
+            BuilderHtmlEscape.html(field.label);
+
+        const fieldValue =
+            BuilderHtmlEscape.attribute(value);
+
+        const safeNodeId =
+            BuilderHtmlEscape.jsString(nodeId);
+
+        const safeKey =
+            BuilderHtmlEscape.jsString(key);
+
         return `
 
             <div>
@@ -84,7 +96,7 @@ window.BuilderSettingsFields = {
                     text-gray-600
                 ">
 
-                    ${field.label}
+                    ${label}
 
                 </label>
 
@@ -92,12 +104,12 @@ window.BuilderSettingsFields = {
 
                     type="text"
 
-                    value="${value}"
+                    value="${fieldValue}"
 
                     oninput="
                         BuilderSettingsUpdater.updateField(
-                            '${nodeId}',
-                            '${key}',
+                            ${safeNodeId},
+                            ${safeKey},
                             this.value
                         )
                     "
@@ -131,6 +143,18 @@ window.BuilderSettingsFields = {
         nodeId
     ) {
 
+        const label =
+            BuilderHtmlEscape.html(field.label);
+
+        const fieldValue =
+            BuilderHtmlEscape.html(value);
+
+        const safeNodeId =
+            BuilderHtmlEscape.jsString(nodeId);
+
+        const safeKey =
+            BuilderHtmlEscape.jsString(key);
+
         return `
 
             <div>
@@ -143,7 +167,7 @@ window.BuilderSettingsFields = {
                     text-gray-600
                 ">
 
-                    ${field.label}
+                    ${label}
 
                 </label>
 
@@ -151,8 +175,8 @@ window.BuilderSettingsFields = {
 
                     oninput="
                         BuilderSettingsUpdater.updateField(
-                            '${nodeId}',
-                            '${key}',
+                            ${safeNodeId},
+                            ${safeKey},
                             this.value
                         )
                     "
@@ -166,7 +190,7 @@ window.BuilderSettingsFields = {
                         text-sm
                         min-h-[120px]
                     "
-                >${value}</textarea>
+                >${fieldValue}</textarea>
 
             </div>
 
@@ -187,6 +211,18 @@ window.BuilderSettingsFields = {
         nodeId
     ) {
 
+        const label =
+            BuilderHtmlEscape.html(field.label);
+
+        const fieldValue =
+            BuilderHtmlEscape.attribute(value);
+
+        const safeNodeId =
+            BuilderHtmlEscape.jsString(nodeId);
+
+        const safeKey =
+            BuilderHtmlEscape.jsString(key);
+
         return `
 
             <div>
@@ -199,7 +235,7 @@ window.BuilderSettingsFields = {
                     text-gray-600
                 ">
 
-                    ${field.label}
+                    ${label}
 
                 </label>
 
@@ -207,12 +243,12 @@ window.BuilderSettingsFields = {
 
                     type="color"
 
-                    value="${value}"
+                    value="${fieldValue}"
 
                     oninput="
                         BuilderSettingsUpdater.updateField(
-                            '${nodeId}',
-                            '${key}',
+                            ${safeNodeId},
+                            ${safeKey},
                             this.value
                         )
                     "
@@ -238,6 +274,24 @@ window.BuilderSettingsFields = {
         nodeId
     ) {
 
+        const label =
+            BuilderHtmlEscape.html(field.label);
+
+        const min =
+            BuilderHtmlEscape.attribute(field.min || 0);
+
+        const max =
+            BuilderHtmlEscape.attribute(field.max || 100);
+
+        const fieldValue =
+            BuilderHtmlEscape.attribute(value);
+
+        const safeNodeId =
+            BuilderHtmlEscape.jsString(nodeId);
+
+        const safeKey =
+            BuilderHtmlEscape.jsString(key);
+
         return `
 
             <div>
@@ -250,7 +304,7 @@ window.BuilderSettingsFields = {
                     text-gray-600
                 ">
 
-                    ${field.label}
+                    ${label}
 
                 </label>
 
@@ -258,16 +312,16 @@ window.BuilderSettingsFields = {
 
                     type="range"
 
-                    min="${field.min || 0}"
+                    min="${min}"
 
-                    max="${field.max || 100}"
+                    max="${max}"
 
-                    value="${value}"
+                    value="${fieldValue}"
 
                     oninput="
                         BuilderSettingsUpdater.updateField(
-                            '${nodeId}',
-                            '${key}',
+                            ${safeNodeId},
+                            ${safeKey},
                             this.value
                         )
                     "

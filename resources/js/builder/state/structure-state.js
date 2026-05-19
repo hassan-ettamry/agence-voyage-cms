@@ -2,45 +2,19 @@ window.BuilderStructureState = {
 
     /*
     |------------------------------------------------------------------
-    | Structure
-    |------------------------------------------------------------------
-    */
-
-    structure: [],
-
-    /*
-    |------------------------------------------------------------------
     | Init
     |------------------------------------------------------------------
     */
 
     init() {
 
-        this.structure = Array.isArray(
-
-            window.initialStructure
-
-        )
-
-            ? window.initialStructure
-
-            : [];
-
-        /*
-        |------------------------------------------------------------------
-        | Sync Store
-        |------------------------------------------------------------------
-        */
-
-        BuilderStore.updateStructure(
-            this.structure
-        );
+        BuilderStore.init();
 
         console.log(
 
             'Builder Structure Initialized:',
 
-            this.structure
+            BuilderStore.getStructure()
 
         );
 
@@ -54,7 +28,7 @@ window.BuilderStructureState = {
 
     getStructure() {
 
-        return this.structure;
+        return BuilderStore.getStructure();
 
     },
 
@@ -66,7 +40,9 @@ window.BuilderStructureState = {
 
     setStructure(structure = []) {
 
-        this.structure = structure;
+        BuilderStore.setStructure(
+            structure
+        );
 
     },
 
@@ -78,7 +54,9 @@ window.BuilderStructureState = {
 
     addComponent(node) {
 
-        this.structure.push(node);
+        BuilderStore.addRootComponent(
+            node
+        );
 
     },
 
@@ -90,7 +68,9 @@ window.BuilderStructureState = {
 
     removeComponent(index) {
 
-        this.structure.splice(index, 1);
+        BuilderStore.removeRootComponent(
+            index
+        );
 
     },
 
@@ -102,17 +82,10 @@ window.BuilderStructureState = {
 
     updateComponent(index, data) {
 
-        if (!this.structure[index]) {
-            return;
-        }
-
-        this.structure[index] = {
-
-            ...this.structure[index],
-
-            ...data
-
-        };
+        BuilderStore.updateRootComponent(
+            index,
+            data
+        );
 
     },
 
@@ -124,7 +97,7 @@ window.BuilderStructureState = {
 
     clear() {
 
-        this.structure = [];
+        BuilderStore.clear();
 
     }
 

@@ -43,11 +43,15 @@ window.BuilderCanvas = {
 
         }
 
+        const structure =
+            BuilderStore.getStructure();
+
         if (BuilderLogger.shouldLog('render')) {
+
             BuilderLogger.log(
                 'STRUCTURE BEFORE RENDER',
                 structuredClone(
-                    BuilderStore.structure
+                    structure
                 )
             );
         }
@@ -58,7 +62,7 @@ window.BuilderCanvas = {
         |--------------------------------------------------------------------------
         */
 
-        if (!BuilderStore.structure.length) {
+        if (!structure.length) {
 
             canvas.innerHTML = `
 
@@ -127,7 +131,7 @@ window.BuilderCanvas = {
 
                             structure:
                                 structuredClone(
-                                    BuilderStore.structure
+                                    structure
                                 )
 
                         })
@@ -135,6 +139,14 @@ window.BuilderCanvas = {
                     }
 
                 );
+
+            if (!response.ok) {
+
+                throw new Error(
+                    `Builder render failed with status ${response.status}`
+                );
+
+            }
 
             /*
             |--------------------------------------------------------------------------
@@ -241,7 +253,7 @@ window.BuilderCanvas = {
         const selected =
             document.querySelector(
 
-                `[data-node-id="${BuilderStore.selectedNodeId}"]`
+                `[data-node-id="${CSS.escape(BuilderStore.selectedNodeId)}"]`
 
             );
 

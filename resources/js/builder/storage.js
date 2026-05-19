@@ -16,7 +16,8 @@ window.BuilderStorage = {
             |--------------------------------------------------------------------------
             */
 
-            const structure = Builder.getStructure();
+            const structure =
+                BuilderStore.getStructure();
 
             /*
             |--------------------------------------------------------------------------

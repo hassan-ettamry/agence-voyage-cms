@@ -39,7 +39,7 @@ window.BuilderHistory = {
         }
 
         const snapshot = JSON.stringify(
-            Builder.getStructure()
+            BuilderStore.getStructure()
         );
 
         /*
@@ -161,7 +161,7 @@ window.BuilderHistory = {
         |--------------------------------------------------------------------------
         */
 
-        Builder.setStructure(
+        BuilderStore.setStructure(
             JSON.parse(previous)
         );
 
@@ -236,7 +236,7 @@ window.BuilderHistory = {
 
         this.stack.push(snapshot);
 
-        Builder.setStructure(
+        BuilderStore.setStructure(
             JSON.parse(snapshot)
         );
 

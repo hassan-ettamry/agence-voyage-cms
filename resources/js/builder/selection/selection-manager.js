@@ -32,13 +32,13 @@ window.BuilderSelectionManager = {
     |--------------------------------------------------------------------------
     */
 
-    clear() {
+    clear(options = {}) {
 
-        BuilderStore.selectedNodeId =
-            null;
+        const {
+            settings = false
+        } = options;
 
-        BuilderStore.selectedElement =
-            null;
+        BuilderStore.clearSelection();
 
         /*
         |--------------------------------------------------------------------------
@@ -73,6 +73,33 @@ window.BuilderSelectionManager = {
         */
 
         BuilderOverlay.hide();
+
+        if (settings) {
+
+            this.clearSettingsPanel();
+
+        }
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Clear Settings Panel
+    |--------------------------------------------------------------------------
+    */
+
+    clearSettingsPanel() {
+
+        const panel =
+            document.getElementById(
+                'settings-panel'
+            );
+
+        if (panel) {
+
+            panel.innerHTML = '';
+
+        }
 
     }
 

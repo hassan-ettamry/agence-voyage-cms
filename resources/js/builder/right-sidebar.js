@@ -69,6 +69,20 @@ window.BuilderRightSidebar = {
             const selected =
                 BuilderStore.selectedNodeId === node.id;
 
+            const safeNodeId =
+                BuilderHtmlEscape.attribute(node.id);
+
+            const safeNodeIdJs =
+                BuilderHtmlEscape.jsString(node.id);
+
+            const type =
+                BuilderHtmlEscape.html(node.type);
+
+            const label =
+                BuilderHtmlEscape.html(
+                    this.getLabel(node)
+                );
+
             html += `
 
                 <div>
@@ -95,7 +109,7 @@ window.BuilderRightSidebar = {
                             }
                         "
 
-                        data-layer-node="${node.id}"
+                        data-layer-node="${safeNodeId}"
 
                         style="
                             padding-left:
@@ -104,7 +118,7 @@ window.BuilderRightSidebar = {
 
                         onclick="
                             BuilderRightSidebar.select(
-                                '${node.id}'
+                                ${safeNodeIdJs}
                             )
                         "
                     >
@@ -118,14 +132,14 @@ window.BuilderRightSidebar = {
                             font-bold
                             shrink-0
                         ">
-                            ${node.type}
+                            ${type}
                         </span>
 
                         <!-- LABEL -->
 
                         <span class="truncate">
 
-                            ${this.getLabel(node)}
+                            ${label}
 
                         </span>
 
@@ -180,7 +194,7 @@ window.BuilderRightSidebar = {
 
         const layer =
             document.querySelector(
-                `[data-layer-node="${nodeId}"]`
+                `[data-layer-node="${CSS.escape(nodeId)}"]`
             );
 
         if (!layer) return;
@@ -208,7 +222,7 @@ window.BuilderRightSidebar = {
 
         const element =
             document.querySelector(
-                `[data-node-id="${nodeId}"]`
+                `[data-node-id="${CSS.escape(nodeId)}"]`
             );
 
         if (!element) return;

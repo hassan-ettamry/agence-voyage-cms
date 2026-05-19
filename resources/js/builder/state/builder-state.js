@@ -20,13 +20,13 @@ window.Builder = {
 
     get selectedNodeId() {
 
-        return BuilderEditorState.selectedNodeId;
+        return BuilderStore.selectedNodeId;
 
     },
 
     set selectedNodeId(value) {
 
-        BuilderEditorState.selectedNodeId = value;
+        BuilderStore.selectedNodeId = value;
 
     },
 
@@ -56,7 +56,7 @@ window.Builder = {
 
     get structure() {
 
-        return BuilderStore.structure;;
+        return BuilderStore.getStructure();
 
     },
 
@@ -68,13 +68,13 @@ window.Builder = {
 
     getStructure() {
 
-        return BuilderStructureState.getStructure();
+        return BuilderStore.getStructure();
 
     },
 
     setStructure(structure = []) {
 
-        BuilderStore.updateStructure(
+        BuilderStore.setStructure(
             structure
         );
 
@@ -90,7 +90,7 @@ window.Builder = {
 
     removeComponent(index) {
 
-        BuilderStructureState.removeComponent(
+        BuilderStore.removeRootComponent(
             index
         );
 
@@ -98,7 +98,7 @@ window.Builder = {
 
     updateComponent(index, data) {
 
-        BuilderStructureState.updateComponent(
+        BuilderStore.updateRootComponent(
             index,
             data
         );

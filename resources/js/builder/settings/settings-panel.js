@@ -49,6 +49,9 @@ window.BuilderSettingsPanel = {
 
             ([tabKey, tab]) => {
 
+                const title =
+                    BuilderHtmlEscape.html(tab.title);
+
                 html += `
 
                     <div class="border-b border-gray-200">
@@ -64,7 +67,7 @@ window.BuilderSettingsPanel = {
                             bg-gray-50
                         ">
 
-                            ${tab.title}
+                            ${title}
 
                         </div>
 
