@@ -110,21 +110,3 @@ window.BuilderHistoryKeyboard = {
     }
 
 };
-
-/*
-|--------------------------------------------------------------------------
-| Init
-|--------------------------------------------------------------------------
-*/
-
-document.addEventListener(
-
-    'DOMContentLoaded',
-
-    () => {
-
-        BuilderHistoryKeyboard.bind();
-
-    }
-
-);

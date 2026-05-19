@@ -83,7 +83,7 @@ window.BuilderCanvas = {
 
             `;
 
-            BuilderOverlay.hide();
+            this.clearStaleSelection();
 
             BuilderLogger.success(
                 `RENDER ${version} COMPLETE`
@@ -257,13 +257,21 @@ window.BuilderCanvas = {
 
             );
 
-        if (!selected) return;
+        if (!selected) {
+
+            this.clearStaleSelection();
+
+            return;
+
+        }
 
         if (!document.body.contains(selected)) {
 
             BuilderLogger.warn(
                 'INVALID SELECTION RESTORE'
             );
+
+            this.clearStaleSelection();
 
             return;
         }
@@ -282,6 +290,40 @@ window.BuilderCanvas = {
             BuilderStore.selectedNodeId
 
         );
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Clear Stale Selection
+    |--------------------------------------------------------------------------
+    */
+
+    clearStaleSelection() {
+
+        if (window.BuilderSelectionManager) {
+
+            BuilderSelectionManager.clear({
+                settings: true
+            });
+
+            return;
+
+        }
+
+        BuilderStore.clearSelection();
+        BuilderOverlay.hide();
+
+        const panel =
+            document.getElementById(
+                'settings-panel'
+            );
+
+        if (panel) {
+
+            panel.innerHTML = '';
+
+        }
 
     }
 

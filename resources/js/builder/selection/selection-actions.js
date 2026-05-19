@@ -37,24 +37,9 @@ window.BuilderSelection = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderSelectionManager.clear();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Clear Settings Panel
-        |--------------------------------------------------------------------------
-        */
-
-        const panel =
-            document.getElementById(
-                'settings-panel'
-            );
-
-        if (panel) {
-
-            panel.innerHTML = '';
-
-        }
+        BuilderSelectionManager.clear({
+            settings: true
+        });
 
         /*
         |--------------------------------------------------------------------------

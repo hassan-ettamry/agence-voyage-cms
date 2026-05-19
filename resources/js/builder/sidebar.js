@@ -2,8 +2,36 @@ window.BuilderSidebar = {
 
     switchTab(tab) {
 
-        document
-            .querySelectorAll('.left-tab')
+        const buttons =
+            document.querySelectorAll(
+                '.left-tab'
+            );
+
+        const contents =
+            document.querySelectorAll(
+                '.left-tab-content'
+            );
+
+        const activeButton =
+            document.querySelector(
+                `[data-tab="${tab}"]`
+            );
+
+        const activeContent =
+            document.getElementById(
+                `tab-${tab}`
+            );
+
+        if (
+            !buttons.length ||
+            !contents.length ||
+            !activeButton ||
+            !activeContent
+        ) {
+            return;
+        }
+
+        buttons
             .forEach(button => {
 
                 button.classList.remove(
@@ -18,13 +46,10 @@ window.BuilderSidebar = {
                 );
             });
 
-        document
-            .querySelectorAll('.left-tab-content')
+        contents
             .forEach(content => {
                 content.classList.add('hidden');
             });
-
-        const activeButton = document.querySelector(`[data-tab="${tab}"]`);
 
         activeButton.classList.remove(
             'border-transparent',
@@ -37,9 +62,7 @@ window.BuilderSidebar = {
             'font-semibold'
         );
 
-        document
-            .getElementById(`tab-${tab}`)
-            ?.classList.remove('hidden');
+        activeContent.classList.remove('hidden');
     },
 
     toggle() {

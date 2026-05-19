@@ -29,7 +29,7 @@
     {{-- Vite --}}
     @vite([
         'resources/css/app.css',
-        'resources/js/app.js'
+        'resources/js/builder/index.js'
     ])
 
     {{-- Extra Head --}}

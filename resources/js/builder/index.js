@@ -151,6 +151,20 @@ document.addEventListener(
 
     () => {
 
+        const workspace =
+            document.getElementById(
+                'builder-workspace'
+            );
+
+        const canvas =
+            document.getElementById(
+                'canvas'
+            );
+
+        if (!workspace || !canvas) {
+            return;
+        }
+
         /*
         |--------------------------------------------------------------------------
         | TEMP EVENT TEST
@@ -232,6 +246,8 @@ document.addEventListener(
 
         if (window.BuilderRightSidebar) {
 
+            BuilderRightSidebar.init();
+
             BuilderRightSidebar.render();
 
         }
@@ -257,6 +273,12 @@ document.addEventListener(
         if (window.BuilderHistory) {
 
             BuilderHistory.init();
+
+        }
+
+        if (window.BuilderHistoryKeyboard) {
+
+            BuilderHistoryKeyboard.bind();
 
         }
 
