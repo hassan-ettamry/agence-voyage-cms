@@ -5,15 +5,14 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Page\StorePageRequest;
 use App\Http\Requests\Page\UpdatePageRequest;
+use App\Models\Component;
 use App\Models\Page;
 use App\Models\PageVersion;
+use App\Services\MenuService;
 use App\Services\PageService;
 use App\Services\Renderer\PageRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use App\Scopes\AgencyScope;
-use App\Models\Component;
-use App\Services\MenuService;
 
 class PageController extends Controller
 {
@@ -33,48 +32,48 @@ class PageController extends Controller
     public function index(Request $request)
     {
         $this->authorize('viewAny', Page::class);
-    
+
         $baseQuery = Page::query();
-    
+
         $query = (clone $baseQuery)
             ->when($request->search, function ($q, $search) {
                 $q->where(function ($sq) use ($search) {
                     $sq->where('title', 'like', "%{$search}%")
-                       ->orWhere('slug', 'like', "%{$search}%");
+                        ->orWhere('slug', 'like', "%{$search}%");
                 });
             })
             ->when($request->status, function ($q, $status) {
                 $q->where('status', $status);
             });
-    
+
         $pages = $query->latest()
             ->paginate($request->integer('per_page', 10))
             ->withQueryString();
-    
+
         $stats = [
             [
                 'label' => 'Total Pages',
                 'value' => (clone $baseQuery)->count(),
-                'note'  => 'All pages',
+                'note' => 'All pages',
             ],
             [
                 'label' => 'Published',
                 'value' => (clone $baseQuery)->where('status', Page::STATUS_PUBLISHED)->count(),
-                'note'  => 'Live pages',
+                'note' => 'Live pages',
                 'color' => 'text-emerald-500',
             ],
             [
                 'label' => 'Draft',
                 'value' => (clone $baseQuery)->where('status', Page::STATUS_DRAFT)->count(),
-                'note'  => 'Not published',
+                'note' => 'Not published',
             ],
             [
                 'label' => 'Recently Created',
                 'value' => (clone $baseQuery)->where('created_at', '>=', now()->subMonth())->count(),
-                'note'  => 'Last 30 days',
+                'note' => 'Last 30 days',
             ],
         ];
-    
+
         return view('pages.index', compact('pages', 'stats'));
     }
 
@@ -84,24 +83,24 @@ class PageController extends Controller
     public function create()
     {
         $this->authorize('create', Page::class);
-    
+
         $baseQuery = Page::query();
-    
+
         $pages = $baseQuery->latest()
             ->paginate(10);
-    
+
         $stats = [
             [
                 'label' => 'Total Pages',
                 'value' => (clone $baseQuery)->count(),
-                'note'  => 'All pages',
+                'note' => 'All pages',
             ],
             [
                 'label' => 'Published',
                 'value' => (clone $baseQuery)
                     ->where('status', Page::STATUS_PUBLISHED)
                     ->count(),
-                'note'  => 'Live pages',
+                'note' => 'Live pages',
                 'color' => 'text-emerald-500',
             ],
             [
@@ -109,10 +108,10 @@ class PageController extends Controller
                 'value' => (clone $baseQuery)
                     ->where('status', Page::STATUS_DRAFT)
                     ->count(),
-                'note'  => 'Not published',
+                'note' => 'Not published',
             ],
         ];
-    
+
         return view('pages.index', [
             'pages' => $pages,
             'stats' => $stats,
@@ -132,7 +131,7 @@ class PageController extends Controller
             $request->user()
         );
 
-        Cache::forget('dashboard_stats_' . auth()->id());
+        Cache::forget('dashboard_stats_'.auth()->id());
 
         return redirect()
             ->route('pages.edit', $page)
@@ -147,14 +146,16 @@ class PageController extends Controller
         $page = Page::where('slug', $slug)
             ->where('status', Page::STATUS_PUBLISHED)
             ->firstOrFail();
-    
+
+        $page = $this->pageService->ensureCanonicalStructure($page);
+
         $html = $renderer->render(
             $page->structure ?? [],
             'live'
         );
-    
+
         $menuItems = $menuService->getMenu('main');
-    
+
         return view('frontend.page', [
             'page' => $page,
             'html' => $html,
@@ -168,11 +169,13 @@ class PageController extends Controller
     public function edit(Page $page)
     {
         $this->authorize('update', $page);
-    
+
+        $page = $this->pageService->ensureCanonicalStructure($page);
+
         $widgets = Component::where('is_active', true)
             ->orderBy('category')
             ->get();
-    
+
         return view('pages.edit', compact(
             'page',
             'widgets'
@@ -193,27 +196,27 @@ class PageController extends Controller
                 $request->validated()['structure'] ?? [],
                 $request->user()
             );
-    
+
             Cache::forget("page_{$page->slug}");
-    
+
             return response()->json([
                 'success' => true,
-                'message' => 'Page saved successfully'
+                'message' => 'Page saved successfully',
             ]);
         }
-    
+
         $oldSlug = $page->slug;
-    
+
         $this->pageService->update(
             $page,
             $request->validated(),
             $request->user()
         );
-    
+
         Cache::forget("page_{$oldSlug}");
         Cache::forget("page_{$page->slug}");
-        Cache::forget('dashboard_stats_' . auth()->id());
-    
+        Cache::forget('dashboard_stats_'.auth()->id());
+
         return back()->with('success', 'Page mise à jour.');
     }
 
@@ -243,7 +246,7 @@ class PageController extends Controller
         $page->delete();
 
         Cache::forget("page_{$slug}");
-        Cache::forget('dashboard_stats_' . auth()->id());
+        Cache::forget('dashboard_stats_'.auth()->id());
 
         return redirect()
             ->route('pages.index')

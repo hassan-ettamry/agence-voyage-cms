@@ -26,24 +26,24 @@ class PageRenderer
     {
         $mode = $this->normalizeMode($mode);
 
-        if (isset($structure[0])) {
-
-            $html = '';
-
-            foreach ($structure as $node) {
-                $html .= $this->renderNode(
-                    $node,
-                    $mode
-                );
-            }
-
-            return $html;
+        if (! array_is_list($structure)) {
+            return $this->debug('Invalid root structure');
         }
 
-        return $this->renderNode(
-            $structure,
-            $mode
-        );
+        $html = '';
+
+        foreach ($structure as $node) {
+            if (! is_array($node)) {
+                continue;
+            }
+
+            $html .= $this->renderNode(
+                $node,
+                $mode
+            );
+        }
+
+        return $html;
     }
 
     /**
@@ -53,9 +53,10 @@ class PageRenderer
         array $node,
         string $mode,
         int $depth = 0
-    ): string
-    {
-        if ($depth > self::MAX_DEPTH) return '';
+    ): string {
+        if ($depth > self::MAX_DEPTH) {
+            return '';
+        }
 
         $type = $node['type'] ?? null;
 
@@ -66,8 +67,8 @@ class PageRenderer
         $nodeId = $node['id'] ?? null;
 
         // vérifier composant
-        if (!$type || !$this->registry->exists($type)) {
-            return $this->debug("Invalid component ".$type);
+        if (! $type || ! $this->registry->exists($type)) {
+            return $this->debug('Invalid component '.$type);
         }
 
         // validation props
@@ -91,8 +92,8 @@ class PageRenderer
         // récupérer vue
         $view = $this->registry->resolveView($type);
 
-        if (!$view) {
-            return $this->debug("Missing view ".$type);
+        if (! $view) {
+            return $this->debug('Missing view '.$type);
         }
 
         // render children
@@ -126,7 +127,7 @@ class PageRenderer
 
                 'isPreview' => $mode === 'preview',
 
-                'isLive' => $mode === 'live'
+                'isLive' => $mode === 'live',
 
             ])->render();
 
@@ -172,7 +173,7 @@ class PageRenderer
     private function debug(string $msg): string
     {
         return app()->environment('local')
-            ? "<!-- ".$msg." -->"
+            ? '<!-- '.$msg.' -->'
             : '';
     }
 }

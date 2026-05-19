@@ -6,7 +6,6 @@ use App\Models\Page;
 use App\Models\PageVersion;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use App\Services\PageStructureValidator;
 
 class PageService
 {
@@ -25,16 +24,12 @@ class PageService
         return DB::transaction(function () use ($data, $user) {
 
             // Validation structure
-            $this->validator->validate($data['structure'] ?? null);
+            $data['structure'] = $data['structure'] ?? [];
+
+            $this->validator->validate($data['structure']);
 
             // Associer la page à l'agence de l'utilisateur
             $data['agency_id'] = $user->agency_id;
-
-            // Structure par défaut si absente
-            $data['structure'] ??= [
-                'type' => 'page',
-                'children' => [],
-            ];
 
             // Générer un slug unique
             $data['slug'] = $this->generateUniqueSlug(
@@ -53,14 +48,26 @@ class PageService
     {
         return DB::transaction(function () use ($page, $data, $user) {
 
+            if (! array_key_exists('structure', $data)) {
+                $structure = $this->canonicalizeStructure($page->structure);
+
+                if ($page->structure !== $structure) {
+                    $data['structure'] = $structure;
+                }
+            }
+
             // Validation structure
-            if (isset($data['structure'])) {
+            if (array_key_exists('structure', $data)) {
+                $data['structure'] = $data['structure'] ?? [];
+
                 $this->validator->validate($data['structure']);
             }
 
             // Vérifier si la structure a changé
-            $structureChanged = isset($data['structure']) &&
-                json_encode($data['structure']) !== json_encode($page->structure);
+            $structureChanged = array_key_exists('structure', $data) &&
+                json_encode($data['structure']) !== json_encode(
+                    $this->canonicalizeStructure($page->structure)
+                );
 
             // Si changement → créer une version
             if ($structureChanged) {
@@ -102,9 +109,13 @@ class PageService
             // Sauvegarder l'état actuel avant restauration
             $this->createVersion($page, $user);
 
+            $structure = $this->canonicalizeStructure($version->structure);
+
+            $this->validator->validate($structure);
+
             // Restaurer les données
             $page->update([
-                'structure' => $version->structure,
+                'structure' => $structure,
                 'meta' => $version->meta,
             ]);
 
@@ -122,11 +133,12 @@ class PageService
             $newPage = $page->replicate();
 
             // Modifier les champs pour éviter conflit
-            $newPage->title = $page->title . ' (copie)';
-            $newPage->slug = $this->generateUniqueSlug($page->slug . '-copy');
+            $newPage->title = $page->title.' (copie)';
+            $newPage->slug = $this->generateUniqueSlug($page->slug.'-copy');
             $newPage->status = Page::STATUS_DRAFT;
             $newPage->published_at = null;
             $newPage->agency_id = $user->agency_id;
+            $newPage->structure = $this->canonicalizeStructure($page->structure);
 
             $newPage->save();
 
@@ -139,7 +151,12 @@ class PageService
      */
     public function publish(Page $page): Page
     {
+        $structure = $this->canonicalizeStructure($page->structure);
+
+        $this->validator->validate($structure);
+
         $page->update([
+            'structure' => $structure,
             'status' => Page::STATUS_PUBLISHED,
             'published_at' => now(),
         ]);
@@ -156,11 +173,56 @@ class PageService
 
         PageVersion::create([
             'page_id' => $page->id,
-            'structure' => $page->structure ?? [],
+            'structure' => $this->canonicalizeStructure($page->structure),
             'meta' => $page->meta,
             'version' => $lastVersion + 1,
             'created_by' => $user->id,
         ]);
+    }
+
+    /**
+     * Normalize persisted legacy root wrappers into the canonical root node list.
+     */
+    public function canonicalizeStructure(?array $structure): array
+    {
+        if (! $structure) {
+            return [];
+        }
+
+        if (array_is_list($structure)) {
+            return $structure;
+        }
+
+        if (
+            ($structure['type'] ?? null) === 'page' &&
+            array_key_exists('children', $structure)
+        ) {
+            $children = $structure['children'];
+
+            return is_array($children) && array_is_list($children)
+                ? $children
+                : [];
+        }
+
+        return [];
+    }
+
+    /**
+     * Persist a canonical structure for existing pages loaded with legacy shape.
+     */
+    public function ensureCanonicalStructure(Page $page): Page
+    {
+        $structure = $this->canonicalizeStructure($page->structure);
+
+        if ($page->structure !== $structure) {
+            $page->forceFill([
+                'structure' => $structure,
+            ])->save();
+
+            $page->refresh();
+        }
+
+        return $page;
     }
 
     /**

@@ -7,73 +7,66 @@ use Illuminate\Validation\ValidationException;
 class PageStructureValidator
 {
     /**
-     * Valider la structure complète de la page
+     * Validate the complete page structure.
      */
     public function validate(?array $structure): void
     {
-        // Si aucune structure, on ne valide pas
-        if (!$structure) {
+        if ($structure === null) {
             return;
         }
 
-        // Lancer la validation récursive
-        if (array_is_list($structure)) {
-
-            foreach ($structure as $node) {
-
-                if (!is_array($node)) {
-                    throw ValidationException::withMessages([
-                        'structure' => 'Chaque composant doit Ãªtre un tableau.'
-                    ]);
-                }
-
-                $this->validateNode($node);
-            }
-
-            return;
-        }
-
-        $this->validateNode($structure);
-    }
-
-    /**
-     * Valider un noeud de la structure (récursif)
-     */
-    private function validateNode(array $node): void
-    {
-        // Vérifier que le type est défini et valide
-        if (!isset($node['type']) || !is_string($node['type'])) {
+        if (! array_is_list($structure)) {
             throw ValidationException::withMessages([
-                'structure' => 'Chaque composant doit avoir un type valide.'
+                'structure' => 'Structure must be a list of root nodes.',
             ]);
         }
 
-        // Vérifier que les props sont un tableau si présentes
-        if (isset($node['props']) && !is_array($node['props'])) {
-            throw ValidationException::withMessages([
-                'structure' => 'Les props doivent être un tableau.'
-            ]);
-        }
-
-        // Vérifier les enfants (validation récursive)
-        if (isset($node['children'])) {
-
-            if (!is_array($node['children'])) {
+        foreach ($structure as $node) {
+            if (! is_array($node)) {
                 throw ValidationException::withMessages([
-                    'structure' => 'Children doit être un tableau.'
+                    'structure' => 'Each component must be an array.',
                 ]);
             }
 
-            foreach ($node['children'] as $child) {
+            $this->validateNode($node);
+        }
+    }
 
-                if (!is_array($child)) {
-                    throw ValidationException::withMessages([
-                        'structure' => 'Chaque enfant doit être un tableau.'
-                    ]);
-                }
+    /**
+     * Validate a single node recursively.
+     */
+    private function validateNode(array $node): void
+    {
+        if (! isset($node['type']) || ! is_string($node['type'])) {
+            throw ValidationException::withMessages([
+                'structure' => 'Each component must have a valid type.',
+            ]);
+        }
 
-                $this->validateNode($child);
+        if (isset($node['props']) && ! is_array($node['props'])) {
+            throw ValidationException::withMessages([
+                'structure' => 'Props must be an array.',
+            ]);
+        }
+
+        if (! isset($node['children'])) {
+            return;
+        }
+
+        if (! is_array($node['children']) || ! array_is_list($node['children'])) {
+            throw ValidationException::withMessages([
+                'structure' => 'Children must be a list.',
+            ]);
+        }
+
+        foreach ($node['children'] as $child) {
+            if (! is_array($child)) {
+                throw ValidationException::withMessages([
+                    'structure' => 'Each child must be an array.',
+                ]);
             }
+
+            $this->validateNode($child);
         }
     }
 }

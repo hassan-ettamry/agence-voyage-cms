@@ -1,17 +1,15 @@
 <?php
 
+use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\ComponentController;
+use App\Http\Controllers\Web\DashboardController;
+use App\Http\Controllers\Web\PageController;
+use App\Http\Controllers\Web\PermissionController;
+use App\Http\Controllers\Web\RoleController;
+use App\Http\Controllers\Web\UserController;
+use App\Services\Renderer\PageRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\Web\AuthController;
-use App\Http\Controllers\Web\PageController;
-use App\Http\Controllers\Web\UserController;
-use App\Http\Controllers\Web\RoleController;
-use App\Http\Controllers\Web\DashboardController;
-use App\Http\Controllers\Web\ComponentController;
-use App\Http\Controllers\Web\PermissionController;
-
-use App\Services\Renderer\PageRenderer;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +20,6 @@ use App\Services\Renderer\PageRenderer;
 Route::get('/', function () {
     return view('public.welcome');
 })->name('home');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -43,7 +40,6 @@ Route::middleware('guest')->group(function () {
 
     Route::post('/login', [AuthController::class, 'login']);
 
-
     /*
     |--------------------------------------------------------------------------
     | Register
@@ -56,7 +52,6 @@ Route::middleware('guest')->group(function () {
     Route::post('/register', [AuthController::class, 'register']);
 });
 
-
 /*
 |--------------------------------------------------------------------------
 | Logout
@@ -66,7 +61,6 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -87,7 +81,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])
         ->name('dashboard.stats');
-
 
     /*
     |--------------------------------------------------------------------------
@@ -111,7 +104,6 @@ Route::middleware(['auth'])->group(function () {
             Route::post('{page}/publish', [PageController::class, 'publish'])
                 ->name('publish');
 
-
             /*
             |--------------------------------------------------------------------------
             | Versions
@@ -124,7 +116,6 @@ Route::middleware(['auth'])->group(function () {
             Route::post('{page}/versions/{version}/restore', [PageController::class, 'restore'])
                 ->name('versions.restore');
 
-
             /*
             |--------------------------------------------------------------------------
             | Duplicate
@@ -134,7 +125,6 @@ Route::middleware(['auth'])->group(function () {
             Route::post('{page}/duplicate', [PageController::class, 'duplicate'])
                 ->name('duplicate');
         });
-
 
     /*
     |--------------------------------------------------------------------------
@@ -156,7 +146,6 @@ Route::middleware(['auth'])->group(function () {
                 ->name('grouped');
         });
 
-
     /*
     |--------------------------------------------------------------------------
     | Users / Roles / Permissions
@@ -169,7 +158,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::resource('permissions', PermissionController::class);
 
-
     /*
     |--------------------------------------------------------------------------
     | Builder Renderer
@@ -180,7 +168,7 @@ Route::middleware(['auth'])->group(function () {
         Request $request,
         PageRenderer $renderer
     ) {
-    
+
         $structure = $request->input('structure', []);
 
         $mode = $request->input(
@@ -188,18 +176,21 @@ Route::middleware(['auth'])->group(function () {
             'editor'
         );
 
-        if (!is_string($mode)) {
+        if (! is_string($mode)) {
             $mode = 'editor';
         }
-    
+
+        if (! is_array($structure) || ! array_is_list($structure)) {
+            abort(422, 'Invalid builder structure root.');
+        }
+
         return $renderer->render(
             $structure,
             $mode
         );
-    
+
     });
 });
-
 
 /*
 |--------------------------------------------------------------------------
