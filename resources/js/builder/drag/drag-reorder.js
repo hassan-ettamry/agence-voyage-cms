@@ -134,7 +134,7 @@ window.BuilderDragReorder = {
 
         const target =
 
-            event.currentTarget.closest(
+            event.target.closest(
                 '[data-node-id]'
             );
 
@@ -211,7 +211,7 @@ window.BuilderDragReorder = {
 
         const target =
 
-            event.currentTarget.closest(
+            event.target.closest(
                 '[data-node-id]'
             );
 

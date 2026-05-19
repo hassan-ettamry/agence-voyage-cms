@@ -43,14 +43,6 @@
 
             data-root-dropzone="true"
 
-            ondragover="
-                BuilderDragDrop.allowDrop(event)
-            "
-
-            ondrop="
-                BuilderDragDrop.drop(event)
-            "
-
             class="
                 bg-white
                 min-h-[600px]

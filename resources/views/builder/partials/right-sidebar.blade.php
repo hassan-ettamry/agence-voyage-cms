@@ -21,7 +21,9 @@
 
     {{-- Bottom: Hide Layers button --}}
     <div class="border-t border-gray-200 p-2">
-        <button onclick="BuilderRightSidebar.toggle()" class="w-full flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 py-1.5 transition-colors">
+        <button
+            data-action="toggle-right-sidebar"
+            class="w-full flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 py-1.5 transition-colors">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
             </svg>

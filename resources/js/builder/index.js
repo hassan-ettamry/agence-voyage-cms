@@ -17,6 +17,7 @@ import './sidebar';
 import './right-sidebar';
 import './schema';
 import './inline-editing';
+import './runtime/actions';
 
 import './debug/logger';
 import './debug/debug-config';
@@ -249,6 +250,18 @@ document.addEventListener(
             BuilderRightSidebar.init();
 
             BuilderRightSidebar.render();
+
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Runtime Actions
+        |--------------------------------------------------------------------------
+        */
+
+        if (window.BuilderRuntimeActions) {
+
+            BuilderRuntimeActions.init();
 
         }
 

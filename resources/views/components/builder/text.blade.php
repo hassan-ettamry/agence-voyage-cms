@@ -8,16 +8,7 @@
 
     draggable="true"
 
-    ondragstart="
-        BuilderDragReorder.start(
-            event,
-            '{{ $nodeId }}'
-        )
-    "
-
-    ondragend="
-        BuilderDragReorder.end(event)
-    "
+    data-drag-action="reorder"
 
     contenteditable="true"
 

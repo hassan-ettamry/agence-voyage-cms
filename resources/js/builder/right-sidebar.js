@@ -120,9 +120,6 @@ window.BuilderRightSidebar = {
             const safeNodeId =
                 BuilderHtmlEscape.attribute(node.id);
 
-            const safeNodeIdJs =
-                BuilderHtmlEscape.jsString(node.id);
-
             const type =
                 BuilderHtmlEscape.html(node.type);
 
@@ -157,17 +154,13 @@ window.BuilderRightSidebar = {
                             }
                         "
 
+                        data-action="select-layer"
+
                         data-layer-node="${safeNodeId}"
 
                         style="
                             padding-left:
                             ${(depth * 20) + 12}px
-                        "
-
-                        onclick="
-                            BuilderRightSidebar.select(
-                                ${safeNodeIdJs}
-                            )
                         "
                     >
 

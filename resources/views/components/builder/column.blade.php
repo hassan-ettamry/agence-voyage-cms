@@ -10,24 +10,7 @@
 
     draggable="true"
 
-    ondragstart="
-        BuilderDragReorder.start(
-            event,
-            '{{ $nodeId }}'
-        )
-    "
-
-    ondragend="
-        BuilderDragReorder.end(event)
-    "
-
-    ondragover="
-        BuilderDragDrop.allowDrop(event)
-    "
-
-    ondrop="
-        BuilderDragDrop.drop(event)
-    "
+    data-drag-action="reorder"
 
     @endif
 

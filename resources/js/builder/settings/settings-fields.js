@@ -79,10 +79,10 @@ window.BuilderSettingsFields = {
             BuilderHtmlEscape.attribute(value);
 
         const safeNodeId =
-            BuilderHtmlEscape.jsString(nodeId);
+            BuilderHtmlEscape.attribute(nodeId);
 
         const safeKey =
-            BuilderHtmlEscape.jsString(key);
+            BuilderHtmlEscape.attribute(key);
 
         return `
 
@@ -106,13 +106,9 @@ window.BuilderSettingsFields = {
 
                     value="${fieldValue}"
 
-                    oninput="
-                        BuilderSettingsUpdater.updateField(
-                            ${safeNodeId},
-                            ${safeKey},
-                            this.value
-                        )
-                    "
+                    data-target-node-id="${safeNodeId}"
+
+                    data-setting-field="${safeKey}"
 
                     class="
                         w-full
@@ -150,10 +146,10 @@ window.BuilderSettingsFields = {
             BuilderHtmlEscape.html(value);
 
         const safeNodeId =
-            BuilderHtmlEscape.jsString(nodeId);
+            BuilderHtmlEscape.attribute(nodeId);
 
         const safeKey =
-            BuilderHtmlEscape.jsString(key);
+            BuilderHtmlEscape.attribute(key);
 
         return `
 
@@ -173,13 +169,9 @@ window.BuilderSettingsFields = {
 
                 <textarea
 
-                    oninput="
-                        BuilderSettingsUpdater.updateField(
-                            ${safeNodeId},
-                            ${safeKey},
-                            this.value
-                        )
-                    "
+                    data-target-node-id="${safeNodeId}"
+
+                    data-setting-field="${safeKey}"
 
                     class="
                         w-full
@@ -218,10 +210,10 @@ window.BuilderSettingsFields = {
             BuilderHtmlEscape.attribute(value);
 
         const safeNodeId =
-            BuilderHtmlEscape.jsString(nodeId);
+            BuilderHtmlEscape.attribute(nodeId);
 
         const safeKey =
-            BuilderHtmlEscape.jsString(key);
+            BuilderHtmlEscape.attribute(key);
 
         return `
 
@@ -245,13 +237,9 @@ window.BuilderSettingsFields = {
 
                     value="${fieldValue}"
 
-                    oninput="
-                        BuilderSettingsUpdater.updateField(
-                            ${safeNodeId},
-                            ${safeKey},
-                            this.value
-                        )
-                    "
+                    data-target-node-id="${safeNodeId}"
+
+                    data-setting-field="${safeKey}"
 
                 />
 
@@ -287,10 +275,10 @@ window.BuilderSettingsFields = {
             BuilderHtmlEscape.attribute(value);
 
         const safeNodeId =
-            BuilderHtmlEscape.jsString(nodeId);
+            BuilderHtmlEscape.attribute(nodeId);
 
         const safeKey =
-            BuilderHtmlEscape.jsString(key);
+            BuilderHtmlEscape.attribute(key);
 
         return `
 
@@ -318,13 +306,9 @@ window.BuilderSettingsFields = {
 
                     value="${fieldValue}"
 
-                    oninput="
-                        BuilderSettingsUpdater.updateField(
-                            ${safeNodeId},
-                            ${safeKey},
-                            this.value
-                        )
-                    "
+                    data-target-node-id="${safeNodeId}"
+
+                    data-setting-field="${safeKey}"
 
                     class="w-full"
                 />

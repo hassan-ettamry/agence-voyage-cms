@@ -1,9 +1,11 @@
 <div
-    onclick="BuilderComponents.add('{{ $type }}')"
+    data-action="add-component"
+
+    data-component="{{ $type }}"
 
     draggable="true"
 
-    ondragstart="BuilderDragDrop.start(event, '{{ $type }}')"
+    data-drag-action="component"
 
     class="group
            flex flex-col items-center justify-center

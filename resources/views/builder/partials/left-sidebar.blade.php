@@ -12,15 +12,14 @@
         @php
             $icons = require base_path('resources/views/builder/data/icons.php');
             $tabs = [
-                ['onclick' => "BuilderSidebar.switchTab('page')",     'tab' => 'page',     'label' => 'Page',     'active' => false],
-                ['onclick' => "BuilderSidebar.switchTab('controls')", 'tab' => 'controls', 'label' => 'Controls', 'active' => false],
-                ['onclick' => "BuilderSidebar.switchTab('widgets')",  'tab' => 'widgets',  'label' => 'Widgets',  'active' => true],
+                ['tab' => 'page',     'label' => 'Page',     'active' => false],
+                ['tab' => 'controls', 'label' => 'Controls', 'active' => false],
+                ['tab' => 'widgets',  'label' => 'Widgets',  'active' => true],
             ];
         @endphp
 
         @foreach($tabs as $tab)
             @include('builder.components.toolbar-button', [
-                'onclick' => $tab['onclick'],
                 'tab'     => $tab['tab'],
                 'icon'    => $icons[$tab['tab']],
                 'label'   => $tab['label'],
@@ -88,7 +87,9 @@
 
     {{-- Footer --}}
     <div class="border-t border-gray-200 p-2">
-        <button onclick="BuilderSidebar.toggle()" class="w-full flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 py-1.5 transition-colors">
+        <button
+            data-action="toggle-left-sidebar"
+            class="w-full flex items-center justify-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 py-1.5 transition-colors">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
             </svg>

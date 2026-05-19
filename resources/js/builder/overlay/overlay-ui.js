@@ -96,31 +96,36 @@ window.BuilderOverlayUI = {
 
                     ${this.button(
                         this.icons.up,
-                        `BuilderOverlayActions.moveUp('${nodeId}')`
+                        'overlay-move-up',
+                        nodeId
                     )}
 
                     ${this.button(
                         this.icons.down,
-                        `BuilderOverlayActions.moveDown('${nodeId}')`
+                        'overlay-move-down',
+                        nodeId
                     )}
 
                     ${this.divider()}
 
                     ${this.button(
                         this.icons.duplicate,
-                        `BuilderOverlayActions.duplicate('${nodeId}')`
+                        'overlay-duplicate',
+                        nodeId
                     )}
 
                     ${this.button(
                         this.icons.edit,
-                        `BuilderOverlayActions.edit('${nodeId}')`
+                        'overlay-edit',
+                        nodeId
                     )}
 
                     ${this.divider()}
 
                     ${this.button(
                         this.icons.delete,
-                        `BuilderSelection.delete()`
+                        'overlay-delete',
+                        nodeId
                     )}
 
                 </div>
@@ -137,13 +142,21 @@ window.BuilderOverlayUI = {
     |--------------------------------------------------------------------------
     */
 
-    button(icon, onclick) {
+    button(icon, action, nodeId) {
+
+        const safeAction =
+            BuilderHtmlEscape.attribute(action);
+
+        const safeNodeId =
+            BuilderHtmlEscape.attribute(nodeId);
 
         return `
 
             <button
 
-                onclick="${onclick}"
+                data-action="${safeAction}"
+
+                data-target-node-id="${safeNodeId}"
 
                 class="
                     w-7
