@@ -129,6 +129,8 @@ window.BuilderCanvas = {
 
                         body: JSON.stringify({
 
+                            mode: 'editor',
+
                             structure:
                                 structuredClone(
                                     structure

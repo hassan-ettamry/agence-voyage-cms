@@ -1,5 +1,7 @@
 <section
 
+    @if($isEditor)
+
     data-type="hero"
 
     data-node-id="{{ $nodeId }}"
@@ -17,10 +19,12 @@
         BuilderDragReorder.end(event)
     "
 
+    @endif
+
     class="
         px-16
         py-20
-        builder-node
+        {{ $isEditor ? 'builder-node' : '' }}
         transition-all
         duration-150
     "
@@ -35,9 +39,14 @@
 >
 
     <h1
+        @if($isEditor)
+
         contenteditable="true"
         data-field="title"
-        class="text-5xl font-bold mb-4 outline-none"
+
+        @endif
+
+        class="text-5xl font-bold mb-4 {{ $isEditor ? 'outline-none' : '' }}"
     >
 
         {{ $props['title'] ?? 'Hero Title' }}
@@ -45,9 +54,14 @@
     </h1>
 
     <p
+        @if($isEditor)
+
         contenteditable="true"
         data-field="description"
-        class="max-w-xl outline-none"
+
+        @endif
+
+        class="max-w-xl {{ $isEditor ? 'outline-none' : '' }}"
     >
 
         {{ $props['description'] ?? '' }}

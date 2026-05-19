@@ -182,8 +182,20 @@ Route::middleware(['auth'])->group(function () {
     ) {
     
         $structure = $request->input('structure', []);
+
+        $mode = $request->input(
+            'mode',
+            'editor'
+        );
+
+        if (!is_string($mode)) {
+            $mode = 'editor';
+        }
     
-        return $renderer->render($structure);
+        return $renderer->render(
+            $structure,
+            $mode
+        );
     
     });
 });

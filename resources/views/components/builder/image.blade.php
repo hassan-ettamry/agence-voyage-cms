@@ -1,5 +1,7 @@
 <div
 
+    @if($isEditor)
+
     data-type="image"
 
     data-node-id="{{ $nodeId }}"
@@ -17,9 +19,11 @@
         BuilderDragReorder.end(event)
     "
 
+    @endif
+
     class="
         p-4
-        builder-node
+        {{ $isEditor ? 'builder-node' : '' }}
         transition-all
         duration-150
     "
@@ -59,7 +63,7 @@
                 class="w-full h-full object-cover"
             >
 
-        @else
+        @elseif($isEditor)
 
             <div class="text-gray-400 text-sm">
 

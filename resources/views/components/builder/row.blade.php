@@ -1,5 +1,7 @@
 <div
 
+    @if($isEditor)
+
     data-type="row"
 
     data-node-id="{{ $nodeId }}"
@@ -17,10 +19,11 @@
         BuilderDragReorder.end(event)
     "
 
+    @endif
+
     class="
         grid
-        p-4
-        builder-node
+        {{ $isEditor ? 'p-4 builder-node' : '' }}
         transition-all
         duration-150
     "
@@ -41,7 +44,7 @@
 
         {!! $children !!}
 
-    @else
+    @elseif($isEditor)
 
         @for($i = 0; $i < ($props['columns'] ?? 2); $i++)
 

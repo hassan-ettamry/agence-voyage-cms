@@ -1,5 +1,7 @@
 <div
 
+    @if($isEditor)
+
     data-type="button"
 
     data-node-id="{{ $nodeId }}"
@@ -17,9 +19,11 @@
         BuilderDragReorder.end(event)
     "
 
+    @endif
+
     class="
         p-4
-        builder-node
+        {{ $isEditor ? 'builder-node' : '' }}
         transition-all
         duration-150
     "
@@ -27,15 +31,19 @@
 
     <button
 
+        @if($isEditor)
+
         contenteditable="true"
 
         data-field="text"
+
+        @endif
 
         class="
             px-5
             py-2
             rounded-lg
-            outline-none
+            {{ $isEditor ? 'outline-none' : '' }}
         "
 
         style="

@@ -1,3 +1,5 @@
-<x-frontend.layout :page="$page" :menu="$menu">
+@extends('frontend.layout')
+
+@section('content')
     {!! $html !!}
-</x-frontend.layout>
+@endsection

@@ -1,5 +1,7 @@
 <div
 
+    @if($isEditor)
+
     data-type="container"
 
     data-node-id="{{ $nodeId }}"
@@ -27,11 +29,12 @@
         BuilderDragDrop.drop(event)
     "
 
+    @endif
+
     class="
         w-full
         mx-auto
-        min-h-[120px]
-        builder-node
+        {{ $isEditor ? 'min-h-[120px] builder-node' : '' }}
         transition-all
         duration-150
     "
@@ -61,7 +64,7 @@
 
         {!! $children !!}
 
-    @else
+    @elseif($isEditor)
 
         <div
             class="

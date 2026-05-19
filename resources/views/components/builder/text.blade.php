@@ -1,5 +1,7 @@
 <p
 
+    @if($isEditor)
+
     data-type="text"
 
     data-node-id="{{ $nodeId }}"
@@ -21,9 +23,10 @@
 
     data-field="text"
 
+    @endif
+
     class="
-        outline-none
-        builder-node
+        {{ $isEditor ? 'outline-none builder-node' : '' }}
         transition-all
         duration-150
     "

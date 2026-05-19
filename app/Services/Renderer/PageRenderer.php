@@ -8,6 +8,12 @@ class PageRenderer
 {
     private const MAX_DEPTH = 50;
 
+    private const MODES = [
+        'editor',
+        'preview',
+        'live',
+    ];
+
     public function __construct(
         private ComponentRegistry $registry,
         private ComponentValidator $validator
@@ -16,26 +22,38 @@ class PageRenderer
     /**
      * Entry point
      */
-    public function render(array $structure): string
+    public function render(array $structure, string $mode = 'live'): string
     {
+        $mode = $this->normalizeMode($mode);
+
         if (isset($structure[0])) {
 
             $html = '';
 
             foreach ($structure as $node) {
-                $html .= $this->renderNode($node);
+                $html .= $this->renderNode(
+                    $node,
+                    $mode
+                );
             }
 
             return $html;
         }
 
-        return $this->renderNode($structure);
+        return $this->renderNode(
+            $structure,
+            $mode
+        );
     }
 
     /**
      * Recursive render
      */
-    private function renderNode(array $node, int $depth = 0): string
+    private function renderNode(
+        array $node,
+        string $mode,
+        int $depth = 0
+    ): string
     {
         if ($depth > self::MAX_DEPTH) return '';
 
@@ -84,6 +102,7 @@ class PageRenderer
 
             $childrenHtml .= $this->renderNode(
                 $child,
+                $mode,
                 $depth + 1
             );
 
@@ -99,7 +118,15 @@ class PageRenderer
 
                 'type' => $type,
 
-                'nodeId' => $nodeId
+                'nodeId' => $nodeId,
+
+                'mode' => $mode,
+
+                'isEditor' => $mode === 'editor',
+
+                'isPreview' => $mode === 'preview',
+
+                'isLive' => $mode === 'live'
 
             ])->render();
 
@@ -127,6 +154,16 @@ class PageRenderer
         }
 
         return $props;
+    }
+
+    /**
+     * Normalize render mode
+     */
+    private function normalizeMode(string $mode): string
+    {
+        return in_array($mode, self::MODES, true)
+            ? $mode
+            : 'live';
     }
 
     /**

@@ -79,6 +79,20 @@ class PageService
     }
 
     /**
+     * Save builder structure through the page lifecycle.
+     */
+    public function updateStructure(Page $page, array $structure, $user): Page
+    {
+        return $this->update(
+            $page,
+            [
+                'structure' => $structure,
+            ],
+            $user
+        );
+    }
+
+    /**
      * Restaurer une version précédente
      */
     public function restore(Page $page, PageVersion $version, $user): Page
@@ -142,7 +156,7 @@ class PageService
 
         PageVersion::create([
             'page_id' => $page->id,
-            'structure' => $page->structure,
+            'structure' => $page->structure ?? [],
             'meta' => $page->meta,
             'version' => $lastVersion + 1,
             'created_by' => $user->id,

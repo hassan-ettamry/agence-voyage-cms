@@ -148,11 +148,18 @@ class PageController extends Controller
             ->where('status', Page::STATUS_PUBLISHED)
             ->firstOrFail();
     
-        $html = $renderer->render($page->structure ?? []);
+        $html = $renderer->render(
+            $page->structure ?? [],
+            'live'
+        );
     
         $menuItems = $menuService->getMenu('main');
     
-        return view('frontend.page', compact('page', 'html', 'menuItems'));
+        return view('frontend.page', [
+            'page' => $page,
+            'html' => $html,
+            'menu' => $menuItems,
+        ]);
     }
 
     /**
@@ -180,10 +187,12 @@ class PageController extends Controller
         $this->authorize('update', $page);
 
         if ($request->expectsJson()) {
-    
-            $page->update([
-                'structure' => $request->validated()['structure'] ?? []
-            ]);
+
+            $this->pageService->updateStructure(
+                $page,
+                $request->validated()['structure'] ?? [],
+                $request->user()
+            );
     
             Cache::forget("page_{$page->slug}");
     

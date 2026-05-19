@@ -17,6 +17,22 @@ class PageStructureValidator
         }
 
         // Lancer la validation récursive
+        if (array_is_list($structure)) {
+
+            foreach ($structure as $node) {
+
+                if (!is_array($node)) {
+                    throw ValidationException::withMessages([
+                        'structure' => 'Chaque composant doit Ãªtre un tableau.'
+                    ]);
+                }
+
+                $this->validateNode($node);
+            }
+
+            return;
+        }
+
         $this->validateNode($structure);
     }
 
@@ -49,6 +65,13 @@ class PageStructureValidator
             }
 
             foreach ($node['children'] as $child) {
+
+                if (!is_array($child)) {
+                    throw ValidationException::withMessages([
+                        'structure' => 'Chaque enfant doit être un tableau.'
+                    ]);
+                }
+
                 $this->validateNode($child);
             }
         }
