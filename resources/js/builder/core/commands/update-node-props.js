@@ -49,7 +49,7 @@ window.BuilderCommands = {
         */
 
         BuilderEventBus.emit(
-            'node.updated',
+            BuilderEvents.NODE_UPDATED,
             {
                 nodeId,
                 field,
@@ -65,18 +65,6 @@ window.BuilderCommands = {
         */
 
         BuilderHistory.push();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Render
-        |--------------------------------------------------------------------------
-        */
-
-        if (render) {
-
-            BuilderRenderManager.requestRender();
-
-        }
 
     }
 

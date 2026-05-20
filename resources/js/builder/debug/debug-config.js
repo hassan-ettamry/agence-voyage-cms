@@ -20,6 +20,8 @@ window.BuilderConfig = {
 
     selectionLogs: false,
 
+    interactionLogs: false,
+
     dragLogs: false,
 
     moveLogs: false,

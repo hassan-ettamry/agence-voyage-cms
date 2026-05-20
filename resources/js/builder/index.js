@@ -11,6 +11,7 @@ import './state/state-utils';
 import './state/builder-state';
 
 import './utils/html-escape';
+import './utils/interaction-boundaries';
 import './viewport';
 import './storage';
 import './sidebar';
@@ -25,9 +26,11 @@ import './debug/debug-validator';
 import './debug/debug-render';
 import './debug/debug-snapshot';
 
+import './core/events';
+import './core/event-bus';
+import './core/structure-rules';
 import './core/store';
 import './core/render-manager';
-import './core/event-bus';
 import './core/commands/update-node-props';
 
 /*
@@ -174,7 +177,7 @@ document.addEventListener(
 
         BuilderEventBus.on(
 
-            'component.added',
+            BuilderEvents.COMPONENT_ADDED,
 
             (component) => {
 
@@ -195,7 +198,7 @@ document.addEventListener(
 
         BuilderEventBus.on(
 
-            'node.updated',
+            BuilderEvents.NODE_UPDATED,
 
             (payload) => {
 
@@ -207,7 +210,10 @@ document.addEventListener(
 
                 }
 
-                BuilderRenderManager.requestRender();
+                BuilderRenderManager.requestRender(
+                    BuilderEvents.NODE_UPDATED,
+                    payload
+                );
 
             }
 
@@ -315,7 +321,9 @@ document.addEventListener(
 
         if (window.BuilderCanvas) {
 
-            BuilderCanvas.render();
+            BuilderCanvas.render(
+                'boot'
+            );
 
         }
 

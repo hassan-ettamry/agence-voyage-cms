@@ -38,7 +38,7 @@ window.BuilderOverlayElements = {
 
         return document.querySelector(
 
-            `[data-node-id="${nodeId}"]`
+            `[data-node-id="${CSS.escape(nodeId)}"]`
 
         );
 

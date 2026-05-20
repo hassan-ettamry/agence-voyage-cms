@@ -44,12 +44,14 @@ window.BuilderStore = {
 
     setStructure(structure = []) {
 
-        this.structure = Array.isArray(structure)
-            ? structure
-            : [];
+        this.structure = BuilderStructureRules.normalizeTree(
+            Array.isArray(structure)
+                ? structure
+                : []
+        );
 
         BuilderEventBus.emit(
-            'structure.updated'
+            BuilderEvents.STRUCTURE_UPDATED
         );
 
     },
@@ -64,8 +66,10 @@ window.BuilderStore = {
 
         this.structure.push(component);
 
+        BuilderStructureRules.normalizeStore();
+
         BuilderEventBus.emit(
-            'structure.updated'
+            BuilderEvents.STRUCTURE_UPDATED
         );
 
     },
@@ -85,7 +89,7 @@ window.BuilderStore = {
         this.structure.splice(index, 1);
 
         BuilderEventBus.emit(
-            'structure.updated'
+            BuilderEvents.STRUCTURE_UPDATED
         );
 
     },
@@ -110,8 +114,10 @@ window.BuilderStore = {
 
         };
 
+        BuilderStructureRules.normalizeStore();
+
         BuilderEventBus.emit(
-            'structure.updated'
+            BuilderEvents.STRUCTURE_UPDATED
         );
 
     },
@@ -141,7 +147,7 @@ window.BuilderStore = {
         this.structure = [];
 
         BuilderEventBus.emit(
-            'structure.updated'
+            BuilderEvents.STRUCTURE_UPDATED
         );
 
     },
@@ -159,7 +165,7 @@ window.BuilderStore = {
         this.selectedElement = element;
 
         BuilderEventBus.emit(
-            'selection.changed',
+            BuilderEvents.SELECTION_CHANGED,
             nodeId
         );
 
@@ -172,7 +178,7 @@ window.BuilderStore = {
         this.selectedElement = null;
 
         BuilderEventBus.emit(
-            'selection.changed',
+            BuilderEvents.SELECTION_CHANGED,
             null
         );
 

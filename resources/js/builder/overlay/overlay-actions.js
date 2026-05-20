@@ -20,8 +20,18 @@ window.BuilderOverlayActions = {
         siblings[index - 1] = siblings[index];
         siblings[index] = temp;
 
+        BuilderStructureRules.normalizeStore();
+
+        BuilderEventBus.emit(
+            BuilderEvents.STRUCTURE_UPDATED
+        );
+
+        BuilderDebugValidator.validateTree();
+
         BuilderHistory.push();
-        BuilderCanvas.render();
+        BuilderRenderManager.requestRender(
+            'overlay.moveUp'
+        );
 
     },
 
@@ -45,8 +55,18 @@ window.BuilderOverlayActions = {
         siblings[index + 1] = siblings[index];
         siblings[index] = temp;
 
+        BuilderStructureRules.normalizeStore();
+
+        BuilderEventBus.emit(
+            BuilderEvents.STRUCTURE_UPDATED
+        );
+
+        BuilderDebugValidator.validateTree();
+
         BuilderHistory.push();
-        BuilderCanvas.render();
+        BuilderRenderManager.requestRender(
+            'overlay.moveDown'
+        );
 
     },
 
@@ -67,16 +87,29 @@ window.BuilderOverlayActions = {
             BuilderComponentUtils.clone(node)
         );
 
-        const parent = BuilderNodeTraversal.findParent(nodeId);
-        const siblings = parent ? parent.children : BuilderStore.structure;
+        const placement =
+            BuilderStructureRules.insertNode(
+                cloned,
+                nodeId,
+                'after'
+            );
 
-        const index = BuilderNodeTraversal.findNodeIndex(nodeId, siblings);
+        if (!placement) {
+            return;
+        }
 
-        // Insert right after the current node
-        siblings.splice(index + 1, 0, cloned);
+        BuilderStructureRules.normalizeStore();
+
+        BuilderEventBus.emit(
+            BuilderEvents.STRUCTURE_UPDATED
+        );
+
+        BuilderDebugValidator.validateTree();
 
         BuilderHistory.push();
-        BuilderCanvas.render();
+        BuilderRenderManager.requestRender(
+            'overlay.duplicate'
+        );
 
     },
 
@@ -113,7 +146,29 @@ window.BuilderOverlayActions = {
 
         if (!element) return;
 
-        element.click();
+        if (
+            BuilderLogger.shouldLog('selection')
+            ||
+            BuilderLogger.shouldLog('interaction')
+        ) {
+
+            BuilderLogger.log(
+                'SELECTION REQUEST SOURCE',
+                {
+                    source: 'overlay-edit',
+                    nodeId
+                }
+            );
+
+        }
+
+        BuilderSelectionManager.select(
+            nodeId,
+            element,
+            {
+                source: 'overlay-edit'
+            }
+        );
 
     }
 

@@ -14,41 +14,27 @@ window.BuilderCanvasFocus = {
 
             (event) => {
 
-                const clickedNode =
-                    event.target.closest(
-                        '[data-node-id]'
-                    );
-
-                const clickedOverlay =
-                    event.target.closest(
-                        '#builder-overlay-root'
-                    );
-
-                const clickedBuilderUi =
-                    event.target.closest(
-                        [
-                            '#left-panel',
-                            '#right-panel',
-                            '#builder-topbar',
-                            '#settings-panel',
-                            '#layers-panel',
-                            'input',
-                            'textarea',
-                            'select',
-                            'button',
-                            'a',
-                            'label',
-                            '[contenteditable="true"]'
-                        ].join(',')
-                    );
-
                 if (
-                    clickedNode ||
-                    clickedOverlay ||
-                    clickedBuilderUi
+                    BuilderInteractionBoundaries
+                        .preservesSelection(
+                            event.target
+                        )
                 ) {
 
                     return;
+
+                }
+
+                if (BuilderLogger.shouldLog('interaction')) {
+
+                    BuilderLogger.log(
+                        'OUTSIDE CLICK CLEARS SELECTION AND OVERLAY',
+                        {
+                            surface:
+                                BuilderInteractionBoundaries
+                                    .surface(event.target)
+                        }
+                    );
 
                 }
 

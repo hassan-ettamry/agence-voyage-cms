@@ -58,6 +58,36 @@ window.BuilderDebugValidator = {
 
                 /*
                 |--------------------------------------------------------------------------
+                | Invalid Parent / Child Placement
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    parent
+                    &&
+                    window.BuilderStructureRules
+                    &&
+                    !BuilderStructureRules.canAccept(
+                        parent,
+                        node
+                    )
+                ) {
+
+                    BuilderLogger.error(
+                        'INVALID CHILD PLACEMENT',
+                        {
+                            parentId: parent.id,
+                            parentType: parent.type,
+                            childId: node.id,
+                            childType: node.type
+                        }
+                    );
+
+                    hasError = true;
+                }
+
+                /*
+                |--------------------------------------------------------------------------
                 | Invalid Children
                 |--------------------------------------------------------------------------
                 */

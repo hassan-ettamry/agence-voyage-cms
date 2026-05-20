@@ -55,7 +55,9 @@ window.BuilderSelection = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderRenderManager.requestRender();
+        BuilderRenderManager.requestRender(
+            'selection.delete'
+        );
 
     }
 

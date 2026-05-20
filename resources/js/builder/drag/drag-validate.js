@@ -19,11 +19,10 @@ window.BuilderDragValidate = {
         */
 
         if (
-
-            parent.accepts &&
-
-            !parent.accepts.includes(type)
-
+            !BuilderStructureRules.canAccept(
+                parent,
+                type
+            )
         ) {
 
             console.warn(

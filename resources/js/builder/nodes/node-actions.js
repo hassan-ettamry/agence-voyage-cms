@@ -32,7 +32,7 @@ window.BuilderNodes = {
 
         BuilderEventBus.emit(
 
-            'node.updated',
+            BuilderEvents.NODE_UPDATED,
         
             {
                 nodeId,
@@ -62,13 +62,24 @@ window.BuilderNodes = {
             return;
         }
 
-        if (!parent.children) {
+        const placement =
+            BuilderStructureRules.insertNode(
+                child,
+                parentId,
+                'inside'
+            );
 
-            parent.children = [];
-
+        if (!placement) {
+            return null;
         }
 
-        parent.children.push(child);
+        BuilderStructureRules.normalizeStore();
+
+        BuilderEventBus.emit(
+            BuilderEvents.STRUCTURE_UPDATED
+        );
+
+        return placement;
 
     },
 
@@ -80,10 +91,23 @@ window.BuilderNodes = {
 
     remove(nodeId) {
 
-        this.removeRecursive(
-            nodeId,
-            BuilderStore.structure
+        const removed =
+            this.removeRecursive(
+                nodeId,
+                BuilderStore.structure
+            );
+
+        if (!removed) {
+            return false;
+        }
+
+        BuilderStructureRules.normalizeStore();
+
+        BuilderEventBus.emit(
+            BuilderEvents.STRUCTURE_UPDATED
         );
+
+        return true;
 
     },
 

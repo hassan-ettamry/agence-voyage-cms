@@ -23,6 +23,9 @@ window.BuilderLogger = {
             case 'selection':
                 return BuilderConfig.selectionLogs;
 
+            case 'interaction':
+                return BuilderConfig.interactionLogs;
+
             case 'drag':
                 return BuilderConfig.dragLogs;
 

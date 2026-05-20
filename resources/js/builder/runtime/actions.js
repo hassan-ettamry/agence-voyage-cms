@@ -166,7 +166,24 @@ window.BuilderRuntimeActions = {
             return;
         }
 
+        if (BuilderLogger.shouldLog('interaction')) {
+
+            BuilderLogger.log(
+                'INTERACTION ACTION',
+                {
+                    action:
+                        target.dataset.action,
+
+                    surface:
+                        BuilderInteractionBoundaries
+                            .surface(event.target)
+                }
+            );
+
+        }
+
         event.preventDefault();
+        event.stopPropagation();
 
         action(
             target,

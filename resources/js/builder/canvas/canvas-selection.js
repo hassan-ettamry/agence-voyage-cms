@@ -38,122 +38,13 @@ window.BuilderCanvasSelection = {
 
                 if (!nodeId) return;
 
-                BuilderLogger.group(
-                    'SELECTION',
-                    BuilderLogger.colors.info
-                );
-
-                BuilderLogger.log(
-                    'SELECTED NODE',
-                    nodeId
-                );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Find Node
-                |--------------------------------------------------------------------------
-                */
-
-                const node =
-                    Builder.findNodeById(
-                        nodeId
-                    );
-
-                if (!node) {
-
-                    BuilderLogger.warn(
-                        'NODE NOT FOUND'
-                    );
-
-                    BuilderLogger.end();
-
-                    return;
-
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | Save Selection
-                |--------------------------------------------------------------------------
-                */
-
-                BuilderStore.setSelection(
+                BuilderSelectionManager.select(
                     nodeId,
-                    element
-                );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Clear Old Selection
-                |--------------------------------------------------------------------------
-                */
-
-                BuilderCanvasUtils
-                    .clearSelectionStyles();
-
-                /*
-                |--------------------------------------------------------------------------
-                | Apply Selection
-                |--------------------------------------------------------------------------
-                */
-
-                BuilderCanvasUtils
-                    .applySelectionStyles(
-                        element
-                    );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Open Controls
-                |--------------------------------------------------------------------------
-                */
-
-                BuilderSidebar.switchTab(
-                    'controls'
-                );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Settings Panel
-                |--------------------------------------------------------------------------
-                */
-
-                const schema =
-                    BuilderSchema.get(
-                        node.type
-                    );
-
-                BuilderSettingsPanel.render(
-
-                    node,
-                    schema,
-                    BuilderStore.selectedNodeId
-
-                );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Selection Changed Event
-                |--------------------------------------------------------------------------
-                */
-
-                BuilderEventBus.emit(
-                    'selection.changed',
-                    nodeId
-                );
-
-                /*
-                |--------------------------------------------------------------------------
-                | Show Overlay
-                |--------------------------------------------------------------------------
-                */
-
-                BuilderOverlay.show(
                     element,
-                    BuilderStore.selectedNodeId
+                    {
+                        source: 'canvas'
+                    }
                 );
-
-                BuilderLogger.end();
 
             }
 

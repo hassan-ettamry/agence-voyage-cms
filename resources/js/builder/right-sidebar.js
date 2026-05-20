@@ -16,7 +16,25 @@ window.BuilderRightSidebar = {
 
         BuilderEventBus.on(
 
-            'structure.updated',
+            BuilderEvents.STRUCTURE_UPDATED,
+
+            () => {
+
+                BuilderRightSidebar.render();
+
+            }
+
+        );
+
+        /*
+        |----------------------------------------------------------
+        | Canvas Rendered
+        |----------------------------------------------------------
+        */
+
+        BuilderEventBus.on(
+
+            BuilderEvents.CANVAS_RENDERED,
 
             () => {
 
@@ -34,7 +52,7 @@ window.BuilderRightSidebar = {
 
         BuilderEventBus.on(
 
-            'selection.changed',
+            BuilderEvents.SELECTION_CHANGED,
 
             (nodeId) => {
 
@@ -268,27 +286,30 @@ window.BuilderRightSidebar = {
 
         if (!element) return;
 
-        /*
-        |----------------------------------------------------------
-        | Trigger Selection
-        |----------------------------------------------------------
-        */
+        if (
+            BuilderLogger.shouldLog('selection')
+            ||
+            BuilderLogger.shouldLog('interaction')
+        ) {
 
-        element.click();
+            BuilderLogger.log(
+                'SELECTION REQUEST SOURCE',
+                {
+                    source: 'layers',
+                    nodeId
+                }
+            );
 
-        /*
-        |----------------------------------------------------------
-        | Scroll Into View
-        |----------------------------------------------------------
-        */
+        }
 
-        element.scrollIntoView({
-
-            behavior: 'smooth',
-
-            block: 'center'
-
-        });
+        BuilderSelectionManager.select(
+            nodeId,
+            element,
+            {
+                source: 'layers',
+                scroll: true
+            }
+        );
 
     },
 

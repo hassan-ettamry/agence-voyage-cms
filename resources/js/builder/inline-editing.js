@@ -183,7 +183,9 @@ window.BuilderInlineEditing = {
 
                 if (!nodeElement) return;
 
-                BuilderRenderManager.requestRender();
+                BuilderRenderManager.requestRender(
+                    'inline-editing.blur'
+                );
 
             },
 

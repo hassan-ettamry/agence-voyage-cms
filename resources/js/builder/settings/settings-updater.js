@@ -104,6 +104,8 @@ window.BuilderSettingsUpdater = {
 
         }
 
+        let changed = false;
+
         /*
         |--------------------------------------------------------------------------
         | Add Missing Columns
@@ -121,22 +123,18 @@ window.BuilderSettingsUpdater = {
 
                 type: 'column',
 
-                accepts: [
-                    'text',
-                    'heading',
-                    'button',
-                    'image',
-                    'container',
-                    'section',
-                    'row',
-                    'hero'
-                ],
+                accepts:
+                    BuilderStructureRules.acceptsForType(
+                        'column'
+                    ),
 
                 props: {},
 
                 children: []
 
             });
+
+            changed = true;
 
         }
 
@@ -151,6 +149,18 @@ window.BuilderSettingsUpdater = {
         ) {
 
             node.children.pop();
+
+            changed = true;
+
+        }
+
+        if (changed) {
+
+            BuilderStructureRules.normalizeStore();
+
+            BuilderEventBus.emit(
+                BuilderEvents.STRUCTURE_UPDATED
+            );
 
         }
 

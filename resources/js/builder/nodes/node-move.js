@@ -190,139 +190,52 @@ window.BuilderNodeMove = {
 
         /*
         |--------------------------------------------------------------------------
-        | Inside
+        | Insert
         |--------------------------------------------------------------------------
         */
 
-        if (position === 'inside') {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Ensure Children
-            |--------------------------------------------------------------------------
-            */
-
-            if (!target.children) {
-
-                target.children = [];
-
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Add Child
-            |--------------------------------------------------------------------------
-            */
-
-            target.children.push(
-                node
+        const placement =
+            BuilderStructureRules.insertNode(
+                node,
+                targetId,
+                position
             );
 
-            BuilderLogger.success(
-                'NODE INSERTED INSIDE'
+        if (!placement) {
+
+            BuilderLogger.warn(
+                'NO VALID MOVE PLACEMENT'
+            );
+
+            BuilderLogger.end();
+
+            return;
+
+        }
+
+        if (
+            placement.normalized ||
+            placement.position !== position
+        ) {
+
+            BuilderLogger.warn(
+                'MOVE PLACEMENT NORMALIZED',
+                {
+                    requestedTarget: targetId,
+                    requestedPosition: position,
+                    actualTarget: placement.target?.id || null,
+                    actualParent: placement.parent?.id || null,
+                    actualPosition: placement.position
+                }
             );
 
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Before / After
-        |--------------------------------------------------------------------------
-        */
+        BuilderStructureRules.normalizeStore();
 
-        else {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Parent
-            |--------------------------------------------------------------------------
-            */
-
-            const parent =
-
-                BuilderNodeTraversal.findParent(
-                    targetId
-                );
-
-            /*
-            |--------------------------------------------------------------------------
-            | Collection
-            |--------------------------------------------------------------------------
-            */
-
-            const collection =
-
-                parent
-                    ? parent.children
-                    : BuilderStore.structure;
-
-            /*
-            |--------------------------------------------------------------------------
-            | Target Index
-            |--------------------------------------------------------------------------
-            */
-
-            const index =
-
-                collection.findIndex(
-
-                    item => item.id === targetId
-
-                );
-
-            if (index === -1) {
-
-                BuilderLogger.warn(
-                    'TARGET INDEX NOT FOUND'
-                );
-
-                BuilderLogger.end();
-
-                return;
-
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | Before
-            |--------------------------------------------------------------------------
-            */
-
-            if (position === 'before') {
-
-                collection.splice(
-                    index,
-                    0,
-                    node
-                );
-
-                BuilderLogger.success(
-                    'NODE INSERTED BEFORE'
-                );
-
-            }
-
-            /*
-            |--------------------------------------------------------------------------
-            | After
-            |--------------------------------------------------------------------------
-            */
-
-            else if (position === 'after') {
-
-                collection.splice(
-                    index + 1,
-                    0,
-                    node
-                );
-
-                BuilderLogger.success(
-                    'NODE INSERTED AFTER'
-                );
-
-            }
-
-        }
+        BuilderEventBus.emit(
+            BuilderEvents.STRUCTURE_UPDATED
+        );
 
         /*
         |--------------------------------------------------------------------------
@@ -544,6 +457,12 @@ window.BuilderNodeMove = {
             )
         );
 
+        BuilderStructureRules.normalizeStore();
+
+        BuilderEventBus.emit(
+            BuilderEvents.STRUCTURE_UPDATED
+        );
+
         /*
         |--------------------------------------------------------------------------
         | Validate Tree
@@ -611,13 +530,19 @@ window.BuilderNodeMove = {
 
         if (parent) {
 
-            parent.children =
-
-                parent.children.filter(
-
-                    child => child.id !== nodeId
-
+            const index =
+                parent.children.findIndex(
+                    child => child.id === nodeId
                 );
+
+            if (index !== -1) {
+
+                parent.children.splice(
+                    index,
+                    1
+                );
+
+            }
 
             BuilderLogger.warn(
                 'NODE REMOVED FROM PARENT'

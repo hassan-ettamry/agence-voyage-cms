@@ -29,7 +29,7 @@ window.BuilderComponents = {
         );
 
         BuilderEventBus.emit(
-            'component.added',
+            BuilderEvents.COMPONENT_ADDED,
             component
         );
 
@@ -47,7 +47,9 @@ window.BuilderComponents = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderRenderManager.requestRender();
+        BuilderRenderManager.requestRender(
+            'component.add'
+        );
 
     }
 

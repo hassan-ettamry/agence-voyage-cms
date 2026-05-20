@@ -6,7 +6,10 @@ window.BuilderComponentRegistry = {
 
             type: 'hero',
 
-            accepts: [],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'hero'
+                ),
 
             props: {
                 title: 'Hero Title',
@@ -25,7 +28,10 @@ window.BuilderComponentRegistry = {
 
             type: 'text',
 
-            accepts: [],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'text'
+                ),
 
             props: {
                 text: 'Your text here.'
@@ -43,7 +49,10 @@ window.BuilderComponentRegistry = {
 
             type: 'heading',
 
-            accepts: [],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'heading'
+                ),
 
             props: {
                 text: 'Your Heading Here'
@@ -61,7 +70,10 @@ window.BuilderComponentRegistry = {
 
             type: 'button',
 
-            accepts: [],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'button'
+                ),
 
             props: {
                 text: 'Click Me'
@@ -79,7 +91,10 @@ window.BuilderComponentRegistry = {
 
             type: 'image',
 
-            accepts: [],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'image'
+                ),
 
             props: {
                 src: '',
@@ -98,16 +113,10 @@ window.BuilderComponentRegistry = {
 
             type: 'section',
 
-            accepts: [
-                'text',
-                'heading',
-                'button',
-                'image',
-                'container',
-                'section',
-                'row',
-                'hero'
-            ],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'section'
+                ),
 
             props: {},
 
@@ -123,16 +132,10 @@ window.BuilderComponentRegistry = {
 
             type: 'container',
 
-            accepts: [
-                'text',
-                'heading',
-                'button',
-                'image',
-                'container',
-                'section',
-                'row',
-                'hero'
-            ],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'container'
+                ),
 
             props: {},
 
@@ -148,16 +151,10 @@ window.BuilderComponentRegistry = {
 
             type: 'column',
 
-            accepts: [
-                'text',
-                'heading',
-                'button',
-                'image',
-                'container',
-                'section',
-                'row',
-                'hero'
-            ],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'column'
+                ),
 
             props: {},
 
@@ -173,9 +170,10 @@ window.BuilderComponentRegistry = {
 
             type: 'row',
 
-            accepts: [
-                'column'
-            ],
+            accepts:
+                BuilderStructureRules.acceptsForType(
+                    'row'
+                ),
 
             props: {
                 columns: 2

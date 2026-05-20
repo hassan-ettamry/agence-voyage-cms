@@ -331,10 +331,14 @@ window.BuilderDragDropAction = {
             BuilderStore.addRootComponent(
                 component
             );
+
+            BuilderDebugValidator.validateTree();
             
             BuilderHistory.push();
 
-            BuilderRenderManager.requestRender();
+            BuilderRenderManager.requestRender(
+                'drag-drop.root'
+            );
 
             BuilderLogger.success(
                 'DROP COMPLETE'
@@ -372,25 +376,21 @@ window.BuilderDragDropAction = {
 
         /*
         |----------------------------------------------------------------------|
-        | Validate
+        | Insert Component
         |----------------------------------------------------------------------|
         */
 
-        const isValid =
-
-            BuilderDragValidate.canDrop(
-                parent,
-                type
+        const placement =
+            BuilderStructureRules.insertNode(
+                component,
+                parent.id,
+                'inside'
             );
 
-        if (!isValid) {
-
-            console.warn(
-                `${type} not allowed inside ${parent.type}`
-            );
+        if (!placement) {
 
             BuilderLogger.warn(
-                'INVALID DROP'
+                'NO VALID DROP PLACEMENT'
             );
 
             BuilderLogger.end();
@@ -399,17 +399,25 @@ window.BuilderDragDropAction = {
 
         }
 
-        /*
-        |----------------------------------------------------------------------|
-        | Add Child
-        |----------------------------------------------------------------------|
-        */
+        BuilderStructureRules.normalizeStore();
 
-        BuilderNodes.addChild(
+        if (placement.normalized) {
 
-            parent.id,
-            component
+            BuilderLogger.warn(
+                'DROP PLACEMENT NORMALIZED',
+                {
+                    requestedParent: parent.id,
+                    actualParent: placement.parent?.id || null,
+                    position: placement.position
+                }
+            );
 
+        }
+
+        BuilderDebugValidator.validateTree();
+
+        BuilderEventBus.emit(
+            BuilderEvents.STRUCTURE_UPDATED
         );
 
         /*
@@ -426,7 +434,9 @@ window.BuilderDragDropAction = {
         |----------------------------------------------------------------------|
         */
 
-        BuilderRenderManager.requestRender();
+        BuilderRenderManager.requestRender(
+            'drag-drop.child'
+        );
 
         BuilderLogger.success(
             'DROP COMPLETE'

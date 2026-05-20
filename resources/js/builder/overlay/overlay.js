@@ -37,45 +37,6 @@ window.BuilderOverlay = {
 
         );
 
-        document.addEventListener(
-
-            'click',
-
-            (event) => {
-
-                const canvas =
-
-                    document.getElementById(
-                        'canvas'
-                    );
-
-                const root =
-
-                    BuilderOverlayElements
-                        .getRoot();
-
-                if (
-
-                    canvas
-                    &&
-                    !canvas.contains(event.target)
-
-                    &&
-
-                    root
-                    &&
-                    !root.contains(event.target)
-
-                ) {
-
-                    this.hide();
-
-                }
-
-            }
-
-        );
-
         console.log(
             'Overlay Initialized'
         );
@@ -143,6 +104,8 @@ window.BuilderOverlay = {
 
             BuilderOverlayElements
                 .getRoot();
+
+        this.currentElement = null;
 
         if (!root) return;
 

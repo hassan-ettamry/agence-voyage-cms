@@ -10,14 +10,41 @@ window.BuilderCanvas = {
 
     /*
     |--------------------------------------------------------------------------
+    | Invalidate Current Render
+    |--------------------------------------------------------------------------
+    */
+
+    invalidateCurrentRender() {
+
+        this.renderVersion++;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Render Canvas
     |--------------------------------------------------------------------------
     */
 
-    async render() {
+    async render(source = 'direct', reason = null) {
 
         const version =
             ++this.renderVersion;
+
+        const startedAt =
+            performance.now();
+
+        const context = {
+            version,
+            source,
+            reason,
+            startedAt
+        };
+
+        BuilderEventBus.emitSafe(
+            BuilderEvents.CANVAS_RENDER_STARTED,
+            context
+        );
 
         if (BuilderLogger.shouldLog('render')) {
 
@@ -25,6 +52,20 @@ window.BuilderCanvas = {
                 `RENDER ${version}`,
                 BuilderLogger.colors.render
             );
+
+            BuilderLogger.log(
+                'SOURCE',
+                source
+            );
+
+            if (reason) {
+
+                BuilderLogger.log(
+                    'REASON',
+                    reason
+                );
+
+            }
         
         }
 
@@ -39,7 +80,16 @@ window.BuilderCanvas = {
 
             BuilderLogger.end();
 
-            return;
+            BuilderEventBus.emitSafe(
+                BuilderEvents.CANVAS_RENDER_FAILED,
+                {
+                    ...context,
+                    error: 'canvas_not_found',
+                    duration: performance.now() - startedAt
+                }
+            );
+
+            return false;
 
         }
 
@@ -89,9 +139,27 @@ window.BuilderCanvas = {
                 `RENDER ${version} COMPLETE`
             );
 
+            if (BuilderLogger.shouldLog('render')) {
+
+                BuilderLogger.log(
+                    'DURATION',
+                    `${(performance.now() - startedAt).toFixed(2)}ms`
+                );
+
+            }
+
             BuilderLogger.end();
 
-            return;
+            BuilderEventBus.emitSafe(
+                BuilderEvents.CANVAS_RENDERED,
+                {
+                    ...context,
+                    empty: true,
+                    duration: performance.now() - startedAt
+                }
+            );
+
+            return true;
 
         }
 
@@ -180,7 +248,15 @@ window.BuilderCanvas = {
 
                 BuilderLogger.end();
 
-                return;
+                BuilderEventBus.emitSafe(
+                    BuilderEvents.CANVAS_RENDER_CANCELLED,
+                    {
+                        ...context,
+                        duration: performance.now() - startedAt
+                    }
+                );
+
+                return false;
             }
 
             /*
@@ -201,16 +277,6 @@ window.BuilderCanvas = {
 
             /*
             |--------------------------------------------------------------------------
-            | Structure Updated Event
-            |--------------------------------------------------------------------------
-            */
-
-            BuilderEventBus.emit(
-                'structure.updated'
-            );
-
-            /*
-            |--------------------------------------------------------------------------
             | Restore Selection
             |--------------------------------------------------------------------------
             */
@@ -221,7 +287,27 @@ window.BuilderCanvas = {
                 `RENDER ${version} COMPLETE`
             );
 
+            if (BuilderLogger.shouldLog('render')) {
+
+                BuilderLogger.log(
+                    'DURATION',
+                    `${(performance.now() - startedAt).toFixed(2)}ms`
+                );
+
+            }
+
             BuilderLogger.end();
+
+            BuilderEventBus.emitSafe(
+                BuilderEvents.CANVAS_RENDERED,
+                {
+                    ...context,
+                    empty: false,
+                    duration: performance.now() - startedAt
+                }
+            );
+
+            return true;
 
         } catch (error) {
 
@@ -234,7 +320,27 @@ window.BuilderCanvas = {
                 error
             );
 
+            if (BuilderLogger.shouldLog('render')) {
+
+                BuilderLogger.log(
+                    'FAILED AFTER',
+                    `${(performance.now() - startedAt).toFixed(2)}ms`
+                );
+
+            }
+
             BuilderLogger.end();
+
+            BuilderEventBus.emitSafe(
+                BuilderEvents.CANVAS_RENDER_FAILED,
+                {
+                    ...context,
+                    error: error?.message || String(error),
+                    duration: performance.now() - startedAt
+                }
+            );
+
+            return false;
 
         }
 
