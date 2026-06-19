@@ -116,18 +116,81 @@ window.BuilderCanvas = {
 
             canvas.innerHTML = `
 
+                ${this.menuShellHtml()}
+
                 <div
                     id="canvas-empty-state"
                     class="
-                        h-[500px]
                         flex
+                        min-h-[300px]
                         items-center
                         justify-center
-                        text-gray-400
+                        py-20
                     "
                 >
 
-                    Drag components here
+                    <div class="
+                        flex
+                        items-center
+                        gap-3
+                    ">
+
+                        <button
+                            type="button"
+                            data-action="open-template-library"
+                            class="
+                                inline-flex
+                                items-center
+                                gap-2
+                                border
+                                border-slate-700
+                                bg-white
+                                px-5
+                                py-2.5
+                                text-sm
+                                font-semibold
+                                text-slate-900
+                                hover:bg-slate-50
+                            "
+                        >
+                            <span class="
+                                flex
+                                h-4
+                                w-4
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-slate-950
+                                text-[11px]
+                                leading-none
+                                text-white
+                            ">+</span>
+                            Add Section
+                        </button>
+
+                        <button
+                            type="button"
+                            data-action="open-template-library"
+                            class="
+                                hidden
+                                items-center
+                                gap-2
+                                border
+                                border-slate-700
+                                bg-white
+                                px-5
+                                py-2.5
+                                text-sm
+                                font-semibold
+                                text-slate-900
+                                hover:bg-slate-50
+                            "
+                        >
+                            <span class="text-base leading-none">▣</span>
+                            Choose Block
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -265,7 +328,12 @@ window.BuilderCanvas = {
             |--------------------------------------------------------------------------
             */
 
-            canvas.innerHTML = html;
+            canvas.innerHTML =
+                this.menuShellHtml()
+                +
+                html
+                +
+                this.canvasActionButtonsHtml(true);
 
             /*
             |--------------------------------------------------------------------------
@@ -274,6 +342,7 @@ window.BuilderCanvas = {
             */
 
             BuilderCanvasEvents.bind();
+            this.disablePreviewLinks(canvas);
 
             /*
             |--------------------------------------------------------------------------
@@ -384,13 +453,21 @@ window.BuilderCanvas = {
             return;
         }
 
+        BuilderStore.selectedElement =
+            selected;
+
+        if (window.BuilderSelectionManager) {
+
+            BuilderSelectionManager.restoreVisuals();
+
+            return;
+
+        }
+
         BuilderCanvasUtils
             .applySelectionStyles(
                 selected
             );
-
-        BuilderStore.selectedElement =
-            selected;
 
         BuilderOverlay.show(
 
@@ -398,6 +475,183 @@ window.BuilderCanvas = {
             BuilderStore.selectedNodeId
 
         );
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Canvas Action Buttons
+    |--------------------------------------------------------------------------
+    */
+
+    canvasActionButtonsHtml(compact = false) {
+
+        return `
+
+            <div
+                data-builder-canvas-actions="true"
+                class="
+                    flex
+                    items-center
+                    justify-center
+                    ${compact ? 'py-10' : ''}
+                "
+            >
+
+                <button
+                    type="button"
+                    data-action="open-template-library"
+                    class="
+                        inline-flex
+                        items-center
+                        gap-2
+                        border
+                        border-slate-700
+                        bg-white
+                        px-5
+                        py-2.5
+                        text-sm
+                        font-semibold
+                        text-slate-900
+                        hover:bg-slate-50
+                    "
+                >
+                    <span class="text-base leading-none">+</span>
+                    ${compact ? 'Add new section' : 'Add Section'}
+                </button>
+
+            </div>
+
+        `;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Disable Preview Links In Editor
+    |--------------------------------------------------------------------------
+    */
+
+    disablePreviewLinks(canvas) {
+
+        canvas
+            .querySelectorAll('a[href]')
+            .forEach(link => {
+
+                link.dataset.builderDisabledLink = 'true';
+                link.setAttribute('tabindex', '-1');
+
+                link.addEventListener(
+                    'click',
+                    event => {
+
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                    },
+                    true
+                );
+
+            });
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Menu Shell Preview
+    |--------------------------------------------------------------------------
+    */
+
+    menuShellHtml() {
+
+        const items =
+            Array.isArray(window.builderMenuItems)
+                ? window.builderMenuItems
+                : [];
+
+        if (!items.length) {
+            return '';
+        }
+
+        const links =
+            items.map(item => {
+
+                const title =
+                    BuilderHtmlEscape.html(item?.title || 'Menu item');
+
+                const url =
+                    BuilderHtmlEscape.attribute(item?.url || '#');
+
+                return `
+
+                    <a
+                        href="${url}"
+                        onclick="return false"
+                        class="
+                            rounded-full
+                            px-3
+                            py-1.5
+                            text-sm
+                            font-medium
+                            text-slate-600
+                            hover:bg-slate-100
+                            hover:text-slate-950
+                        "
+                    >
+                        ${title}
+                    </a>
+
+                `;
+
+            }).join('');
+
+        return `
+
+            <header
+                data-builder-shell="menu"
+                class="
+                    relative
+                    z-0
+                    border-b
+                    border-slate-200
+                    bg-white
+                    px-6
+                    py-3
+                "
+            >
+
+                <div class="
+                    mx-auto
+                    flex
+                    max-w-6xl
+                    items-center
+                    justify-between
+                    gap-4
+                ">
+
+                    <div class="
+                        text-sm
+                        font-semibold
+                        text-slate-950
+                    ">
+                        Navigation
+                    </div>
+
+                    <nav class="
+                        flex
+                        flex-wrap
+                        items-center
+                        justify-end
+                        gap-1
+                    ">
+                        ${links}
+                    </nav>
+
+                </div>
+
+            </header>
+
+        `;
 
     },
 

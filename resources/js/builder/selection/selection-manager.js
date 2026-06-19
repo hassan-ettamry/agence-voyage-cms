@@ -86,13 +86,10 @@ window.BuilderSelectionManager = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderCanvasUtils
-            .clearSelectionStyles();
-
-        BuilderCanvasUtils
-            .applySelectionStyles(
-                selectedElement
-            );
+        this.applyVisuals(
+            BuilderStore.selectedNodeId,
+            selectedElement
+        );
 
         /*
         |--------------------------------------------------------------------------
@@ -102,6 +99,12 @@ window.BuilderSelectionManager = {
 
         BuilderSidebar.switchTab(
             'controls'
+        );
+
+        BuilderSidebar.setTitle(
+            BuilderSidebar.componentLabel(
+                node.type
+            )
         );
 
         const schema =
@@ -123,9 +126,9 @@ window.BuilderSelectionManager = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderOverlay.show(
-            selectedElement,
-            BuilderStore.selectedNodeId
+        this.showSelectionToolbar(
+            BuilderStore.selectedNodeId,
+            selectedElement
         );
 
         if (scroll) {
@@ -141,6 +144,233 @@ window.BuilderSelectionManager = {
         }
 
         BuilderLogger.end();
+
+        return true;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Apply Selection Visuals
+    |--------------------------------------------------------------------------
+    */
+
+    applyVisuals(nodeId, selectedElement = null) {
+
+        const element =
+            selectedElement
+            ||
+            this.findElement(nodeId);
+
+        if (!nodeId || !element) {
+            return false;
+        }
+
+        BuilderCanvasUtils
+            .clearSelectionStyles();
+
+        this.applyAncestorVisuals(
+            nodeId
+        );
+
+        this.applyChildContainerVisuals(
+            nodeId
+        );
+
+        BuilderCanvasUtils
+            .applySelectionStyles(
+                element
+            );
+
+        return true;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Apply Ancestor Visuals
+    |--------------------------------------------------------------------------
+    */
+
+    applyAncestorVisuals(nodeId) {
+
+        const ancestors =
+            BuilderNodeTraversal.findAncestors(
+                nodeId
+            )
+            ||
+            [];
+
+        ancestors.forEach((ancestor, index) => {
+
+            const element =
+                this.findElement(
+                    ancestor.id
+                );
+
+            if (!element) {
+                return;
+            }
+
+            const isImmediateParent =
+                index === ancestors.length - 1;
+
+            const distanceFromSelected =
+                ancestors.length - index;
+
+            BuilderOverlayTheme.applyOutline(
+                element,
+                isImmediateParent ? 'parent' : 'ancestor',
+                BuilderOverlayTheme.pathOutlineOptions(
+                    distanceFromSelected
+                )
+            );
+
+            element.dataset.builderHoverState =
+                isImmediateParent
+                    ? 'parent'
+                    : 'ancestor';
+
+        });
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Apply Child Container Visuals
+    |--------------------------------------------------------------------------
+    */
+
+    applyChildContainerVisuals(nodeId) {
+
+        BuilderNodeTraversal
+            .directChildrenByType(
+                nodeId,
+                'container'
+            )
+            .forEach(child => {
+
+                const element =
+                    this.findElement(
+                        child.id
+                    );
+
+                if (!element) {
+                    return;
+                }
+
+                BuilderOverlayTheme.applyOutline(
+                    element,
+                    'child',
+                    BuilderOverlayTheme.childOutlineOptions()
+                );
+
+                element.dataset.builderHoverState =
+                    'child';
+
+            });
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Show Selection Toolbar
+    |--------------------------------------------------------------------------
+    */
+
+    showSelectionToolbar(nodeId, selectedElement = null) {
+
+        const element =
+            selectedElement
+            ||
+            this.findElement(nodeId);
+
+        if (!nodeId || !element) {
+            return false;
+        }
+
+        const ancestors =
+            BuilderNodeTraversal.findAncestors(
+                nodeId
+            )
+            ||
+            [];
+
+        const parent =
+            ancestors[ancestors.length - 1];
+
+        const parentElement =
+            parent?.id
+                ? this.findElement(parent.id)
+                : null;
+
+        if (parentElement) {
+
+            BuilderOverlay.showGroup([
+                {
+                    element: parentElement,
+                    nodeId: parent.id,
+                    mode: 'parent-hover',
+                    align: 'left',
+                    height: 24
+                },
+                {
+                    element,
+                    nodeId,
+                    mode: 'selected',
+                    align: 'center',
+                    height: 24
+                }
+            ]);
+
+            return true;
+
+        }
+
+        BuilderOverlay.show(
+            element,
+            nodeId,
+            {
+                mode: 'selected',
+                align: 'center',
+                height: 24
+            }
+        );
+
+        return true;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restore Current Visual State
+    |--------------------------------------------------------------------------
+    */
+
+    restoreVisuals() {
+
+        if (!BuilderStore.selectedNodeId) {
+            return false;
+        }
+
+        const selectedElement =
+            this.findElement(
+                BuilderStore.selectedNodeId
+            );
+
+        if (!selectedElement) {
+            return false;
+        }
+
+        this.applyVisuals(
+            BuilderStore.selectedNodeId,
+            selectedElement
+        );
+
+        this.showSelectionToolbar(
+            BuilderStore.selectedNodeId,
+            selectedElement
+        );
 
         return true;
 
@@ -188,14 +418,15 @@ window.BuilderSelectionManager = {
 
                 el.classList.remove(
 
-                    'outline',
-                    'outline-2',
-                    'outline-dashed',
-                    'outline-pink-500',
-                    'outline-offset-[-2px]',
                     'relative',
                     'z-[1]'
 
+                );
+
+                delete el.dataset.builderHoverState;
+
+                BuilderOverlayTheme.clearOutline(
+                    el
                 );
 
             });
@@ -209,6 +440,8 @@ window.BuilderSelectionManager = {
         BuilderOverlay.hide();
 
         if (settings) {
+
+            BuilderSidebar.setTitle();
 
             this.clearSettingsPanel();
 

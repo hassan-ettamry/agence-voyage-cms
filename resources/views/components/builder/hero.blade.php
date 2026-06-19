@@ -22,10 +22,10 @@
 
     style="
         background-color:
-            {{ $props['backgroundColor'] ?? '#111827' }};
+            {{ $props['backgroundColor'] ?? 'var(--site-secondary, #111827)' }};
 
         color:
-            {{ $props['textColor'] ?? '#ffffff' }};
+            {{ $props['textColor'] ?? 'var(--site-background, #ffffff)' }};
     "
 >
 
@@ -38,6 +38,7 @@
         @endif
 
         class="text-5xl font-bold mb-4 {{ $isEditor ? 'outline-none' : '' }}"
+        style="font-family: var(--site-heading-font, ui-sans-serif, system-ui, sans-serif);"
     >
 
         {{ $props['title'] ?? 'Hero Title' }}

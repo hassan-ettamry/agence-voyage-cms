@@ -11,10 +11,21 @@ class ComponentValidator
         'textColor',
         'borderColor',
         'color',
+        'iconColor',
+        'titleColor',
+        'linkColor',
+        'buttonColor',
+        'accentColor',
     ];
 
     private const IMAGE_URL_PROPS = [
         'src',
+    ];
+
+    private const URL_PROPS = [
+        'url',
+        'embedUrl',
+        'actionUrl',
     ];
 
     private const CSS_LENGTH_PROPS = [
@@ -24,17 +35,89 @@ class ComponentValidator
         'paddingRight',
         'padding',
         'maxWidth',
+        'minHeight',
+        'width',
         'height',
         'gap',
         'fontSize',
+        'borderWidth',
+        'borderRadius',
+        'marginTop',
+        'marginBottom',
+        'top',
+        'left',
+        'size',
     ];
 
     private const ENUM_PROPS = [
+        'display' => [
+            'block',
+            'flex',
+            'grid',
+            'none',
+        ],
+        'flexDirection' => [
+            'row',
+            'row-reverse',
+            'column',
+            'column-reverse',
+        ],
+        'justifyContent' => [
+            'flex-start',
+            'center',
+            'flex-end',
+            'space-between',
+            'space-around',
+            'space-evenly',
+            'start',
+            'end',
+        ],
+        'alignItems' => [
+            'stretch',
+            'flex-start',
+            'center',
+            'flex-end',
+            'baseline',
+            'start',
+            'end',
+        ],
         'align' => [
             'left',
             'center',
             'right',
             'justify',
+        ],
+        'layout' => [
+            'horizontal',
+            'vertical',
+        ],
+        'target' => [
+            'same-tab',
+            'new-tab',
+        ],
+        'underline' => [
+            'yes',
+            'no',
+        ],
+        'controls' => [
+            'yes',
+            'no',
+        ],
+        'autoplay' => [
+            'yes',
+            'no',
+        ],
+        'allowFullscreen' => [
+            'yes',
+            'no',
+        ],
+        'allowMultiple' => [
+            'yes',
+            'no',
+        ],
+        'method' => [
+            'get',
+            'post',
         ],
         'borderStyle' => [
             'none',
@@ -43,11 +126,38 @@ class ComponentValidator
             'dotted',
             'double',
         ],
+        'containerRole' => [
+            'layout',
+            'grid',
+            'grid-item',
+            'card',
+            'content',
+            'group',
+        ],
+        'overflow' => [
+            'visible',
+            'hidden',
+            'auto',
+            'scroll',
+        ],
+        'visibility' => [
+            'visible',
+            'hidden',
+        ],
+        'position' => [
+            'static',
+            'relative',
+            'absolute',
+            'sticky',
+        ],
     ];
 
     private const INTEGER_RANGE_PROPS = [
-        'columns' => [1, 12],
+        'gridColumns' => [1, 12],
+        'gridSpan' => [1, 12],
         'fontWeight' => [1, 1000],
+        'columns' => [1, 6],
+        'zoom' => [1, 20],
     ];
 
     private const NUMBER_RANGE_PROPS = [
@@ -117,9 +227,16 @@ class ComponentValidator
                 );
             }
 
+            if (in_array($key, self::URL_PROPS, true)) {
+                $this->assertValid(
+                    $this->isSafeUrl($value),
+                    $key
+                );
+            }
+
             if (in_array($key, self::CSS_LENGTH_PROPS, true)) {
                 $this->assertValid(
-                    $this->isSafeCssLength($value),
+                    $this->isSafeCssLength($value, $key),
                     $key
                 );
             }
@@ -199,6 +316,51 @@ class ComponentValidator
             || str_starts_with($lowerValue, 'storage/');
     }
 
+    private function isSafeUrl($value): bool
+    {
+        if (! is_string($value)) {
+            return false;
+        }
+
+        $value = trim($value);
+
+        if ($value === '') {
+            return true;
+        }
+
+        if (preg_match('/[\x00-\x1F\x7F\s\\\\<>"\']/', $value)) {
+            return false;
+        }
+
+        $lowerValue = strtolower($value);
+
+        if (str_starts_with($lowerValue, '//')) {
+            return false;
+        }
+
+        if (preg_match('/^(?:javascript|vbscript|data):/i', $value)) {
+            return false;
+        }
+
+        if ($value === '#') {
+            return true;
+        }
+
+        $scheme = parse_url($value, PHP_URL_SCHEME);
+
+        if ($scheme !== null) {
+            $scheme = strtolower($scheme);
+
+            if (in_array($scheme, ['http', 'https'], true)) {
+                return filter_var($value, FILTER_VALIDATE_URL) !== false;
+            }
+
+            return in_array($scheme, ['mailto', 'tel'], true);
+        }
+
+        return str_starts_with($value, '/');
+    }
+
     private function isSafeColor($value): bool
     {
         if (! is_string($value)) {
@@ -215,7 +377,7 @@ class ComponentValidator
             || preg_match('/^#(?:[0-9a-f]{3}|[0-9a-f]{4}|[0-9a-f]{6}|[0-9a-f]{8})$/i', $value) === 1;
     }
 
-    private function isSafeCssLength($value): bool
+    private function isSafeCssLength($value, string $key): bool
     {
         if (is_int($value) || is_float($value)) {
             return is_finite((float) $value) && $value >= 0;
@@ -228,6 +390,10 @@ class ComponentValidator
         $value = trim($value);
 
         if ($value === '') {
+            return true;
+        }
+
+        if ($key === 'maxWidth' && strtolower($value) === 'none') {
             return true;
         }
 

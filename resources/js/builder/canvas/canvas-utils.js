@@ -44,14 +44,15 @@ window.BuilderCanvasUtils = {
 
                 el.classList.remove(
 
-                    'outline',
-                    'outline-2',
-                    'outline-dashed',
-                    'outline-pink-500',
-                    'outline-offset-[-2px]',
                     'relative',
                     'z-[1]'
 
+                );
+
+                delete el.dataset.builderHoverState;
+
+                BuilderOverlayTheme.clearOutline(
+                    el
                 );
 
             });
@@ -68,13 +69,14 @@ window.BuilderCanvasUtils = {
 
         if (!element) return;
 
+        BuilderOverlayTheme.applyOutline(
+            element,
+            'active',
+            BuilderOverlayTheme.pathOutlineOptions(0)
+        );
+
         element.classList.add(
 
-            'outline',
-            'outline-2',
-            'outline-dashed',
-            'outline-pink-500',
-            'outline-offset-[-2px]',
             'relative',
             'z-[1]'
 

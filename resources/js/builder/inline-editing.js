@@ -100,9 +100,10 @@ window.BuilderInlineEditing = {
                 |------------------------------------------------------
                 */
 
-                if (!node.props) {
-                    node.props = {};
-                }
+                node.props =
+                    BuilderStructureRules.ensurePlainProps(
+                        node.props
+                    );
 
                 /*
                 |------------------------------------------------------
@@ -112,7 +113,9 @@ window.BuilderInlineEditing = {
                 BuilderCommands.updateNodeProps(
                     nodeId,
                     field,
-                    editable.innerText,
+                    field === 'html'
+                        ? editable.innerHTML
+                        : editable.innerText,
                     {
                         render: false
                     }

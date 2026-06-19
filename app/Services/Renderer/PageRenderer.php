@@ -52,7 +52,10 @@ class PageRenderer
     private function renderNode(
         array $node,
         string $mode,
-        int $depth = 0
+        int $depth = 0,
+        ?array $parentNode = null,
+        int $siblingIndex = 0,
+        int $siblingCount = 1
     ): string {
         if ($depth > self::MAX_DEPTH) {
             return '';
@@ -60,7 +63,9 @@ class PageRenderer
 
         $type = $node['type'] ?? null;
 
-        $props = $node['props'] ?? [];
+        $props = $this->normalizeProps(
+            $node['props'] ?? []
+        );
 
         $children = $node['children'] ?? [];
 
@@ -99,12 +104,15 @@ class PageRenderer
         // render children
         $childrenHtml = '';
 
-        foreach ($children as $child) {
+        foreach ($children as $index => $child) {
 
             $childrenHtml .= $this->renderNode(
                 $child,
                 $mode,
-                $depth + 1
+                $depth + 1,
+                $node,
+                $index,
+                count($children)
             );
 
         }
@@ -128,6 +136,18 @@ class PageRenderer
                 'isPreview' => $mode === 'preview',
 
                 'isLive' => $mode === 'live',
+
+                'parentNode' => $parentNode,
+
+                'parentType' => $parentNode['type'] ?? null,
+
+                'parentProps' => $this->normalizeProps(
+                    $parentNode['props'] ?? []
+                ),
+
+                'siblingIndex' => $siblingIndex,
+
+                'siblingCount' => $siblingCount,
 
             ])->render();
 
@@ -155,6 +175,17 @@ class PageRenderer
         }
 
         return $props;
+    }
+
+    private function normalizeProps(mixed $props): array
+    {
+        if (! is_array($props)) {
+            return [];
+        }
+
+        return array_is_list($props)
+            ? []
+            : $props;
     }
 
     /**

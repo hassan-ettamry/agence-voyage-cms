@@ -9,6 +9,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use App\Scopes\AgencyScope;
 
 class User extends Authenticatable
@@ -36,10 +37,21 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'display_name',
         'email',
+        'phone',
+        'bio',
         'password',
         'agency_id',
         'role_id',
+        'avatar_path',
+        'language',
+        'timezone',
+        'date_format',
+        'time_format',
+        'profile_preferences',
+        'last_login_at',
+        'password_changed_at',
     ];
 
     /**
@@ -55,6 +67,13 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'profile_preferences' => 'array',
+        'last_login_at' => 'datetime',
+        'password_changed_at' => 'datetime',
+    ];
+
+    protected $appends = [
+        'avatar_url',
     ];
 
     /**
@@ -112,6 +131,16 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->avatar_path ? Storage::disk('public')->url($this->avatar_path) : null;
+    }
+
+    public function displayName(): string
+    {
+        return $this->display_name ?: $this->name;
     }
 
     /**

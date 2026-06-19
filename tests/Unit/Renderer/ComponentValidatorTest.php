@@ -61,6 +61,49 @@ class ComponentValidatorTest extends TestCase
         ];
     }
 
+    #[DataProvider('safeWidgetUrls')]
+    public function test_it_accepts_safe_widget_urls(string $key, string $url): void
+    {
+        $this->validator->validate('link', [
+            $key => $url,
+        ], null);
+
+        $this->assertTrue(true);
+    }
+
+    public static function safeWidgetUrls(): array
+    {
+        return [
+            ['url', '#'],
+            ['url', '/contact'],
+            ['url', 'https://example.com/page'],
+            ['url', 'mailto:hello@example.com'],
+            ['url', 'tel:+212600000000'],
+            ['embedUrl', 'https://www.google.com/maps?q=Rabat&output=embed'],
+            ['actionUrl', '/contact'],
+        ];
+    }
+
+    #[DataProvider('unsafeWidgetUrls')]
+    public function test_it_rejects_unsafe_widget_urls(string $key, string $url): void
+    {
+        $this->expectException(ValidationException::class);
+
+        $this->validator->validate('link', [
+            $key => $url,
+        ], null);
+    }
+
+    public static function unsafeWidgetUrls(): array
+    {
+        return [
+            ['url', 'javascript:alert(1)'],
+            ['url', 'data:text/html,<svg onload=alert(1)>'],
+            ['embedUrl', '//evil.example/map'],
+            ['actionUrl', 'https://example.com/form" onsubmit="alert(1)'],
+        ];
+    }
+
     #[DataProvider('safeColors')]
     public function test_it_accepts_safe_colors(string $color): void
     {
@@ -161,6 +204,13 @@ class ComponentValidatorTest extends TestCase
             'borderStyle' => 'dashed',
         ], null);
 
+        $this->validator->validate('container', [
+            'containerRole' => 'grid-item',
+            'overflow' => 'visible',
+            'visibility' => 'visible',
+            'position' => 'relative',
+        ], null);
+
         $this->assertTrue(true);
     }
 
@@ -186,6 +236,33 @@ class ComponentValidatorTest extends TestCase
             'src' => '/storage/photo.jpg',
             'backgroundColor' => '#ffffff',
         ], $schema);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_max_width_accepts_none_for_layout_defaults(): void
+    {
+        $this->validator->validate('container', [
+            'maxWidth' => 'none',
+        ], null);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_container_role_preset_metadata_is_allowed(): void
+    {
+        $this->validator->validate('container', [
+            'containerRole' => 'grid',
+            'rolePreset' => [
+                'role' => 'grid',
+                'version' => 1,
+                'applied' => [
+                    'display' => 'grid',
+                    'gridColumns' => 12,
+                    'gap' => 24,
+                ],
+            ],
+        ], null);
 
         $this->assertTrue(true);
     }

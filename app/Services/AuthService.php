@@ -2,39 +2,38 @@
 
 namespace App\Services;
 
-use App\Models\User;
 use App\Models\Agency;
+use App\Models\User;
+use App\Support\DefaultAgencyRoles;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class AuthService
 {
-    /**
-     * Enregistrer une nouvelle agence + utilisateur admin
-     */
     public function register(array $data): User
     {
         return DB::transaction(function () use ($data) {
-
-            // Création de l'agence
             $agency = Agency::create([
                 'name' => $data['agency_name'],
                 'email' => $data['email'],
                 'slug' => Str::slug($data['agency_name']),
                 'status' => 'active',
                 'plan' => 'free',
+                'onboarding_status' => Agency::ONBOARDING_PENDING,
+                'onboarding_step' => Agency::ONBOARDING_STEP_PROFILE,
+                'onboarding_auto_start' => true,
             ]);
 
-            // Création de l'utilisateur admin
-            $user = User::create([
+            $adminRole = DefaultAgencyRoles::ensureForAgency($agency);
+            app(MenuService::class)->ensureDefaultForAgency($agency->id);
+
+            return User::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
-                'password' => $data['password'], // hash déjà géré dans le model
+                'password' => $data['password'],
                 'agency_id' => $agency->id,
-                'role' => 'admin',
+                'role_id' => $adminRole->id,
             ]);
-
-            return $user;
         });
     }
 }

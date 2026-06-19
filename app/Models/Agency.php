@@ -7,54 +7,109 @@ use Illuminate\Support\Str;
 
 class Agency extends Model
 {
-    // Désactive l'auto-incrémentation (on utilise UUID)
+    public const ONBOARDING_PENDING = 'pending';
+    public const ONBOARDING_IN_PROGRESS = 'in_progress';
+    public const ONBOARDING_COMPLETED = 'completed';
+
+    public const ONBOARDING_STEP_PROFILE = 'profile';
+    public const ONBOARDING_STEP_TEMPLATE = 'template';
+    public const ONBOARDING_STEP_THEME = 'theme';
+    public const ONBOARDING_STEP_REVIEW = 'review';
+
     public $incrementing = false;
 
-    // Type de la clé primaire (string au lieu d'int)
     protected $keyType = 'string';
 
-    // Champs autorisés pour le remplissage en masse (mass assignment)
     protected $fillable = [
         'name',
         'slug',
         'email',
         'phone',
+        'address',
         'logo',
         'settings',
         'plan',
         'status',
+        'theme_id',
+        'theme_overrides',
+        'active_site_template_id',
+        'template_applied_at',
+        'onboarding_status',
+        'onboarding_step',
+        'onboarding_data',
+        'onboarding_auto_start',
+        'onboarding_completed_at',
     ];
 
-    // Cast automatique des champs
     protected $casts = [
-        'settings' => 'array', // Convertit JSON ↔ array automatiquement
+        'settings' => 'array',
+        'theme_overrides' => 'array',
+        'template_applied_at' => 'datetime',
+        'onboarding_data' => 'array',
+        'onboarding_auto_start' => 'boolean',
+        'onboarding_completed_at' => 'datetime',
     ];
 
-    /**
-     * Méthode boot : appelée au démarrage du modèle
-     */
     protected static function boot()
     {
         parent::boot();
 
-        // Événement exécuté lors de la création d'une agence
         static::creating(function ($model) {
-
-            // Génération automatique d'un UUID pour l'id
             $model->id = (string) Str::uuid();
 
-            // Génération automatique du slug si non fourni
-            if (!$model->slug) {
+            if (! $model->slug) {
                 $model->slug = Str::slug($model->name);
             }
         });
     }
 
-    /**
-     * Relation : une agence possède plusieurs utilisateurs
-     */
     public function users()
     {
         return $this->hasMany(User::class);
+    }
+
+    public function destinations()
+    {
+        return $this->hasMany(Destination::class);
+    }
+
+    public function offers()
+    {
+        return $this->hasMany(Offer::class);
+    }
+
+    public function mediaAssets()
+    {
+        return $this->hasMany(MediaAsset::class);
+    }
+
+    public function menus()
+    {
+        return $this->hasMany(Menu::class);
+    }
+
+    public function theme()
+    {
+        return $this->belongsTo(Theme::class);
+    }
+
+    public function activeSiteTemplate()
+    {
+        return $this->belongsTo(SiteTemplate::class, 'active_site_template_id');
+    }
+
+    public function siteArchives()
+    {
+        return $this->hasMany(SiteArchive::class);
+    }
+
+    public function onboardingIsComplete(): bool
+    {
+        return $this->onboarding_status === self::ONBOARDING_COMPLETED;
+    }
+
+    public function shouldAutoStartOnboarding(): bool
+    {
+        return $this->onboarding_auto_start && ! $this->onboardingIsComplete();
     }
 }

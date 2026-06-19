@@ -6,19 +6,18 @@
 
     {{-- LEFT SIDE (garde même style que pages) --}}
     <x-slot name="left">
-        <button class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm">
-            Users
-        </button>
-
-        <button class="inline-flex items-center gap-1.5 border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-sm">
-            Manage
-        </button>
+        <a href="{{ url('/') }}" target="_blank" rel="noopener">
+            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="11" cy="12" r="7"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h14M11 5c2 2 3 4.3 3 7s-1 5-3 7M11 5c-2 2-3 4.3-3 7s1 5 3 7M16 5h3v3M19 5l-5 5"/>
+            </svg>
+            Visit site
+        </a>
     </x-slot>
 
     {{-- RIGHT SIDE --}}
     <x-slot name="right">
-        <button onclick="openModal('createUserModal')"
-                class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm shadow-sm">
+        <button type="button" onclick="openModal('createUserModal')">
             + New User
         </button>
     </x-slot>
@@ -58,6 +57,12 @@
             Export
         </button>
 
+        <button type="button"
+                onclick="openModal('createUserModal')"
+                class="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition flex items-center gap-1.5">
+            + New User
+        </button>
+
     </x-slot>
 
     {{-- TABLE --}}
@@ -85,7 +90,8 @@
                     $color = $colors[crc32($user->name) % count($colors)];
                 @endphp
 
-                <tr class="hover:bg-gray-50 transition">
+                <tr class="hover:bg-gray-50 transition user-row"
+                    data-filter-value="{{ $user->role?->slug === 'admin' ? 'admin' : 'users' }}">
 
                     {{-- ID --}}
                     <td class="px-5 py-3.5 text-gray-400 text-xs font-mono">

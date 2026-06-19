@@ -25,6 +25,21 @@ window.BuilderSettingsUpdater = {
 
         if (!node) return;
 
+        if (
+            key === 'containerRole'
+            &&
+            node.type === 'container'
+            &&
+            window.BuilderContainerRoles
+        ) {
+            node.props =
+                BuilderContainerRoles.prepareRoleChange(
+                    BuilderStructureRules.ensurePlainProps(
+                        node.props
+                    )
+                );
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Update Props
@@ -41,128 +56,156 @@ window.BuilderSettingsUpdater = {
 
         /*
         |--------------------------------------------------------------------------
-        | Sync Row Columns
-        |--------------------------------------------------------------------------
-        */
-
-        this.syncRowColumns(
-
-            node,
-            key,
-            value
-
-        );
-
-        /*
-        |--------------------------------------------------------------------------
         | Save History
         |--------------------------------------------------------------------------
         */
 
         BuilderHistory.push();
 
+        if ([
+            'containerRole',
+            'linkType',
+            'source',
+            'showCta',
+            'icon',
+            'display',
+            'backgroundMode',
+            'sourceType'
+        ].includes(key)) {
+            this.refreshSettingsPanel(nodeId);
+        }
+
     },
 
     /*
     |--------------------------------------------------------------------------
-    | Sync Row Columns
+    | Apply Container Role Preset
     |--------------------------------------------------------------------------
     */
 
-    syncRowColumns(
-        node,
-        key,
-        value
-    ) {
+    applyContainerRolePreset(nodeId) {
 
-        if (
-
-            node.type !== 'row'
-
-            ||
-
-            key !== 'columns'
-
-        ) {
-
-            return;
-
-        }
-
-        const columns =
-            parseInt(value);
-
-        /*
-        |--------------------------------------------------------------------------
-        | Ensure Children
-        |--------------------------------------------------------------------------
-        */
-
-        if (!node.children) {
-
-            node.children = [];
-
-        }
-
-        let changed = false;
-
-        /*
-        |--------------------------------------------------------------------------
-        | Add Missing Columns
-        |--------------------------------------------------------------------------
-        */
-
-        while (
-            node.children.length < columns
-        ) {
-
-            node.children.push({
-
-                id:
-                    BuilderComponentUtils.generateId(),
-
-                type: 'column',
-
-                accepts:
-                    BuilderStructureRules.acceptsForType(
-                        'column'
-                    ),
-
-                props: {},
-
-                children: []
-
-            });
-
-            changed = true;
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Remove Extra Columns
-        |--------------------------------------------------------------------------
-        */
-
-        while (
-            node.children.length > columns
-        ) {
-
-            node.children.pop();
-
-            changed = true;
-
-        }
-
-        if (changed) {
-
-            BuilderStructureRules.normalizeStore();
-
-            BuilderEventBus.emit(
-                BuilderEvents.STRUCTURE_UPDATED
+        const node =
+            Builder.findNodeById(
+                nodeId
             );
 
+        if (
+            !node
+            ||
+            node.type !== 'container'
+            ||
+            !window.BuilderContainerRoles
+        ) {
+            return;
         }
+
+        node.props =
+            BuilderStructureRules.ensurePlainProps(
+                node.props
+            );
+
+        const result =
+            BuilderContainerRoles.applyPreset(
+                node.props.containerRole || 'group',
+                node.props
+            );
+
+        node.props = result.props;
+
+        BuilderEventBus.emit(
+            BuilderEvents.NODE_UPDATED,
+            {
+                nodeId,
+                key: 'rolePreset',
+                value: node.props.rolePreset
+            }
+        );
+
+        BuilderHistory.push();
+
+        this.refreshSettingsPanel(nodeId);
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Use Theme Default
+    |--------------------------------------------------------------------------
+    */
+
+    useThemeDefault(nodeId, key) {
+
+        const node =
+            Builder.findNodeById(
+                nodeId
+            );
+
+        if (!node || !key) {
+            return;
+        }
+
+        node.props =
+            BuilderStructureRules.ensurePlainProps(
+                node.props
+            );
+
+        if (
+            !Object.prototype.hasOwnProperty.call(
+                node.props,
+                key
+            )
+        ) {
+            return;
+        }
+
+        delete node.props[key];
+
+        BuilderEventBus.emit(
+            BuilderEvents.NODE_UPDATED,
+            {
+                nodeId,
+                key,
+                value: undefined
+            }
+        );
+
+        BuilderHistory.push();
+
+        this.refreshSettingsPanel(nodeId);
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Refresh Settings Panel
+    |--------------------------------------------------------------------------
+    */
+
+    refreshSettingsPanel(nodeId) {
+
+        if (
+            BuilderStore.selectedNodeId !== nodeId
+            ||
+            !window.BuilderSettingsPanel
+        ) {
+            return;
+        }
+
+        const node =
+            Builder.findNodeById(
+                nodeId
+            );
+
+        if (!node) {
+            return;
+        }
+
+        BuilderSettingsPanel.render(
+            node,
+            BuilderSchema.get(node.type),
+            nodeId
+        );
 
     }
 

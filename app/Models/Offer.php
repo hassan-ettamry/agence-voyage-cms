@@ -2,109 +2,122 @@
 
 namespace App\Models;
 
+use App\Scopes\AgencyScope;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Offer extends Model
 {
-    // UUID au lieu d’auto-increment
+    public const STATUS_DRAFT = 'draft';
+    public const STATUS_PUBLISHED = 'published';
+
     public $incrementing = false;
 
-    // Clé primaire en string
     protected $keyType = 'string';
 
-    // Champs autorisés
     protected $fillable = [
-        'agency_id',       // multi-tenant
-        'destination_id',  // relation vers destination
-        'title',           // titre de l’offre
-        'description',     // description
-        'price',           // prix (decimal)
-        'duration_days',   // durée en jours
-        'is_special'       // offre spéciale (promo)
+        'agency_id',
+        'destination_id',
+        'media_asset_id',
+        'title',
+        'slug',
+        'description',
+        'price',
+        'duration_days',
+        'is_special',
+        'status',
     ];
 
-    // Cast automatique
     protected $casts = [
-        'price' => 'decimal:2', 
+        'price' => 'decimal:2',
         'is_special' => 'boolean',
     ];
 
-    /**
-     * Boot : avant création
-     */
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($model) {
-
-            // Sécurité : agency obligatoire
-            if (!$model->agency_id) {
+            if (! $model->agency_id) {
                 throw new \InvalidArgumentException('Agency ID is required');
             }
 
-            // UUID
-            if (!$model->id) {
+            if (! $model->id) {
                 $model->id = (string) Str::uuid();
             }
-        });
-    }
 
-    /**
-     * Global Scope multi-tenant
-     */
-    protected static function booted()
-    {
-        static::addGlobalScope('agency', function ($query) {
+            if (! $model->slug) {
+                $model->slug = static::uniqueSlug($model->title, $model->agency_id);
+            }
 
-            if (app()->bound('auth') && auth()->hasUser()) {
-                $agencyId = auth()->user()->agency_id;
-
-                if ($agencyId) {
-                    $query->where('agency_id', $agencyId);
-                }
+            if (! $model->status) {
+                $model->status = self::STATUS_DRAFT;
             }
         });
     }
 
-    /**
-     * Relation : offre → agence
-     */
+    protected static function booted()
+    {
+        static::addGlobalScope(new AgencyScope);
+    }
+
     public function agency()
     {
         return $this->belongsTo(Agency::class);
     }
 
-    /**
-     * Relation : offre → destination
-     */
     public function destination()
     {
         return $this->belongsTo(Destination::class);
     }
 
-    /**
-     * Scope : offres spéciales
-     */
+    public function media()
+    {
+        return $this->belongsTo(MediaAsset::class, 'media_asset_id');
+    }
+
     public function scopeSpecial($query)
     {
         return $query->where('is_special', true);
     }
 
-    /**
-     * Scope : filtrer par agence
-     */
+    public function scopePublished($query)
+    {
+        return $query->where('status', self::STATUS_PUBLISHED);
+    }
+
     public function scopeForAgency($query, $agencyId)
     {
         return $query->where('agency_id', $agencyId);
     }
 
-    /**
-     * Helper : vérifier si spécial
-     */
     public function isSpecial(): bool
     {
-        return $this->is_special;
+        return (bool) $this->is_special;
+    }
+
+    public function isPublished(): bool
+    {
+        return $this->status === self::STATUS_PUBLISHED;
+    }
+
+    public static function uniqueSlug(string $title, string $agencyId, ?string $ignoreId = null): string
+    {
+        $base = Str::slug($title) ?: 'offer';
+        $slug = $base;
+        $count = 1;
+
+        while (
+            static::withoutGlobalScopes()
+                ->where('agency_id', $agencyId)
+                ->where('slug', $slug)
+                ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $slug = "{$base}-{$count}";
+            $count++;
+        }
+
+        return $slug;
     }
 }

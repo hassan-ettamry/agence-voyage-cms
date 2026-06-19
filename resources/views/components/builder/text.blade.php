@@ -24,7 +24,7 @@
 
     style="
         color:
-            {{ $props['color'] ?? '#374151' }};
+            {{ $props['color'] ?? 'var(--site-text, #374151)' }};
 
         font-size:
             {{ ($props['fontSize'] ?? 16) . 'px' }};

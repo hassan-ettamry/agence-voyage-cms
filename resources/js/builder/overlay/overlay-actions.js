@@ -172,4 +172,35 @@ window.BuilderOverlayActions = {
 
     }
 
+    ,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Delete
+    |--------------------------------------------------------------------------
+    */
+
+    delete(nodeId) {
+
+        if (!nodeId) {
+            return;
+        }
+
+        BuilderNodes.remove(
+            nodeId
+        );
+
+        if (BuilderStore.selectedNodeId === nodeId) {
+            BuilderSelectionManager.clear({
+                settings: true
+            });
+        }
+
+        BuilderHistory.push();
+        BuilderRenderManager.requestRender(
+            'overlay.delete'
+        );
+
+    }
+
 };

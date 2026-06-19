@@ -1,3 +1,32 @@
+const BuilderWidgetTypes = [
+    'text',
+    'richtext',
+    'heading',
+    'button',
+    'image',
+    'icon',
+    'icon-text',
+    'link',
+    'video',
+    'iframe',
+    'gallery',
+    'map',
+    'contact-form',
+    'faq',
+    'countdown',
+    'hero',
+    'destination-grid',
+    'featured-destinations',
+    'offer-grid',
+    'special-offers',
+    'offer-card'
+];
+
+const BuilderContainerChildren = [
+    'container',
+    ...BuilderWidgetTypes
+];
+
 window.BuilderStructureRules = {
 
     /*
@@ -12,47 +41,50 @@ window.BuilderStructureRules = {
 
         text: [],
 
+        richtext: [],
+
         heading: [],
 
         button: [],
 
         image: [],
 
+        icon: [],
+
+        'icon-text': [],
+
+        link: [],
+
+        video: [],
+
+        iframe: [],
+
+        gallery: [],
+
+        map: [],
+
+        'contact-form': [],
+
+        faq: [],
+
+        countdown: [],
+
+        'destination-grid': [],
+
+        'featured-destinations': [],
+
+        'offer-grid': [],
+
+        'special-offers': [],
+
+        'offer-card': [],
+
         section: [
-            'text',
-            'heading',
-            'button',
-            'image',
-            'container',
-            'section',
-            'row',
-            'hero'
+            ...BuilderContainerChildren
         ],
 
         container: [
-            'text',
-            'heading',
-            'button',
-            'image',
-            'container',
-            'section',
-            'row',
-            'hero'
-        ],
-
-        column: [
-            'text',
-            'heading',
-            'button',
-            'image',
-            'container',
-            'section',
-            'row',
-            'hero'
-        ],
-
-        row: [
-            'column'
+            ...BuilderContainerChildren
         ]
 
     },
@@ -68,6 +100,77 @@ window.BuilderStructureRules = {
         return [
             ...(this.acceptedChildren[type] || [])
         ];
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Props Normalization
+    |--------------------------------------------------------------------------
+    */
+
+    isPlainObject(value) {
+
+        return (
+            value !== null
+            &&
+            typeof value === 'object'
+            &&
+            !Array.isArray(value)
+            &&
+            Object.prototype.toString.call(value) === '[object Object]'
+        );
+
+    },
+
+    ensurePlainProps(props) {
+
+        return this.isPlainObject(props)
+            ? props
+            : {};
+
+    },
+
+    normalizeNode(node) {
+
+        if (!node || typeof node !== 'object' || Array.isArray(node)) {
+            return null;
+        }
+
+        node.props =
+            this.ensurePlainProps(
+                node.props
+            );
+
+        if (!Array.isArray(node.children)) {
+            node.children = [];
+        }
+
+        return node;
+
+    },
+
+    normalizeContainerRole(node, parent = null, siblingIndex = 0) {
+
+        if (
+            node?.type !== 'container'
+            ||
+            !window.BuilderContainerRoles
+        ) {
+            return;
+        }
+
+        node.props =
+            this.ensurePlainProps(
+                node.props
+            );
+
+        node.props.containerRole =
+            BuilderContainerRoles.infer(
+                node,
+                parent,
+                siblingIndex
+            );
 
     },
 
@@ -126,6 +229,15 @@ window.BuilderStructureRules = {
     */
 
     insertNode(node, targetId = null, position = 'after') {
+
+        node =
+            this.normalizeNode(
+                node
+            );
+
+        if (!node) {
+            return null;
+        }
 
         const placement =
             this.findPlacement(
@@ -350,11 +462,22 @@ window.BuilderStructureRules = {
         const normalized = [];
         const overflow = [];
 
-        nodes.forEach(node => {
+        nodes.forEach((node, index) => {
 
-            if (!node || typeof node !== 'object') {
+            node =
+                this.normalizeNode(
+                    node
+                );
+
+            if (!node) {
                 return;
             }
+
+            this.normalizeContainerRole(
+                node,
+                parent,
+                index
+            );
 
             const childResult =
                 this.normalizeCollection(

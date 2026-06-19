@@ -13,7 +13,12 @@ window.BuilderSchema = {
         if (!component)
             return null;
 
-        return component.schema_json || null;
+        const schema =
+            component.schema_json || null;
+
+        return window.BuilderControlSchemas
+            ? BuilderControlSchemas.get(type, schema)
+            : schema;
     }
 
 };

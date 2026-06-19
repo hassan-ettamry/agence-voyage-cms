@@ -18,6 +18,14 @@ window.BuilderComponentFactory = {
         const component =
             factory();
 
+        if (window.BuilderStructureRules) {
+
+            BuilderStructureRules.normalizeNode(
+                component
+            );
+
+        }
+
         component.id =
             BuilderComponentUtils.generateId();
 

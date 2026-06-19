@@ -38,6 +38,8 @@ window.BuilderHistory = {
             return;
         }
 
+        BuilderStructureRules.normalizeStore();
+
         const snapshot = JSON.stringify(
             BuilderStore.getStructure()
         );

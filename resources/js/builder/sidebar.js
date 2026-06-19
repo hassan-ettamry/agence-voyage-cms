@@ -1,5 +1,58 @@
 window.BuilderSidebar = {
 
+    componentLabels: {
+        richtext: 'RichText',
+        text: 'Text',
+        heading: 'Heading',
+        button: 'Button',
+        image: 'Image',
+        icon: 'Icon',
+        'icon-text': 'Icon With Text',
+        link: 'Link',
+        video: 'Video',
+        iframe: 'iFrame',
+        gallery: 'Gallery',
+        map: 'Map',
+        'contact-form': 'Contact Form',
+        faq: 'FAQ',
+        countdown: 'Countdown',
+        section: 'Section',
+        container: 'Container',
+        hero: 'Hero'
+    },
+
+    componentLabel(type) {
+
+        if (!type) {
+            return '';
+        }
+
+        return this.componentLabels[type]
+            || type
+                .split('-')
+                .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+                .join(' ');
+
+    },
+
+    setTitle(title = null) {
+
+        const panelTitle =
+            document.getElementById(
+                'builder-panel-title'
+            );
+
+        if (!panelTitle) {
+            return;
+        }
+
+        panelTitle.textContent =
+            title
+            || panelTitle.dataset.pageTitle
+            || '';
+
+    },
+
     switchTab(tab) {
 
         const buttons =
@@ -35,14 +88,15 @@ window.BuilderSidebar = {
             .forEach(button => {
 
                 button.classList.remove(
-                    'border-blue-600',
-                    'text-blue-600',
-                    'font-semibold'
+                    'border-b-slate-900',
+                    'bg-[#eff6ff]',
+                    'font-medium'
                 );
 
                 button.classList.add(
-                    'border-transparent',
-                    'text-gray-500'
+                    'border-b-transparent',
+                    'bg-white',
+                    'text-slate-800'
                 );
             });
 
@@ -52,14 +106,16 @@ window.BuilderSidebar = {
             });
 
         activeButton.classList.remove(
-            'border-transparent',
-            'text-gray-500'
+            'border-b-transparent',
+            'bg-white',
+            'text-slate-800'
         );
 
         activeButton.classList.add(
-            'border-blue-600',
-            'text-blue-600',
-            'font-semibold'
+            'border-b-slate-900',
+            'bg-[#eff6ff]',
+            'text-slate-800',
+            'font-medium'
         );
 
         activeContent.classList.remove('hidden');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Page;
 
+use App\Models\Menu;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -35,7 +36,28 @@ class StorePageRequest extends FormRequest
             'status' => ['nullable', 'in:draft,published'],
             'meta_title' => ['nullable', 'string', 'max:60'],
             'meta_description' => ['nullable', 'string', 'max:160'],
+            'menu_selection' => ['nullable', 'string'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $selection = $this->input('menu_selection', 'none');
+
+            if (in_array($selection, ['none', 'default', null, ''], true)) {
+                return;
+            }
+
+            $exists = Menu::withoutGlobalScopes()
+                ->where('agency_id', $this->user()->agency_id)
+                ->whereKey($selection)
+                ->exists();
+
+            if (! $exists) {
+                $validator->errors()->add('menu_selection', 'Le menu selectionne est invalide.');
+            }
+        });
     }
 
     /**
@@ -60,6 +82,10 @@ class StorePageRequest extends FormRequest
             $this->merge([
                 'slug' => \Illuminate\Support\Str::slug($this->title)
             ]);
+        }
+
+        if (! $this->filled('menu_selection')) {
+            $this->merge(['menu_selection' => 'none']);
         }
     }
 }

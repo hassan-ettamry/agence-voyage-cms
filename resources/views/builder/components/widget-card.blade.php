@@ -9,9 +9,11 @@
 
     class="group
            flex flex-col items-center justify-center
-           gap-1.5
-           p-3
-           rounded-lg
+           gap-1
+           h-[80px]
+           w-[114px]
+           p-2
+           rounded-md
            border border-gray-200
            cursor-pointer
            transition-all
@@ -24,14 +26,18 @@
     {{-- ICON --}}
     <div class="w-6 h-6 text-gray-500 group-hover:text-blue-600 transition-colors">
 
-        <x-dynamic-component
-            :component="'heroicon-o-' . $icon"
-        />
+        @php
+            $icon = is_string($icon ?? null) && preg_match('/^[a-z0-9-]+$/', $icon)
+                ? $icon
+                : 'square-3-stack-3d';
+        @endphp
+
+        <x-dynamic-component :component="'heroicon-o-' . $icon" />
 
     </div>
 
     {{-- LABEL --}}
-    <span class="text-[11px]
+    <span class="text-[12px]
                  text-center
                  text-gray-600
                  group-hover:text-blue-700

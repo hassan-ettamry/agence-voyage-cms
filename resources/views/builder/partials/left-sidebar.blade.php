@@ -1,14 +1,22 @@
-<div id="left-panel" class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0 overflow-hidden">
+<div
+    id="left-panel"
+    class="bg-white border-r border-gray-200 flex flex-col shrink-0 overflow-hidden"
+    style="width: 260px; min-width: 260px; max-width: 260px;"
+>
 
     {{-- Panel Title --}}
-    @component('builder.components.panel-title')
-        <span class="text-xs font-semibold text-gray-500 uppercase tracking-widest">
+    <div class="flex h-[56px] items-center justify-center border-b border-gray-200 bg-white px-4">
+        <span
+            id="builder-panel-title"
+            class="text-sm font-semibold text-slate-800"
+            data-page-title="{{ $page->title ?? 'My test page' }}"
+        >
             {{ $page->title ?? 'My test page' }}
         </span>
-    @endcomponent
+    </div>
 
     {{-- Tabs --}}
-    <div class="flex border-b border-gray-200 text-xs font-medium overflow-x-auto shrink-0">
+    <div class="grid h-[39px] grid-cols-3 border-b border-gray-200 bg-white text-[13px] font-medium shrink-0">
         @php
             $icons = require base_path('resources/views/builder/data/icons.php');
             $tabs = [
@@ -29,9 +37,12 @@
     </div>
 
     {{-- Widgets Tab --}}
-    <div id="tab-widgets" class="left-tab-content flex-1 overflow-y-auto p-3">
+    <div id="tab-widgets" class="left-tab-content flex-1 overflow-y-auto px-3 py-3">
 
-        <div class="grid grid-cols-2 gap-2">
+        <div
+            class="grid justify-center"
+            style="grid-template-columns: repeat(2, 114px); gap: 8px;"
+        >
 
             @foreach($widgets as $w)
 
@@ -58,6 +69,7 @@
             flex-1
             overflow-y-auto
             bg-gray-50
+            builder-left-scroll
         "
     >
 

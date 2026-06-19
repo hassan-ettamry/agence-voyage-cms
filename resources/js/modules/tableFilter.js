@@ -1,9 +1,9 @@
 export function initTableFilter() {
 
-    const buttons = document.querySelectorAll('.filter-btn');
+    const buttons = document.querySelectorAll('button.filter-btn');
     if (!buttons.length) return;
 
-    const rows = document.querySelectorAll('.page-row');
+    const rows = document.querySelectorAll('[data-filter-value]');
     const emptyRow = document.getElementById('empty-state-row');
 
     buttons.forEach(btn => {
@@ -27,7 +27,7 @@ export function initTableFilter() {
         let visibleCount = 0;
 
         rows.forEach(row => {
-            const type = row.dataset.type;
+            const type = row.dataset.filterValue;
 
             if (filter === 'all' || type === filter) {
                 row.style.display = '';

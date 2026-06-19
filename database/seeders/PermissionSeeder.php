@@ -27,6 +27,21 @@ class PermissionSeeder extends Seeder
             ['name' => 'Create Permission', 'slug' => 'permission.create'],
             ['name' => 'Update Permission', 'slug' => 'permission.update'],
             ['name' => 'Delete Permission', 'slug' => 'permission.delete'],
+            ['name' => 'View Destinations', 'slug' => 'destination.view'],
+            ['name' => 'Create Destination', 'slug' => 'destination.create'],
+            ['name' => 'Update Destination', 'slug' => 'destination.update'],
+            ['name' => 'Delete Destination', 'slug' => 'destination.delete'],
+            ['name' => 'View Offers', 'slug' => 'offer.view'],
+            ['name' => 'Create Offer', 'slug' => 'offer.create'],
+            ['name' => 'Update Offer', 'slug' => 'offer.update'],
+            ['name' => 'Delete Offer', 'slug' => 'offer.delete'],
+            ['name' => 'View Media', 'slug' => 'media.view'],
+            ['name' => 'Upload Media', 'slug' => 'media.upload'],
+            ['name' => 'Update Media', 'slug' => 'media.update'],
+            ['name' => 'Delete Media', 'slug' => 'media.delete'],
+            ['name' => 'View Themes', 'slug' => 'theme.view'],
+            ['name' => 'Apply Theme', 'slug' => 'theme.apply'],
+            ['name' => 'Update Theme', 'slug' => 'theme.update'],
         ];
 
         foreach ($permissions as $perm) {
@@ -34,7 +49,6 @@ class PermissionSeeder extends Seeder
             Permission::updateOrCreate(
                 ['slug' => $perm['slug']], // unique
                 [
-                    'id' => Str::uuid(),
                     'name' => $perm['name'],
                 ]
             );

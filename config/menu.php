@@ -15,10 +15,17 @@ return [
         [
             'label' => 'Pages',
             'route' => 'pages.index',
+            'icon' => 'page',
         ],
         [
-            'label' => 'Navigation',
+            'label' => 'Templates',
+            'route' => 'site-templates.index',
+            'icon' => 'template',
+        ],
+        [
+            'label' => 'Menu',
             'route' => '#',
+            'icon' => 'menu',
         ],
     ],
 ],
@@ -27,50 +34,32 @@ return [
     'label' => 'Content',
     'icon'  => 'content',
     'children' => [
-        ['label' => 'Destinations', 'route' => '#'],
-        ['label' => 'Offers', 'route' => '#'],
-        ['label' => 'Forms', 'route' => '#'],
+        ['label' => 'Destinations', 'route' => 'destinations.index', 'icon' => 'destination'],
+        ['label' => 'Offers', 'route' => 'offers.index', 'icon' => 'offer'],
     ],
 ],
 
 [
     'label' => 'Media',
-    'route' => '#',
+    'route' => 'media.index',
     'icon'  => 'media',
 ],
 
 [
-    'label' => 'Design',
+    'label' => 'Themes',
+    'route' => 'themes.index',
     'icon'  => 'design',
-    'children' => [
-        ['label' => 'Themes', 'route' => '#'],
-        ['label' => 'Styles', 'route' => '#'],
-    ],
+    'active' => 'themes.*',
 ],
 
 [
     'label' => 'Users & Roles',
     'icon'  => 'users',
     'children' => [
-        ['label' => 'Users', 'route' => 'users.index'],
-        ['label' => 'Roles', 'route' => 'roles.index'],
-        ['label' => 'Permissions', 'route' => 'permissions.index'],
+        ['label' => 'Users', 'route' => 'users.index', 'icon' => 'user'],
+        ['label' => 'Roles', 'route' => 'roles.index', 'icon' => 'role'],
+        ['label' => 'Permissions', 'route' => 'permissions.index', 'icon' => 'permission'],
     ],
-],
-
-[
-    'label' => 'Marketing',
-    'icon'  => 'marketing',
-    'children' => [
-        ['label' => 'Contacts', 'route' => '#'],
-        ['label' => 'Deals', 'route' => '#'],
-    ],
-],
-
-[
-    'label' => 'Settings',
-    'route' => '#',
-    'icon'  => 'settings',
 ],
 
 ];

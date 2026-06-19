@@ -6,7 +6,12 @@ window.BuilderOverlayPosition = {
     |--------------------------------------------------------------------------
     */
 
-    calculate(element) {
+    calculate(element, options = {}) {
+
+        const {
+            align = 'left',
+            offsetY = 0
+        } = options;
 
         const rect =
 
@@ -18,22 +23,33 @@ window.BuilderOverlayPosition = {
                 .getWrapper()
                 .getBoundingClientRect();
 
-        return {
-
-            top:
-
+        const top =
+            Math.max(
+                0,
                 rect.top
                 -
                 wrapperRect.top
-                -
-                30,
+                +
+                offsetY
+            );
 
-            left:
+        const rawLeft =
+            align === 'center'
+                ? rect.left - wrapperRect.left + (rect.width / 2)
+                : rect.left - wrapperRect.left;
 
-                rect.left
-                -
-                wrapperRect.left
+        const left =
+            Math.max(
+                0,
+                rawLeft
+            );
 
+        return {
+            top,
+            left,
+            align,
+            width: rect.width,
+            height: rect.height
         };
 
     }

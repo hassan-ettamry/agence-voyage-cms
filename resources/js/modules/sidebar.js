@@ -35,9 +35,33 @@ export function initSidebar() {
     const userMenu = document.querySelector('.user-menu');
 
     if (userMenuToggle && userMenu) {
+        const viewportPadding = 12;
+        const triggerGap = 8;
+        const userMenuAnchor = userMenu.closest('.user-menu-anchor');
+
+        const updateUserMenuSize = () => {
+            if (userMenu.classList.contains('hidden')) {
+                return;
+            }
+
+            const anchorRect = userMenuAnchor?.getBoundingClientRect();
+            const availableHeight = anchorRect
+                ? Math.max(0, anchorRect.top - viewportPadding - triggerGap)
+                : Math.max(0, window.innerHeight - (viewportPadding * 2));
+
+            userMenu.style.maxHeight = `${Math.max(0, Math.floor(availableHeight))}px`;
+        };
+
         const closeUserMenu = () => {
             userMenu.classList.add('hidden');
             userMenuToggle.setAttribute('aria-expanded', 'false');
+            userMenu.style.removeProperty('max-height');
+        };
+
+        const openUserMenu = () => {
+            userMenu.classList.remove('hidden');
+            userMenuToggle.setAttribute('aria-expanded', 'true');
+            updateUserMenuSize();
         };
 
         userMenuToggle.addEventListener('click', (event) => {
@@ -45,8 +69,12 @@ export function initSidebar() {
 
             const isOpen = !userMenu.classList.contains('hidden');
 
-            userMenu.classList.toggle('hidden', isOpen);
-            userMenuToggle.setAttribute('aria-expanded', String(!isOpen));
+            if (isOpen) {
+                closeUserMenu();
+                return;
+            }
+
+            openUserMenu();
         });
 
         userMenu.addEventListener('click', (event) => {
@@ -60,6 +88,9 @@ export function initSidebar() {
                 closeUserMenu();
             }
         });
+
+        window.addEventListener('resize', updateUserMenuSize);
+        window.addEventListener('scroll', updateUserMenuSize, true);
     }
 
     // =========================

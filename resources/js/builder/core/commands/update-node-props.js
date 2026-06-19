@@ -30,9 +30,10 @@ window.BuilderCommands = {
         |--------------------------------------------------------------------------
         */
 
-        if (!node.props) {
-            node.props = {};
-        }
+        node.props =
+            BuilderStructureRules.ensurePlainProps(
+                node.props
+            );
 
         /*
         |--------------------------------------------------------------------------

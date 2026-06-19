@@ -7,13 +7,13 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
             </svg>
-            <h3 class="text-xs font-semibold text-gray-800 uppercase tracking-wider">Layers</h3>
+            <h3 class="text-sm font-semibold text-gray-900">Layers</h3>
         </div>
     @endcomponent
 
     {{-- Layers Tree --}}
     <div class="flex-1 overflow-y-auto" id="layers-panel">
-        <div id="layers-tree" class="py-1 text-xs text-gray-700 select-none" style="font-size: 11px; line-height: 1.4;">
+        <div id="layers-tree" class="py-2 text-[13px] text-slate-700 select-none">
             {{-- Dynamically populated by JS --}}
         </div>
         <div id="layers-empty" class="text-center text-gray-400 text-xs py-10 hidden">No elements on canvas</div>

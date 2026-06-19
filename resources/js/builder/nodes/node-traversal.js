@@ -94,6 +94,84 @@ window.BuilderNodeTraversal = {
 
     /*
     |--------------------------------------------------------------------------
+    | Find Ancestors
+    |--------------------------------------------------------------------------
+    */
+
+    findAncestors(
+
+        nodeId,
+
+        nodes = BuilderStore.structure,
+
+        path = []
+
+    ) {
+
+        for (const node of nodes) {
+
+            if (node.id === nodeId) {
+                return path;
+            }
+
+            if (node.children?.length) {
+
+                const found = this.findAncestors(
+
+                    nodeId,
+
+                    node.children,
+
+                    [
+                        ...path,
+                        node
+                    ]
+
+                );
+
+                if (found) {
+                    return found;
+                }
+
+            }
+
+        }
+
+        return null;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Direct Children By Type
+    |--------------------------------------------------------------------------
+    */
+
+    directChildrenByType(
+
+        nodeId,
+
+        type
+
+    ) {
+
+        const node =
+            this.findNodeById(
+                nodeId
+            );
+
+        if (!node?.children?.length) {
+            return [];
+        }
+
+        return node.children.filter(
+            child => child.type === type
+        );
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
     | Find Node Index
     |--------------------------------------------------------------------------
     */

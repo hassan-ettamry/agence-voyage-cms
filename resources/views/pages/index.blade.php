@@ -6,19 +6,18 @@
 
     {{-- LEFT SIDE --}}
     <x-slot name="left">
-        <button class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm">
-            Gallery
-        </button>
-
-        <button class="inline-flex items-center gap-1.5 border border-gray-300 hover:bg-gray-50 px-3 py-1.5 rounded-lg text-sm">
+        <a href="{{ url('/') }}" target="_blank" rel="noopener">
+            <svg class="h-[18px] w-[18px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                <circle cx="11" cy="12" r="7"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 12h14M11 5c2 2 3 4.3 3 7s-1 5-3 7M11 5c-2 2-3 4.3-3 7s1 5 3 7M16 5h3v3M19 5l-5 5"/>
+            </svg>
             Visit site
-        </button>
+        </a>
     </x-slot>
 
     {{-- RIGHT SIDE --}}
     <x-slot name="right">
-        <button onclick="openModal('createPageModal')"
-                class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm shadow-sm">
+        <button type="button" onclick="openModal('createPageModal')">
             + New Page
         </button>
     </x-slot>
@@ -49,9 +48,8 @@
 
         <x-ui.filter-tabs :filters="[
             'all' => 'All',
-            'custom' => 'Custom',
-            'default' => 'Default',
-            'modal' => 'Modal'
+            'published' => 'Published',
+            'draft' => 'Draft'
         ]" />
 
         <button class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition flex items-center gap-1.5">
@@ -59,6 +57,12 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
             </svg>
             Export
+        </button>
+
+        <button type="button"
+                onclick="openModal('createPageModal')"
+                class="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition flex items-center gap-1.5">
+            + New Page
         </button>
 
     </x-slot>
@@ -101,7 +105,8 @@
                     $avatarColors = ['bg-indigo-500','bg-violet-500','bg-emerald-500','bg-sky-500','bg-rose-500','bg-amber-500','bg-teal-500','bg-pink-500'];
                     $avatarColor = $avatarColors[crc32($page->title) % count($avatarColors)];
                 @endphp
-                <tr class="hover:bg-gray-50 transition-colors page-row" data-type="{{ $type }}">
+                <tr class="hover:bg-gray-50 transition-colors page-row"
+                    data-filter-value="{{ $page->status }}">
 
                     {{-- ID --}}
                     <td class="px-5 py-3.5 text-gray-400 font-mono text-xs">{{ $page->id }}</td>
@@ -130,7 +135,7 @@
 
                     {{-- Menu --}}
                     <td class="px-5 py-3.5 text-xs text-gray-500">
-                        {{ $page->menu ?? 'Primary Menu' }}
+                        {{ $page->menuItems->first()?->menu?->name ?? 'No menu' }}
                     </td>
 
                     {{-- Plan --}}
@@ -153,9 +158,10 @@
                     {{-- ACTIONS USING GLOBAL COMPONENT --}}
                     <td class="px-5 py-3.5">
                         <x-ui.actions
+                            :builder="route('pages.builder', $page)"
                             :edit="route('pages.edit', $page)"
                             :delete="route('pages.destroy', $page)"
-                            :preview="'#'"
+                            :preview="$page->isPublished() ? route('pages.show', $page->slug) : null"
                             confirm="Delete this page?"
                         />
                     </td>
@@ -180,7 +186,7 @@
 
 @endsection
 
-@if(!empty($openCreateModal))
+@if(!empty($openCreateModal) || $errors->any())
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         openModal('createPageModal');

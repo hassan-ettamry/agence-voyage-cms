@@ -2,9 +2,15 @@ import './bootstrap';
 
 import { initSidebar } from './modules/sidebar';
 import { initTableFilter } from './modules/tableFilter';
+import { initPageSettingsTabs } from './modules/pageSettingsTabs';
+import { initCountdownWidgets } from './modules/countdown';
+import { initDashboardCharts } from './modules/dashboardCharts';
 import './modules/modal';
 
 document.addEventListener('DOMContentLoaded', () => {
     initSidebar();
     initTableFilter();
+    initPageSettingsTabs();
+    initCountdownWidgets();
+    initDashboardCharts();
 });

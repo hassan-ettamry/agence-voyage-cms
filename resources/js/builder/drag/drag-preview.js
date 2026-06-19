@@ -20,25 +20,8 @@ window.BuilderDragPreview = {
             return;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Remove Tailwind Classes
-        |--------------------------------------------------------------------------
-        */
-
-        this.activeElement.classList.remove(
-
-            'border-t-4',
-            'border-b-4',
-
-            'border-blue-500',
-
-            'outline',
-            'outline-2',
-            'outline-blue-500',
-
-            'bg-blue-50'
-
+        BuilderOverlayTheme.clearDragPreview(
+            this.activeElement
         );
 
         this.activeElement = null;
@@ -77,11 +60,9 @@ window.BuilderDragPreview = {
 
         if (position === 'before') {
 
-            target.classList.add(
-
-                'border-t-4',
-                'border-blue-500'
-
+            BuilderOverlayTheme.applyDragPreview(
+                target,
+                position
             );
 
         }
@@ -94,11 +75,9 @@ window.BuilderDragPreview = {
 
         if (position === 'after') {
 
-            target.classList.add(
-
-                'border-b-4',
-                'border-blue-500'
-
+            BuilderOverlayTheme.applyDragPreview(
+                target,
+                position
             );
 
         }
@@ -111,13 +90,9 @@ window.BuilderDragPreview = {
 
         if (position === 'inside') {
 
-            target.classList.add(
-
-                'outline',
-                'outline-2',
-                'outline-blue-500',
-                'bg-blue-50'
-
+            BuilderOverlayTheme.applyDragPreview(
+                target,
+                position
             );
 
         }

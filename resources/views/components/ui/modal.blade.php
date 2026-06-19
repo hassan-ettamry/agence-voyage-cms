@@ -5,10 +5,10 @@
 ])
 
 <div id="{{ $id }}"
-     class="fixed inset-0 bg-black/40 hidden items-center justify-center z-50">
+     class="fixed inset-0 z-50 hidden items-center justify-center overflow-y-auto bg-black/40 p-4">
 
-    <div class="bg-white rounded-xl shadow-xl p-6 relative"
-         style="width: {{ $width }}">
+    <div class="relative max-h-[calc(100vh-2rem)] w-full overflow-y-auto rounded-xl bg-white p-5 shadow-xl sm:p-6"
+         style="max-width: {{ $width }}">
 
         {{-- CLOSE --}}
         <button onclick="closeModal('{{ $id }}')"

@@ -22,11 +22,10 @@ window.BuilderNodes = {
             return;
         }
 
-        if (!node.props) {
-
-            node.props = {};
-
-        }
+        node.props =
+            BuilderStructureRules.ensurePlainProps(
+                node.props
+            );
 
         node.props[key] = value;
 

@@ -41,6 +41,11 @@ class AuthController extends Controller
     {
         $request->authenticate();
         $request->session()->regenerate();
+        $request->user()->forceFill(['last_login_at' => now()])->save();
+
+        if ($request->user()->agency?->shouldAutoStartOnboarding()) {
+            return redirect()->route('onboarding.index');
+        }
 
         return redirect()->intended(route('dashboard'));
     }
@@ -54,7 +59,7 @@ class AuthController extends Controller
         Auth::login($user);
 
         return redirect()
-            ->route('dashboard')
+            ->route('onboarding.profile')
             ->with('success', 'Bienvenue ! Votre agence a été créée.');
     }
 

@@ -4,35 +4,23 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Role;
+use App\Services\RoleIndexService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class RoleController extends Controller
 {
+    public function __construct(private RoleIndexService $indexService) {}
+
     /**
      * Display roles list
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Role::class);
 
-        $roles = Role::with(['permissions', 'users'])->get();
-    
-        $stats = [
-            [
-                'label' => 'Total Roles',
-                'value' => $roles->count(),
-            ],
-            [
-                'label' => 'Total Users',
-                'value' => \App\Models\User::count(),
-            ],
-            [
-                'label' => 'Permissions',
-                'value' => \App\Models\Permission::count(),
-            ],
-        ];
-    
-        return view('roles.index', compact('roles', 'stats'));
+        return view('roles.index', $this->indexService->build($request->query(), $request->user()));
     }
 
     /**
@@ -52,9 +40,36 @@ class RoleController extends Controller
     {
         $this->authorize('create', Role::class);
 
-        Role::create($request->all());
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string', Rule::exists('permissions', 'id')],
+        ]);
 
-        return redirect()->route('roles.index')
+        $slug = Str::slug($validated['name']);
+
+        if (Role::withoutGlobalScopes()
+            ->where('agency_id', $request->user()->agency_id)
+            ->where('slug', $slug)
+            ->exists()) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'name' => 'A role with this name already exists.',
+                ]);
+        }
+
+        $role = Role::create([
+            'agency_id' => $request->user()->agency_id,
+            'name' => $validated['name'],
+            'slug' => $slug,
+        ]);
+
+        $role->syncPermissions($validated['permissions'] ?? []);
+
+        return redirect()->route('roles.index', array_filter([
+            'module' => $request->query('module'),
+        ]))
             ->with('success', 'Role created successfully');
     }
 

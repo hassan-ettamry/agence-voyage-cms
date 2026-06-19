@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-label="Istanbul heritage tour">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#7c3aed"/>
+      <stop offset="1" stop-color="#be123c"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="760" fill="url(#sky)"/>
+  <circle cx="945" cy="150" r="116" fill="#fef08a" opacity=".7"/>
+  <path d="M190 615h820v145H190z" fill="#fff1f2" opacity=".88"/>
+  <path d="M330 615V420h70v195zm470 0V420h70v195zM470 615V440a130 130 0 0 1 260 0v175z" fill="#fff1f2" opacity=".88"/>
+  <path d="M448 438a152 152 0 0 1 304 0" fill="none" stroke="#fff1f2" stroke-width="42" opacity=".88"/>
+  <text x="84" y="380" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700">Istanbul Heritage Tour</text>
+</svg>

@@ -3,49 +3,25 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
-use App\Models\Role;
-use App\Services\UserService;
 use App\Http\Requests\User\StoreUserRequest;
 use App\Http\Requests\User\UpdateUserRequest;
+use App\Models\User;
+use App\Services\UserIndexService;
+use App\Services\UserService;
+use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
-    public function __construct(private UserService $service) {}
+    public function __construct(
+        private UserService $service,
+        private UserIndexService $indexService
+    ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', User::class);
 
-        $users = User::with('role')->paginate(10);
-        $roles = Role::orderBy('name')->get();
-
-        // Stats
-        $stats = [
-            [
-                'label' => 'Total Users',
-                'value' => $users->total(),
-                'note'  => '↑ Active users',
-                'color' => 'text-emerald-500',
-            ],
-            [
-                'label' => 'Admins',
-                'value' => User::whereHas('role', fn($q) => $q->where('slug', 'admin'))->count(),
-                'note'  => 'System admins',
-            ],
-            [
-                'label' => 'Roles',
-                'value' => Role::count(),
-                'note'  => 'Defined roles',
-            ],
-            [
-                'label' => 'Permissions',
-                'value' => '—',
-                'note'  => 'System level',
-            ],
-        ];
-
-        return view('users.index', compact('users', 'roles', 'stats'));
+        return view('users.index', $this->indexService->build($request->query(), $request->user()));
     }
 
     public function store(StoreUserRequest $request)

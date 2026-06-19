@@ -27,6 +27,11 @@ class PermissionPolicy
         return $user->hasPermission('permission.update');
     }
 
+    public function updateAny(User $user): bool
+    {
+        return $user->hasPermission('permission.update');
+    }
+
     public function delete(User $user, Permission $permission): bool
     {
         return $user->hasPermission('permission.delete');

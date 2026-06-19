@@ -8,22 +8,25 @@ use App\Http\Requests\Page\UpdatePageRequest;
 use App\Models\Component;
 use App\Models\Page;
 use App\Models\PageVersion;
+use App\Services\DashboardStatsService;
+use App\Services\AgencyThemeService;
 use App\Services\MenuService;
+use App\Services\PageIndexService;
 use App\Services\PageService;
 use App\Services\Renderer\PageRenderer;
+use App\Support\AgencyContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class PageController extends Controller
 {
-    private PageService $pageService;
-
-    public function __construct(PageService $pageService)
-    {
+    public function __construct(
+        private PageService $pageService,
+        private PageIndexService $pageIndexService,
+        private AgencyThemeService $themeService
+    ) {
         $this->middleware('auth')->except(['show']);
-        $this->middleware('verified')->only(['create', 'store', 'edit', 'update']);
-
-        $this->pageService = $pageService;
+        $this->middleware('verified')->only(['create', 'store', 'edit', 'builder', 'update']);
     }
 
     /**
@@ -33,90 +36,20 @@ class PageController extends Controller
     {
         $this->authorize('viewAny', Page::class);
 
-        $baseQuery = Page::query();
-
-        $query = (clone $baseQuery)
-            ->when($request->search, function ($q, $search) {
-                $q->where(function ($sq) use ($search) {
-                    $sq->where('title', 'like', "%{$search}%")
-                        ->orWhere('slug', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->status, function ($q, $status) {
-                $q->where('status', $status);
-            });
-
-        $pages = $query->latest()
-            ->paginate($request->integer('per_page', 10))
-            ->withQueryString();
-
-        $stats = [
-            [
-                'label' => 'Total Pages',
-                'value' => (clone $baseQuery)->count(),
-                'note' => 'All pages',
-            ],
-            [
-                'label' => 'Published',
-                'value' => (clone $baseQuery)->where('status', Page::STATUS_PUBLISHED)->count(),
-                'note' => 'Live pages',
-                'color' => 'text-emerald-500',
-            ],
-            [
-                'label' => 'Draft',
-                'value' => (clone $baseQuery)->where('status', Page::STATUS_DRAFT)->count(),
-                'note' => 'Not published',
-            ],
-            [
-                'label' => 'Recently Created',
-                'value' => (clone $baseQuery)->where('created_at', '>=', now()->subMonth())->count(),
-                'note' => 'Last 30 days',
-            ],
-        ];
-
-        return view('pages.index', compact('pages', 'stats'));
+        return view('pages.index', $this->pageIndexService->build($request->query(), $request->user()));
     }
 
     /**
      * Create form
      */
-    public function create()
+    public function create(Request $request)
     {
         $this->authorize('create', Page::class);
 
-        $baseQuery = Page::query();
-
-        $pages = $baseQuery->latest()
-            ->paginate(10);
-
-        $stats = [
-            [
-                'label' => 'Total Pages',
-                'value' => (clone $baseQuery)->count(),
-                'note' => 'All pages',
-            ],
-            [
-                'label' => 'Published',
-                'value' => (clone $baseQuery)
-                    ->where('status', Page::STATUS_PUBLISHED)
-                    ->count(),
-                'note' => 'Live pages',
-                'color' => 'text-emerald-500',
-            ],
-            [
-                'label' => 'Draft',
-                'value' => (clone $baseQuery)
-                    ->where('status', Page::STATUS_DRAFT)
-                    ->count(),
-                'note' => 'Not published',
-            ],
-        ];
-
-        return view('pages.index', [
-            'pages' => $pages,
-            'stats' => $stats,
-            'openCreateModal' => true,
-        ]);
+        return view('pages.index', array_merge(
+            $this->pageIndexService->build($request->query(), $request->user()),
+            ['openCreateModal' => true]
+        ));
     }
 
     /**
@@ -131,10 +64,10 @@ class PageController extends Controller
             $request->user()
         );
 
-        Cache::forget('dashboard_stats_'.auth()->id());
+        DashboardStatsService::forgetFor($request->user());
 
         return redirect()
-            ->route('pages.edit', $page)
+            ->route('pages.builder', $page)
             ->with('success', 'Page créée avec succès.');
     }
 
@@ -143,9 +76,12 @@ class PageController extends Controller
      */
     public function show(string $slug, PageRenderer $renderer, MenuService $menuService)
     {
-        $page = Page::where('slug', $slug)
+        $page = Page::withoutGlobalScopes()
+            ->where('slug', $slug)
             ->where('status', Page::STATUS_PUBLISHED)
             ->firstOrFail();
+
+        AgencyContext::set($page->agency_id);
 
         $page = $this->pageService->ensureCanonicalStructure($page);
 
@@ -171,14 +107,52 @@ class PageController extends Controller
         $this->authorize('update', $page);
 
         $page = $this->pageService->ensureCanonicalStructure($page);
+        $menus = app(MenuService::class)->optionsForUser(auth()->user());
+        $menuSelection = app(MenuService::class)->selectionForPage($page);
+
+        return view('pages.edit', compact('page', 'menus', 'menuSelection'));
+    }
+
+    /**
+     * Visual page builder
+     */
+    public function builder(Page $page)
+    {
+        $this->authorize('update', $page);
+
+        $page = $this->pageService->ensureCanonicalStructure($page);
+        $menuItems = app(MenuService::class)->menuForPagePreview($page);
+        $builderStructure = $this->pageService->structureForBuilder($page->structure);
+        $builderPages = Page::withoutGlobalScopes()
+            ->where('agency_id', $page->agency_id)
+            ->orderBy('title')
+            ->get(['id', 'title', 'slug', 'status']);
+        $builderThemeCss = $this->themeService->cssVariables($page->agency);
+
+        $templateOnlyTypes = [
+            'section',
+            'row',
+            'column',
+            'destination-grid',
+            'featured-destinations',
+            'offer-grid',
+            'special-offers',
+            'offer-card',
+        ];
 
         $widgets = Component::where('is_active', true)
+            ->whereNotIn('type', $templateOnlyTypes)
             ->orderBy('category')
             ->get();
 
-        return view('pages.edit', compact(
+        return view('pages.builder', compact(
             'page',
-            'widgets'
+            'builderStructure',
+            'widgets',
+            'menuItems',
+            'builderPages'
+            ,
+            'builderThemeCss'
         ));
     }
 
@@ -190,7 +164,6 @@ class PageController extends Controller
         $this->authorize('update', $page);
 
         if ($request->expectsJson()) {
-
             $this->pageService->updateStructure(
                 $page,
                 $request->validated()['structure'] ?? [],
@@ -215,7 +188,7 @@ class PageController extends Controller
 
         Cache::forget("page_{$oldSlug}");
         Cache::forget("page_{$page->slug}");
-        Cache::forget('dashboard_stats_'.auth()->id());
+        DashboardStatsService::forgetFor($request->user());
 
         return back()->with('success', 'Page mise à jour.');
     }
@@ -230,6 +203,7 @@ class PageController extends Controller
         $this->pageService->publish($page);
 
         Cache::forget("page_{$page->slug}");
+        DashboardStatsService::forgetFor(auth()->user());
 
         return back()->with('success', 'Page publiée.');
     }
@@ -243,10 +217,11 @@ class PageController extends Controller
 
         $slug = $page->slug;
 
+        $page->menuItems()->delete();
         $page->delete();
 
         Cache::forget("page_{$slug}");
-        Cache::forget('dashboard_stats_'.auth()->id());
+        DashboardStatsService::forgetFor(auth()->user());
 
         return redirect()
             ->route('pages.index')
@@ -281,7 +256,7 @@ class PageController extends Controller
         Cache::forget("page_{$page->slug}");
 
         return redirect()
-            ->route('pages.edit', $page)
+            ->route('pages.builder', $page)
             ->with('success', 'Version restaurée.');
     }
 
@@ -294,8 +269,10 @@ class PageController extends Controller
 
         $newPage = $this->pageService->duplicate($page, auth()->user());
 
+        DashboardStatsService::forgetFor(auth()->user());
+
         return redirect()
-            ->route('pages.edit', $newPage)
+            ->route('pages.builder', $newPage)
             ->with('success', 'Page dupliquée.');
     }
 }

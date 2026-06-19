@@ -4,28 +4,25 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Permission;
+use App\Services\PermissionCatalogService;
+use App\Services\PermissionIndexService;
 use Illuminate\Http\Request;
 
 class PermissionController extends Controller
 {
+    public function __construct(
+        private PermissionIndexService $indexService,
+        private PermissionCatalogService $permissionCatalog
+    ) {}
+
     /**
      * Display permissions list
      */
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('viewAny', Permission::class);
 
-        $permissions = Permission::paginate(10);
-    
-        $stats = [
-            [
-                'label' => 'Total Permissions',
-                'value' => $permissions->total(),
-                'icon' => 'shield'
-            ]
-        ];
-    
-        return view('permissions.index', compact('permissions', 'stats'));
+        return view('permissions.index', $this->indexService->build($request->query(), $request->user()));
     }
 
     /**
@@ -45,10 +42,32 @@ class PermissionController extends Controller
     {
         $this->authorize('create', Permission::class);
 
-        Permission::create($request->all());
+        $validated = $request->validate([
+            'modules' => ['required', 'array', 'min:1'],
+            'modules.*' => ['required', 'string', 'distinct'],
+        ]);
+
+        $createdModules = $this->permissionCatalog->createModules($validated['modules']);
 
         return redirect()->route('permissions.index')
-            ->with('success', 'Permission created successfully');
+            ->with('success', count($createdModules).' module(s) created successfully');
+    }
+
+    public function updateModule(Request $request, string $module)
+    {
+        $this->authorize('updateAny', Permission::class);
+
+        $validated = $request->validate([
+            'actions' => ['nullable', 'array'],
+            'actions.*' => ['required', 'string', 'distinct'],
+        ]);
+
+        $actions = $validated['actions'] ?? [];
+
+        $this->permissionCatalog->syncModule($module, $actions);
+
+        return redirect()->route('permissions.index')
+            ->with('success', 'Module permissions updated successfully');
     }
 
     /**

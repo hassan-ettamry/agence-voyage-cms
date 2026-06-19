@@ -1,8 +1,8 @@
 <button
         data-action="switch-tab"
         data-tab="{{ $tab }}"
-        class="left-tab flex items-center gap-1 px-3 py-2.5 whitespace-nowrap border-b-2 transition-colors
-               {{ $active ? 'border-blue-600 text-blue-600 font-semibold' : 'border-transparent text-gray-500 hover:text-gray-800' }}"
+        class="left-tab flex h-full items-center justify-center gap-1.5 whitespace-nowrap border-b-2 border-r border-gray-100 transition-colors
+               {{ $active ? 'border-b-slate-900 bg-[#eff6ff] text-slate-800 font-medium' : 'border-b-transparent bg-white text-slate-800 hover:bg-slate-50' }}"
 >
     {!! $icon !!}
     {{ $label }}

@@ -5,8 +5,7 @@
 <x-layout.topbar>
 
     <x-slot name="right">
-        <button onclick="openModal('createRoleModal')"
-                class="inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm shadow-sm">
+        <button type="button" onclick="openModal('createRoleModal')">
             + New Role
         </button>
     </x-slot>
@@ -27,14 +26,28 @@
     <x-slot name="title">
         <span class="text-sm font-semibold text-gray-800">Roles</span>
         <span class="text-xs text-gray-400">
-            ({{ $roles->count() }} records)
+            ({{ $roles->total() }} records)
         </span>
     </x-slot>
 
     {{-- ACTIONS --}}
     <x-slot name="actions">
-        <button class="px-3 py-1.5 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">
+        @if(! empty($moduleFilters))
+            <x-ui.filter-tabs
+                :filters="$moduleFilters"
+                :current="$selectedModule"
+                query="module"
+            />
+        @endif
+
+        <button class="px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
             Export
+        </button>
+
+        <button type="button"
+                onclick="openModal('createRoleModal')"
+                class="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 transition">
+            + New Role
         </button>
     </x-slot>
 
@@ -44,7 +57,7 @@
         <x-ui.data-table>
 
             {{-- HEAD --}}
-            <x-slot name="head">
+    <x-slot name="head">
                 <tr class="bg-gray-50/80 border-b border-gray-100">
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Role</th>
                     <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">Users</th>
@@ -58,118 +71,108 @@
             {{-- BODY --}}
             <x-slot name="body">
 
-                @foreach($roles as $role)
+                @forelse($roles as $role)
 
-                    @php
-                        $grouped = collect($role->permissions)->groupBy(function($perm) {
-                            return ucfirst(explode(' ', strtolower($perm->name))[1] ?? 'Other');
-                        });
-                        $first = true;
-                    @endphp
+                    <tr class="hover:bg-gray-50/60 transition-colors duration-150 border-b border-gray-100 last:border-0">
 
-                    @foreach($grouped as $module => $perms)
+                        {{-- ROLE --}}
+                        <td class="px-6 py-4 align-middle">
+                            <div class="flex items-center gap-3">
 
-                        <tr class="hover:bg-gray-50/60 transition-colors duration-150 border-b border-gray-100 last:border-0">
+                                <div class="w-9 h-9 bg-indigo-500 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                                    {{ strtoupper(substr($role->name, 0, 1)) }}
+                                </div>
 
-                            @if($first)
-
-                                {{-- ROLE (rowspan) --}}
-                                <td class="px-6 py-4 align-top text-center" rowspan="{{ $grouped->count() }}">
-                                    <div class="flex items-center gap-3">
-
-                                        <div class="w-9 h-9 bg-indigo-500 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                                            {{ strtoupper(substr($role->name, 0, 1)) }}
-                                        </div>
-
-                                        <div>
-                                            <div class="flex items-center gap-2">
-                                                <span class="font-semibold text-gray-800 text-sm leading-tight">
-                                                    {{ $role->name }}
-                                                </span>
-
-                                                @if($role->slug === 'admin')
-                                                    <span class="px-1.5 py-0.5 text-xs bg-red-100 text-red-600 rounded font-medium">
-                                                        System
-                                                    </span>
-                                                @endif
-                                            </div>
-
-                                            <div class="text-xs text-gray-400 mt-0.5">
-                                                {{ $role->slug }}
-                                            </div>
-                                        </div>
-
-                                    </div>
-                                </td>
-
-                                {{-- USERS (rowspan) --}}
-                                <td class="px-6 py-4 align-top text-sm text-gray-600" rowspan="{{ $grouped->count() }}">
-                                    <div class="flex items-center gap-1.5">
-                                        <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                            <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
-                                        </svg>
-                                        <span class="font-medium text-gray-700">{{ $role->users->count() }}</span>
-                                    </div>
-                                </td>
-
-                            @endif
-
-                            {{-- MODULE --}}
-                            <td class="px-6 py-4 text-sm text-gray-700">
-                                <span class="font-medium">{{ $module }}</span>
-                            </td>
-
-                            {{-- PERMISSIONS --}}
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-1.5 flex-wrap">
-
-                                    @foreach($perms as $perm)
-
-                                        @php
-                                            $action = ucfirst(explode(' ', strtolower($perm->name))[0]);
-
-                                            $colors = [
-                                                'View'   => 'bg-blue-50 text-blue-600 ring-1 ring-blue-200',
-                                                'Create' => 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200',
-                                                'Update' => 'bg-amber-50 text-amber-600 ring-1 ring-amber-200',
-                                                'Delete' => 'bg-rose-50 text-rose-600 ring-1 ring-rose-200',
-                                            ];
-                                        @endphp
-
-                                        <span class="px-2 py-0.5 text-xs rounded-md font-medium {{ $colors[$action] ?? 'bg-gray-100 text-gray-600' }}">
-                                            {{ $action }}
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-gray-800 text-sm leading-tight">
+                                            {{ $role->name }}
                                         </span>
 
-                                    @endforeach
+                                        @if($role->slug === 'admin')
+                                            <span class="px-1.5 py-0.5 text-xs bg-red-100 text-red-600 rounded font-medium">
+                                                System
+                                            </span>
+                                        @endif
+                                    </div>
 
+                                    <div class="text-xs text-gray-400 mt-0.5">
+                                        {{ $role->slug }}
+                                    </div>
                                 </div>
-                            </td>
 
-                            @if($first)
+                            </div>
+                        </td>
 
-                                {{-- CREATED --}}
-                                <td class="px-6 py-4 align-top text-xs text-gray-400 whitespace-nowrap" rowspan="{{ $grouped->count() }}">
-                                    {{ \Carbon\Carbon::parse($role->created_at)->format('Y-m-d') }}
-                                </td>
+                        {{-- USERS --}}
+                        <td class="px-6 py-4 align-middle text-sm text-gray-600">
+                            <div class="flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                                </svg>
+                                <span class="font-medium text-gray-700">{{ $role->users->count() }}</span>
+                            </div>
+                        </td>
 
-                                {{-- ACTIONS --}}
-                                <td class="px-6 py-4 align-top" rowspan="{{ $grouped->count() }}">
-                                    <x-ui.actions
-                                        :edit="route('roles.edit', $role)"
-                                        :delete="route('roles.destroy', $role)"
-                                        confirm="Delete this role?"
-                                    />
-                                </td>
+                        {{-- MODULE --}}
+                        <td class="px-6 py-4 align-middle text-sm text-gray-700">
+                            <span class="inline-flex items-center rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">
+                                {{ $selectedModuleLabel ?? 'Module' }}
+                            </span>
+                        </td>
 
-                                @php $first = false; @endphp
+                        {{-- PERMISSIONS --}}
+                        <td class="px-6 py-4 align-middle">
+                            <div class="flex items-center gap-1.5 flex-wrap">
 
-                            @endif
+                                @forelse($role->visible_permissions as $perm)
 
-                        </tr>
+                                    @php
+                                        $action = $perm->action_label;
 
-                    @endforeach
+                                        $colors = [
+                                            'View'   => 'bg-blue-50 text-blue-600 ring-1 ring-blue-200',
+                                            'Create' => 'bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200',
+                                            'Update' => 'bg-amber-50 text-amber-600 ring-1 ring-amber-200',
+                                            'Delete' => 'bg-rose-50 text-rose-600 ring-1 ring-rose-200',
+                                        ];
+                                    @endphp
 
-                @endforeach
+                                    <span class="px-2 py-0.5 text-xs rounded-md font-medium {{ $colors[$action] ?? 'bg-gray-100 text-gray-600' }}">
+                                        {{ $action }}
+                                    </span>
+
+                                @empty
+                                    <span class="text-xs text-gray-400">No permission</span>
+                                @endforelse
+
+                            </div>
+                        </td>
+
+                        {{-- CREATED --}}
+                        <td class="px-6 py-4 align-middle text-xs text-gray-400 whitespace-nowrap">
+                            {{ \Carbon\Carbon::parse($role->created_at)->format('Y-m-d') }}
+                        </td>
+
+                        {{-- ACTIONS --}}
+                        <td class="px-6 py-4 align-middle">
+                            <x-ui.actions
+                                :edit="route('roles.edit', $role)"
+                                :delete="route('roles.destroy', $role)"
+                                align="right"
+                                confirm="Delete this role?"
+                            />
+                        </td>
+
+                    </tr>
+
+                @empty
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-sm text-gray-400">
+                            No roles have permissions for this module.
+                        </td>
+                    </tr>
+                @endforelse
 
             </x-slot>
 
@@ -179,11 +182,20 @@
 
     {{-- FOOTER --}}
     <x-slot name="footer">
-        <div class="text-xs text-gray-400">
-            Total roles: {{ $roles->count() }}
-        </div>
+        <x-ui.pagination :paginator="$roles" />
     </x-slot>
 
 </x-ui.table-layout>
 
+{{-- ================= MODAL ================= --}}
+@include('roles.partials.create')
+
 @endsection
+
+@if($errors->any())
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        openModal('createRoleModal');
+    });
+</script>
+@endif

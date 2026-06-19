@@ -112,6 +112,16 @@ class Page extends Model
         return $this->hasOne(PageVersion::class)->ofMany('version', 'max');
     }
 
+    public function menuItems()
+    {
+        return $this->hasMany(MenuItem::class);
+    }
+
+    public function primaryMenuItem()
+    {
+        return $this->hasOne(MenuItem::class)->oldest('created_at');
+    }
+
     /**
      * Scopes
      */

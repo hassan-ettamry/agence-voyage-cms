@@ -2,11 +2,16 @@
 
     {{-- Logo / Brand --}}
     <div class="flex items-center gap-2 w-56 shrink-0">
-        <button class="text-gray-400 hover:text-gray-600 transition-colors mr-1">
+        <a
+            href="{{ route('dashboard') }}"
+            title="Close builder"
+            aria-label="Close builder"
+            class="text-gray-400 hover:text-gray-600 transition-colors mr-1"
+        >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
             </svg>
-        </button>
+        </a>
         <div>
             <div class="font-bold text-sm leading-tight text-gray-900">Site Builder</div>
             <div class="text-[10px] text-gray-400 leading-tight">Vision</div>
@@ -16,12 +21,40 @@
     {{-- Page Selector --}}
     <div class="flex items-center gap-2">
         <span class="text-xs text-gray-500 whitespace-nowrap">Page Selected:</span>
-        <button class="flex items-center gap-1.5 border border-gray-200 rounded px-3 py-1.5 text-xs font-medium text-gray-700 hover:border-gray-300 bg-white shadow-sm transition-colors">
-            {{ $page->title ?? 'My test page' }}
-            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-            </svg>
-        </button>
+        <select
+            id="builder-page-select"
+            aria-label="Page selected"
+            class="
+                min-w-[136px]
+                border
+                border-gray-200
+                rounded
+                bg-white
+                px-3
+                py-1.5
+                pr-8
+                text-xs
+                font-medium
+                text-gray-700
+                shadow-sm
+                transition-colors
+                hover:border-gray-300
+                focus:border-blue-400
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-100
+            "
+            onchange="if (this.value) window.location.href = this.value"
+        >
+            @foreach(($builderPages ?? collect([$page])) as $builderPage)
+                <option
+                    value="{{ route('pages.builder', $builderPage) }}"
+                    @selected($builderPage->id === $page->id)
+                >
+                    {{ $builderPage->title }}
+                </option>
+            @endforeach
+        </select>
     </div>
 
     {{-- Viewport Switcher --}}
@@ -30,7 +63,7 @@
         [
             'id' => 'viewport-desktop',
             'viewport' => 'desktop',
-            'icon' => '<svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
             'label' => 'Desktop',
             'title' => 'Desktop',
             'active' => true,
@@ -38,7 +71,7 @@
         [
             'id' => 'viewport-tab',
             'viewport' => 'tab',
-            'icon' => '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" stroke-width="1.5" stroke="currentColor" fill="none"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2" stroke-linecap="round"/></svg>',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" stroke-width="1.5" stroke="currentColor" fill="none"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2" stroke-linecap="round"/></svg>',
             'label' => 'Tab',
             'title' => 'Tab',
             'active' => false,
@@ -46,7 +79,7 @@
         [
             'id' => 'viewport-mobile',
             'viewport' => 'mobile',
-            'icon' => '<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2" ry="2" stroke-width="1.5" stroke="currentColor" fill="none"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2" stroke-linecap="round"/></svg>',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2" ry="2" stroke-width="1.5" stroke="currentColor" fill="none"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2" stroke-linecap="round"/></svg>',
             'label' => 'Mobile',
             'title' => 'Mobile',
             'active' => false,
@@ -93,7 +126,7 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
             </svg>
-            Save as template
+            Save as block
         </button>
         <button
             data-action="save-page"

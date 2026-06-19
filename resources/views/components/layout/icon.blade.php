@@ -54,6 +54,104 @@
 </svg>
 @break
 
+@case('page')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <path d="M7 3h7l5 5v13H7z"/>
+    <path d="M14 3v5h5"/>
+    <path d="M9 12h6"/>
+    <path d="M9 16h6"/>
+</svg>
+@break
+
+@case('navigation')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <path d="M12 3l7 18-7-4-7 4 7-18z"/>
+</svg>
+@break
+
+@case('menu')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+    <rect x="4" y="5" width="16" height="14" rx="2"/>
+    <path stroke-linecap="round" d="M8 9h8M8 13h8M8 17h5"/>
+</svg>
+@break
+
+@case('site-template')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <rect x="3" y="4" width="18" height="16" rx="2"/>
+    <path d="M3 9h18"/>
+    <path d="M8 13h3"/>
+    <path d="M13 13h3"/>
+    <path d="M8 16h8"/>
+</svg>
+@break
+
+@case('template')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <rect x="3" y="4" width="18" height="16" rx="2"/>
+    <path stroke-linecap="round" d="M3 9h18"/>
+    <rect x="7" y="12" width="4" height="4" rx="0.8"/>
+    <rect x="13" y="12" width="4" height="4" rx="0.8"/>
+</svg>
+@break
+
+@case('destination')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <path d="M12 21s6-5.2 6-10a6 6 0 10-12 0c0 4.8 6 10 6 10z"/>
+    <circle cx="12" cy="11" r="2.2"/>
+</svg>
+@break
+
+@case('offer')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <path d="M20 12l-8 8-10-10V4h6z"/>
+    <path d="M7.5 7.5h.01"/>
+</svg>
+@break
+
+@case('form')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <rect x="4" y="4" width="16" height="16" rx="2"/>
+    <path d="M8 8h8M8 12h8M8 16h5"/>
+</svg>
+@break
+
+@case('theme')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <path d="M4 20h16"/>
+    <path d="M7 16l5-10 5 10"/>
+</svg>
+@break
+
+@case('style')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <path d="M4 7h16"/>
+    <path d="M4 12h16"/>
+    <path d="M4 17h10"/>
+</svg>
+@break
+
+@case('user')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <circle cx="12" cy="8" r="3"/>
+    <path d="M5 20a7 7 0 0114 0"/>
+</svg>
+@break
+
+@case('role')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <rect x="4" y="4" width="16" height="16" rx="3"/>
+    <path d="M8 9h8M8 13h5"/>
+</svg>
+@break
+
+@case('permission')
+<svg class="w-[16px] h-[16px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+    <path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4z"/>
+    <path d="M9 12l2 2 4-4"/>
+</svg>
+@break
+
 @case('marketing')
 <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
     <path d="M22 12c0 5.5-4.5 9-10 9a11 11 0 01-6.4-2L2 21l2.1-3.5A9 9 0 012 12C2 6.5 6.5 3 12 3s10 3.5 10 9z"/>
@@ -71,6 +169,14 @@
 @break
 
 {{-- ACTION BUTTON ICONS --}}
+@case('builder-action')
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M4 5a2 2 0 012-2h12a2 2 0 012 2v4H4V5z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" d="M4 9h6v12H6a2 2 0 01-2-2V9z"/>
+    <path stroke-linecap="round" stroke-linejoin="round" d="M10 9h10v10a2 2 0 01-2 2h-8V9z"/>
+</svg>
+@break
+
 @case('edit')
 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
     <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>

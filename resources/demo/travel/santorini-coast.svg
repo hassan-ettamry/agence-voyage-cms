@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-label="Santorini coast">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0ea5e9"/>
+      <stop offset="1" stop-color="#1d4ed8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="760" fill="url(#sky)"/>
+  <rect y="470" width="1200" height="290" fill="#0f766e" opacity=".45"/>
+  <path d="M90 540c120-125 280-185 480-178 190 8 340 83 540 6v392H90z" fill="#f8fafc"/>
+  <path d="M720 310h260v230H720zM780 240h140a70 70 0 0 1 70 70H710a70 70 0 0 1 70-70z" fill="#fefefe" opacity=".95"/>
+  <circle cx="850" cy="270" r="68" fill="#2563eb"/>
+  <text x="84" y="380" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700">Santorini Coast</text>
+</svg>

@@ -25,4 +25,24 @@ class Permission extends Model
     {
         return $this->belongsToMany(Role::class);
     }
+
+    public function getModuleKeyAttribute(): string
+    {
+        return Str::before($this->slug, '.');
+    }
+
+    public function getModuleLabelAttribute(): string
+    {
+        return Str::headline($this->module_key);
+    }
+
+    public function getActionKeyAttribute(): string
+    {
+        return Str::afterLast($this->slug, '.');
+    }
+
+    public function getActionLabelAttribute(): string
+    {
+        return Str::headline($this->action_key);
+    }
 }

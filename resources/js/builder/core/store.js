@@ -44,10 +44,13 @@ window.BuilderStore = {
 
     setStructure(structure = []) {
 
-        this.structure = BuilderStructureRules.normalizeTree(
+        const source =
             Array.isArray(structure)
                 ? structure
-                : []
+                : [];
+
+        this.structure = BuilderStructureRules.normalizeTree(
+            source
         );
 
         BuilderEventBus.emit(

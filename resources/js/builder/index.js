@@ -12,13 +12,17 @@ import './state/builder-state';
 
 import './utils/html-escape';
 import './utils/interaction-boundaries';
+import './components/container-roles';
 import './viewport';
 import './storage';
 import './sidebar';
 import './right-sidebar';
+import './settings/control-schemas';
 import './schema';
 import './inline-editing';
 import './runtime/actions';
+import './template-library';
+import { initCountdownWidgets } from '../modules/countdown';
 
 import './debug/logger';
 import './debug/debug-config';
@@ -32,6 +36,8 @@ import './core/structure-rules';
 import './core/store';
 import './core/render-manager';
 import './core/commands/update-node-props';
+
+import './overlay/overlay-theme';
 
 /*
 |--------------------------------------------------------------------------
@@ -140,6 +146,7 @@ import './overlay/overlay';
 */
 
 import './settings/settings-panel';
+import './settings/richtext-controls';
 import './settings/settings-fields';
 import './settings/settings-updater';
 
@@ -271,6 +278,12 @@ document.addEventListener(
 
         }
 
+        if (window.BuilderTemplateLibrary) {
+
+            BuilderTemplateLibrary.init();
+
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Overlay
@@ -326,6 +339,8 @@ document.addEventListener(
             );
 
         }
+
+        initCountdownWidgets();
 
         /*
         |--------------------------------------------------------------------------

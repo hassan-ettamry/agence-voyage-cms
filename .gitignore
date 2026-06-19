@@ -5,9 +5,17 @@
 /bootstrap/cache
 /public/build
 /public/hot
+/public/storage
 /storage/framework/sessions
 /storage/framework/cache
 /storage/framework/views
+/.claude/settings.local.json
+/nul
+/backups
+*.sql
+*.sql.gz
+*transfer*.zip
+*backup*.zip
 /.idea
 /.vscode
 *.log
