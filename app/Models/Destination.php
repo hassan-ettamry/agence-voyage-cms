@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Scopes\AgencyScope;
+use App\Services\PublicContentCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Destination extends Model
 {
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_PUBLISHED = 'published';
 
     public $incrementing = false;
@@ -57,6 +59,23 @@ class Destination extends Model
     protected static function booted()
     {
         static::addGlobalScope(new AgencyScope);
+
+        static::updating(fn (Destination $destination) => PublicContentCache::forgetDestination(
+            $destination->agency_id,
+            $destination->getRawOriginal('slug')
+        ));
+
+        static::saved(function (Destination $destination) {
+            PublicContentCache::forgetDestination(
+                $destination->agency_id,
+                $destination->slug
+            );
+        });
+
+        static::deleted(fn (Destination $destination) => PublicContentCache::forgetDestination(
+            $destination->agency_id,
+            $destination->slug
+        ));
     }
 
     public function agency()

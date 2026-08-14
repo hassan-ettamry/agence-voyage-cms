@@ -161,7 +161,7 @@
                             :builder="route('pages.builder', $page)"
                             :edit="route('pages.edit', $page)"
                             :delete="route('pages.destroy', $page)"
-                            :preview="$page->isPublished() ? route('pages.show', $page->slug) : null"
+                            :preview="$page->isPublished() ? app(\App\Services\PublicSiteUrl::class)->page($page->agency, $page) : null"
                             confirm="Delete this page?"
                         />
                     </td>

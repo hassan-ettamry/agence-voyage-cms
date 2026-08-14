@@ -2,14 +2,15 @@
 
 namespace App\Models;
 
+use App\Scopes\AgencyScope;
+use App\Services\PublicContentCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
-use App\Models\PageVersion;
-use App\Scopes\AgencyScope;
 
 class Page extends Model
 {
     public $incrementing = false;
+
     protected $keyType = 'string';
 
     protected $fillable = [
@@ -29,6 +30,7 @@ class Page extends Model
     ];
 
     const STATUS_DRAFT = 'draft';
+
     const STATUS_PUBLISHED = 'published';
 
     /**
@@ -40,24 +42,24 @@ class Page extends Model
 
         static::creating(function ($model) {
 
-            if (!$model->agency_id) {
+            if (! $model->agency_id) {
                 throw new \InvalidArgumentException('Agency ID is required');
             }
 
-            if (!$model->id) {
+            if (! $model->id) {
                 $model->id = (string) Str::uuid();
             }
 
-            if (!$model->status) {
+            if (! $model->status) {
                 $model->status = self::STATUS_DRAFT;
             }
 
-            if ($model->status === self::STATUS_PUBLISHED && !$model->published_at) {
+            if ($model->status === self::STATUS_PUBLISHED && ! $model->published_at) {
                 $model->published_at = now();
             }
 
             // slug unique par agency (bypass global scope)
-            if (!$model->slug) {
+            if (! $model->slug) {
 
                 $slug = Str::slug($model->title);
                 $original = $slug;
@@ -69,7 +71,7 @@ class Page extends Model
                         ->where('agency_id', $model->agency_id)
                         ->exists()
                 ) {
-                    $slug = $original . '-' . $count++;
+                    $slug = $original.'-'.$count++;
                 }
 
                 $model->slug = $slug;
@@ -79,7 +81,7 @@ class Page extends Model
         static::updating(function ($model) {
             if (
                 $model->status === self::STATUS_PUBLISHED &&
-                !$model->published_at
+                ! $model->published_at
             ) {
                 $model->published_at = now();
             }
@@ -92,6 +94,23 @@ class Page extends Model
     protected static function booted()
     {
         static::addGlobalScope(new AgencyScope);
+
+        static::updating(fn (Page $page) => PublicContentCache::forgetPage(
+            $page->agency_id,
+            $page->getRawOriginal('slug')
+        ));
+
+        static::saved(function (Page $page) {
+            PublicContentCache::forgetPage(
+                $page->agency_id,
+                $page->slug
+            );
+        });
+
+        static::deleted(fn (Page $page) => PublicContentCache::forgetPage(
+            $page->agency_id,
+            $page->slug
+        ));
     }
 
     /**

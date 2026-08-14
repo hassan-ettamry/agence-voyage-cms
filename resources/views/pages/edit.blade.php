@@ -16,7 +16,7 @@
         </a>
 
         @if($page->isPublished())
-            <a href="{{ route('pages.show', $page->slug) }}"
+            <a href="{{ app(\App\Services\PublicSiteUrl::class)->page($page->agency, $page) }}"
                target="_blank"
                rel="noopener">
                 View live

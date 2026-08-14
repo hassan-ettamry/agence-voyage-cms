@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Agency;
 use App\Models\Menu;
 use App\Models\MenuItem;
 use App\Models\Page;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\DB;
 
 class MenuService
 {
+    public function __construct(private PublicSiteUrl $publicUrls) {}
+
     public function getMenu(string $name): array
     {
         if ($name === 'main' && AgencyContext::has()) {
@@ -50,14 +53,16 @@ class MenuService
 
     private function itemsForMenu(Menu $menu, bool $includeDraftPages): array
     {
+        $agency = Agency::query()->findOrFail($menu->agency_id);
+
         return $menu->items
             ->filter(fn ($item) => $item->url || ($item->page && ($includeDraftPages || $item->page->isPublished())))
-            ->map(function ($item) {
+            ->map(function ($item) use ($agency) {
                 return [
                     'title' => $item->title,
                     'url' => $item->page
-                        ? route('pages.show', $item->page->slug)
-                        : $item->url,
+                        ? $this->publicUrls->page($agency, $item->page)
+                        : $this->publicUrls->fromStoredUrl($agency, $item->url),
                 ];
             })->toArray();
     }
@@ -127,6 +132,7 @@ class MenuService
 
         if ($selection === 'none') {
             $page->menuItems()->delete();
+
             return;
         }
 

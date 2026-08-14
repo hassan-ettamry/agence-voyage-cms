@@ -139,7 +139,7 @@ class TravelContentModulesTest extends TestCase
             'status' => Offer::STATUS_PUBLISHED,
         ]);
 
-        $this->get(route('public.offers.show', $offer->slug))
+        $this->get(route('public.site.offers.show', [$agency->slug, $offer->slug]))
             ->assertOk()
             ->assertSee('Weekend Escape')
             ->assertSee('Essaouira');

@@ -61,7 +61,7 @@
         @foreach($destinations as $destination)
             @php($cover = $destination->media->first())
             <a
-                href="{{ $isEditor ? '#' : route('public.destinations.show', $destination->slug) }}"
+                href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->destination($destination->agency, $destination) }}"
                 @if($isEditor) onclick="return false" @endif
                 class="overflow-hidden border transition hover:-translate-y-0.5"
                 style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"

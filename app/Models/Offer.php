@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use App\Scopes\AgencyScope;
+use App\Services\PublicContentCache;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class Offer extends Model
 {
     public const STATUS_DRAFT = 'draft';
+
     public const STATUS_PUBLISHED = 'published';
 
     public $incrementing = false;
@@ -59,6 +61,23 @@ class Offer extends Model
     protected static function booted()
     {
         static::addGlobalScope(new AgencyScope);
+
+        static::updating(fn (Offer $offer) => PublicContentCache::forgetOffer(
+            $offer->agency_id,
+            $offer->getRawOriginal('slug')
+        ));
+
+        static::saved(function (Offer $offer) {
+            PublicContentCache::forgetOffer(
+                $offer->agency_id,
+                $offer->slug
+            );
+        });
+
+        static::deleted(fn (Offer $offer) => PublicContentCache::forgetOffer(
+            $offer->agency_id,
+            $offer->slug
+        ));
     }
 
     public function agency()

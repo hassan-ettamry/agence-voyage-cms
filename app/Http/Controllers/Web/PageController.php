@@ -5,14 +5,17 @@ namespace App\Http\Controllers\Web;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Page\StorePageRequest;
 use App\Http\Requests\Page\UpdatePageRequest;
+use App\Models\Agency;
 use App\Models\Component;
 use App\Models\Page;
 use App\Models\PageVersion;
-use App\Services\DashboardStatsService;
 use App\Services\AgencyThemeService;
+use App\Services\DashboardStatsService;
 use App\Services\MenuService;
 use App\Services\PageIndexService;
 use App\Services\PageService;
+use App\Services\PublicContentCache;
+use App\Services\PublicSiteUrl;
 use App\Services\Renderer\PageRenderer;
 use App\Support\AgencyContext;
 use Illuminate\Http\Request;
@@ -25,7 +28,7 @@ class PageController extends Controller
         private PageIndexService $pageIndexService,
         private AgencyThemeService $themeService
     ) {
-        $this->middleware('auth')->except(['show']);
+        $this->middleware('auth')->except(['show', 'siteHome', 'siteShow']);
         $this->middleware('verified')->only(['create', 'store', 'edit', 'builder', 'update']);
     }
 
@@ -74,14 +77,67 @@ class PageController extends Controller
     /**
      * PUBLIC PAGE
      */
-    public function show(string $slug, PageRenderer $renderer, MenuService $menuService)
+    public function siteHome(Request $request, PageRenderer $renderer, MenuService $menuService)
     {
+        $agency = $this->publicAgency($request);
+
         $page = Page::withoutGlobalScopes()
-            ->where('slug', $slug)
-            ->where('status', Page::STATUS_PUBLISHED)
+            ->forAgency($agency->id)
+            ->published()
+            ->orderByRaw("CASE WHEN slug = 'home' THEN 0 ELSE 1 END")
+            ->orderBy('published_at')
+            ->orderBy('created_at')
             ->firstOrFail();
 
-        AgencyContext::set($page->agency_id);
+        return $this->renderPublicPage($page, $agency, $renderer, $menuService);
+    }
+
+    public function siteShow(
+        Request $request,
+        string $agencySlug,
+        string $pageSlug,
+        PageRenderer $renderer,
+        MenuService $menuService
+    ) {
+        $agency = $this->publicAgency($request);
+
+        $cacheKey = PublicContentCache::pageKey($agency->id, $pageSlug);
+        $page = Cache::remember($cacheKey, now()->addHour(), fn () => Page::withoutGlobalScopes()
+            ->forAgency($agency->id)
+            ->published()
+            ->where('slug', $pageSlug)
+            ->firstOrFail());
+
+        return $this->renderPublicPage($page, $agency, $renderer, $menuService);
+    }
+
+    /**
+     * Redirect an unambiguous legacy page URL to its tenant-aware URL.
+     */
+    public function show(string $slug, PublicSiteUrl $urls)
+    {
+        $pages = Page::withoutGlobalScopes()
+            ->published()
+            ->where('slug', $slug)
+            ->whereHas('agency', fn ($query) => $query->where('status', 'active'))
+            ->with('agency')
+            ->limit(2)
+            ->get();
+
+        abort_unless($pages->count() === 1, 404);
+
+        $page = $pages->first();
+
+        return redirect()->to($urls->page($page->agency, $page), 301);
+    }
+
+    private function renderPublicPage(
+        Page $page,
+        Agency $agency,
+        PageRenderer $renderer,
+        MenuService $menuService
+    ) {
+        AgencyContext::set($agency->id);
 
         $page = $this->pageService->ensureCanonicalStructure($page);
 
@@ -96,7 +152,17 @@ class PageController extends Controller
             'page' => $page,
             'html' => $html,
             'menu' => $menuItems,
+            'siteAgency' => $agency,
         ]);
+    }
+
+    private function publicAgency(Request $request): Agency
+    {
+        $agency = $request->attributes->get('publicAgency');
+
+        abort_unless($agency instanceof Agency, 404);
+
+        return $agency;
     }
 
     /**
@@ -150,8 +216,7 @@ class PageController extends Controller
             'builderStructure',
             'widgets',
             'menuItems',
-            'builderPages'
-            ,
+            'builderPages',
             'builderThemeCss'
         ));
     }
@@ -170,7 +235,7 @@ class PageController extends Controller
                 $request->user()
             );
 
-            Cache::forget("page_{$page->slug}");
+            PublicContentCache::forgetPage($page->agency_id, $page->slug);
 
             return response()->json([
                 'success' => true,
@@ -186,8 +251,7 @@ class PageController extends Controller
             $request->user()
         );
 
-        Cache::forget("page_{$oldSlug}");
-        Cache::forget("page_{$page->slug}");
+        PublicContentCache::forgetPage($page->agency_id, $oldSlug, $page->slug);
         DashboardStatsService::forgetFor($request->user());
 
         return back()->with('success', 'Page mise à jour.');
@@ -202,7 +266,7 @@ class PageController extends Controller
 
         $this->pageService->publish($page);
 
-        Cache::forget("page_{$page->slug}");
+        PublicContentCache::forgetPage($page->agency_id, $page->slug);
         DashboardStatsService::forgetFor(auth()->user());
 
         return back()->with('success', 'Page publiée.');
@@ -220,7 +284,7 @@ class PageController extends Controller
         $page->menuItems()->delete();
         $page->delete();
 
-        Cache::forget("page_{$slug}");
+        PublicContentCache::forgetPage($page->agency_id, $slug);
         DashboardStatsService::forgetFor(auth()->user());
 
         return redirect()
@@ -253,7 +317,7 @@ class PageController extends Controller
 
         $this->pageService->restore($page, $version, auth()->user());
 
-        Cache::forget("page_{$page->slug}");
+        PublicContentCache::forgetPage($page->agency_id, $page->slug);
 
         return redirect()
             ->route('pages.builder', $page)

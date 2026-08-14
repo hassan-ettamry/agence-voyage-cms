@@ -161,7 +161,7 @@ class ThemeCustomizationTest extends TestCase
             ->assertOk()
             ->assertSee('--site-primary: #abcdef;', false);
 
-        $this->get(route('pages.show', $page->slug))
+        $this->get(route('public.site.pages.show', [$agency->slug, $page->slug]))
             ->assertOk()
             ->assertSee('--site-primary: #abcdef;', false);
 

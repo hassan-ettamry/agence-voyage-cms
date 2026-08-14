@@ -11,7 +11,7 @@
 
     <div class="mt-8">
         @if($offer->destination)
-            <a href="{{ route('public.destinations.show', $offer->destination->slug) }}" class="text-sm font-semibold uppercase text-indigo-500">{{ $offer->destination->name }}</a>
+            <a href="{{ app(\App\Services\PublicSiteUrl::class)->destination($siteAgency, $offer->destination) }}" class="text-sm font-semibold uppercase text-indigo-500">{{ $offer->destination->name }}</a>
         @endif
         <h1 class="mt-2 text-4xl font-bold text-gray-900">{{ $offer->title }}</h1>
         <div class="mt-4 flex flex-wrap gap-3">

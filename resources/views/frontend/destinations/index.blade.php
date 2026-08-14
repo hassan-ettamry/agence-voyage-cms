@@ -10,7 +10,7 @@
     <div class="grid gap-6 md:grid-cols-3">
         @foreach($destinations as $destination)
             @php($cover = $destination->media->first())
-            <a href="{{ route('public.destinations.show', $destination->slug) }}" class="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
+            <a href="{{ app(\App\Services\PublicSiteUrl::class)->destination($siteAgency, $destination) }}" class="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md">
                 <div class="aspect-video bg-slate-100">
                     @if($cover)
                         <img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $destination->name }}" class="h-full w-full object-cover">

@@ -1,5 +1,5 @@
 @php($cover = $offer->media ?: $offer->destination?->media?->first())
-<a href="{{ route('public.offers.show', $offer->slug) }}" class="overflow-hidden border transition hover:-translate-y-0.5" style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);">
+<a href="{{ app(\App\Services\PublicSiteUrl::class)->offer($siteAgency ?? $offer->agency, $offer) }}" class="overflow-hidden border transition hover:-translate-y-0.5" style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);">
     <div class="aspect-video" style="background-color: var(--site-background, #f1f5f9);">
         @if($cover)
             <img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $offer->title }}" class="h-full w-full object-cover">

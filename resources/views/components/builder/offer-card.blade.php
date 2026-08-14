@@ -35,7 +35,7 @@
     @if($offer)
         @php($cover = $offer->media ?: $offer->destination?->media?->first())
         <a
-            href="{{ $isEditor ? '#' : route('public.offers.show', $offer->slug) }}"
+            href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->offer($offer->agency, $offer) }}"
             @if($isEditor) onclick="return false" @endif
             class="block max-w-sm overflow-hidden border transition hover:-translate-y-0.5"
             style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"

@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\AccountController;
+use App\Http\Controllers\Web\AuthController;
 use App\Http\Controllers\Web\ComponentController;
-use App\Http\Controllers\Web\DestinationController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DemoContentController;
+use App\Http\Controllers\Web\DestinationController;
 use App\Http\Controllers\Web\MediaController;
 use App\Http\Controllers\Web\OfferController;
 use App\Http\Controllers\Web\OnboardingController;
@@ -16,6 +16,7 @@ use App\Http\Controllers\Web\RoleController;
 use App\Http\Controllers\Web\SiteTemplateController;
 use App\Http\Controllers\Web\ThemeController;
 use App\Http\Controllers\Web\UserController;
+use App\Http\Middleware\ResolvePublicAgency;
 use App\Services\Renderer\PageRenderer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -291,17 +292,39 @@ Route::middleware(['auth'])->group(function () {
 |--------------------------------------------------------------------------
 */
 
+Route::prefix('/sites/{agencySlug}')
+    ->middleware(ResolvePublicAgency::class)
+    ->group(function () {
+        Route::get('/', [PageController::class, 'siteHome'])
+            ->name('public.site.home');
+
+        Route::get('/pages/{pageSlug}', [PageController::class, 'siteShow'])
+            ->name('public.site.pages.show');
+
+        Route::get('/destinations', [PublicContentController::class, 'destinations'])
+            ->name('public.site.destinations.index');
+
+        Route::get('/destinations/{destinationSlug}', [PublicContentController::class, 'destination'])
+            ->name('public.site.destinations.show');
+
+        Route::get('/offers', [PublicContentController::class, 'offers'])
+            ->name('public.site.offers.index');
+
+        Route::get('/offers/{offerSlug}', [PublicContentController::class, 'offer'])
+            ->name('public.site.offers.show');
+    });
+
 Route::get('/pages/{slug}', [PageController::class, 'show'])
     ->name('pages.show');
 
-Route::get('/destinations', [PublicContentController::class, 'destinations'])
+Route::get('/destinations', [PublicContentController::class, 'legacyDestinations'])
     ->name('public.destinations.index');
 
-Route::get('/destinations/{slug}', [PublicContentController::class, 'destination'])
+Route::get('/destinations/{slug}', [PublicContentController::class, 'legacyDestination'])
     ->name('public.destinations.show');
 
-Route::get('/offers', [PublicContentController::class, 'offers'])
+Route::get('/offers', [PublicContentController::class, 'legacyOffers'])
     ->name('public.offers.index');
 
-Route::get('/offers/{slug}', [PublicContentController::class, 'offer'])
+Route::get('/offers/{slug}', [PublicContentController::class, 'legacyOffer'])
     ->name('public.offers.show');
