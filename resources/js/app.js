@@ -5,6 +5,7 @@ import { initTableFilter } from './modules/tableFilter';
 import { initPageSettingsTabs } from './modules/pageSettingsTabs';
 import { initCountdownWidgets } from './modules/countdown';
 import { initDashboardCharts } from './modules/dashboardCharts';
+import { initPublicNavigation } from './modules/public-navigation';
 import './modules/modal';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -13,4 +14,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initPageSettingsTabs();
     initCountdownWidgets();
     initDashboardCharts();
+    initPublicNavigation();
 });

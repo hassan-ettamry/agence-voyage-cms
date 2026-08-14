@@ -99,6 +99,37 @@ class PublicTenancyTest extends TestCase
         $response->assertSee(route('public.site.offers.index', $agency->slug), false);
     }
 
+    public function test_public_layout_renders_tenant_aware_navigation_and_agency_footer(): void
+    {
+        $agency = $this->agency('Signature Atlas');
+        $agency->update([
+            'phone' => '+212 500 000 000',
+            'address' => 'Marrakech, Morocco',
+            'settings' => [
+                'public_site' => ['tagline' => 'Private journeys across Morocco.'],
+                'social_links' => ['instagram' => 'https://example.com/signature-atlas'],
+            ],
+        ]);
+        $home = $this->page($agency, 'home', 'Signature home');
+        $menu = Menu::withoutGlobalScopes()->create([
+            'agency_id' => $agency->id, 'name' => 'Main Menu', 'slug' => 'main', 'is_default' => true,
+        ]);
+        MenuItem::create(['menu_id' => $menu->id, 'page_id' => $home->id, 'title' => 'Home', 'order' => 1]);
+        MenuItem::create(['menu_id' => $menu->id, 'title' => 'Offers', 'url' => '/offers', 'order' => 2]);
+
+        $response = $this->get(route('public.site.home', $agency->slug));
+
+        $response->assertOk()
+            ->assertSee('data-site-navigation', false)
+            ->assertSee('data-site-nav-toggle', false)
+            ->assertSee('Signature Atlas')
+            ->assertSee('Private journeys across Morocco.')
+            ->assertSee('+212 500 000 000')
+            ->assertSee('Marrakech, Morocco')
+            ->assertSee(route('public.site.offers.index', $agency->slug), false)
+            ->assertSee(route('public.site.pages.show', [$agency->slug, 'privacy-policy']), false);
+    }
+
     public function test_public_caches_are_tenant_aware_and_invalidated_after_update(): void
     {
         [$atlas, $ocean] = [$this->agency('Atlas'), $this->agency('Ocean')];

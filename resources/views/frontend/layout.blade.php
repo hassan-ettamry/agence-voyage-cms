@@ -2,23 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>
-        {{ $metaTitle ?? $page->title ?? 'Website' }}
-    </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ $metaTitle ?? $page->title ?? 'Website' }}</title>
     @if(!empty($metaDescription))
         <meta name="description" content="{{ $metaDescription }}">
     @endif
 
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @php
         $themeAgency = $siteAgency ?? (isset($page) ? $page->agency : null);
@@ -26,53 +16,20 @@
     @endphp
     <style>
         :root { {!! $themeCss !!} }
-        body {
-            background: var(--site-background);
-            color: var(--site-text);
-            font-family: var(--site-body-font);
-        }
-        h1, h2, h3, h4, h5, h6 { font-family: var(--site-heading-font); }
     </style>
 </head>
 
-<body>
+<body class="site-shell">
+    <a href="#site-main-content" class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-white focus:px-4 focus:py-3 focus:font-bold focus:text-slate-950">
+        Skip to content
+    </a>
 
-    {{-- NAVBAR --}}
-    <header class="border-b" style="border-color: var(--site-border); background: var(--site-surface);">
+    @include('frontend.partials.site-header')
 
-        <div class="max-w-7xl mx-auto px-6 py-4 flex gap-6">
-
-            @if(isset($menu))
-
-                @foreach($menu as $item)
-
-                    <a
-                        href="{{ $item['url'] }}"
-                        class="transition hover:opacity-70"
-                        style="color: var(--site-text);"
-                    >
-                        {{ $item['title'] }}
-                    </a>
-
-                @endforeach
-
-            @endif
-
-        </div>
-
-    </header>
-
-    {{-- CONTENT --}}
-    <main class="min-h-screen">
+    <main id="site-main-content" class="min-h-screen">
         @yield('content')
     </main>
 
-    {{-- FOOTER --}}
-    <footer class="border-t mt-10 p-6 text-center text-sm" style="border-color: var(--site-border); color: var(--site-muted); background: var(--site-surface);">
-
-        © {{ date('Y') }}
-
-    </footer>
-
+    @include('frontend.partials.site-footer')
 </body>
 </html>
