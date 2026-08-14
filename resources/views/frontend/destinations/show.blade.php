@@ -1,27 +1,14 @@
 @extends('frontend.layout')
 
 @section('content')
-<article class="mx-auto max-w-7xl px-6 py-12">
-    @php($cover = $destination->media->first())
-    <div class="overflow-hidden rounded-xl bg-slate-100">
-        @if($cover)
-            <img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $destination->name }}" class="h-[420px] w-full object-cover">
-        @endif
-    </div>
+@php($cover = $destination->media->first())
+<article>
+    <section class="relative isolate min-h-[540px] overflow-hidden bg-[var(--site-secondary)] text-white">@if($cover)<img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $destination->name }}" class="absolute inset-0 -z-20 h-full w-full object-cover">@endif<div class="absolute inset-0 -z-10 bg-gradient-to-t from-black/85 via-black/40 to-black/15"></div><div class="site-container flex min-h-[540px] flex-col justify-end py-14"><a href="{{ app(\App\Services\PublicSiteUrl::class)->destinations($siteAgency) }}" class="mb-8 font-bold text-white/80">&larr; All destinations</a><div class="site-eyebrow" style="color: var(--site-accent);">{{ $destination->country }}</div><h1 class="site-heading mt-3 max-w-5xl text-[clamp(3.5rem,8vw,7.5rem)]">{{ $destination->name }}</h1></div></section>
 
-    <div class="mt-8 max-w-3xl">
-        <div class="text-sm font-semibold uppercase text-indigo-500">{{ $destination->country }}</div>
-        <h1 class="mt-2 text-4xl font-bold text-gray-900">{{ $destination->name }}</h1>
-        <p class="mt-4 text-lg leading-8 text-gray-600">{{ $destination->description }}</p>
-    </div>
+    <section class="site-section"><div class="site-container grid gap-12 lg:grid-cols-[1fr_320px]"><div><div class="site-eyebrow">THE DESTINATION</div><p class="site-lead mt-4 whitespace-pre-line">{{ $destination->description }}</p></div><aside class="site-card h-fit p-7"><h2 class="site-heading text-2xl">Inspired to go?</h2><p class="site-copy mt-3">Explore current journeys or talk to our local team about a trip designed for you.</p><a href="{{ app(\App\Services\PublicSiteUrl::class)->offers($siteAgency) }}?destination={{ urlencode($destination->slug) }}" class="site-button mt-6 w-full">View journeys</a><a href="{{ app(\App\Services\PublicSiteUrl::class)->page($siteAgency, 'contact') }}" class="site-button site-button--secondary mt-3 w-full">Plan a custom trip</a></aside></div></section>
 
-    @if($destination->offers->isNotEmpty())
-        <h2 class="mt-12 text-2xl font-bold text-gray-900">Offers</h2>
-        <div class="mt-5 grid gap-6 md:grid-cols-3">
-            @foreach($destination->offers as $offer)
-                @include('frontend.partials.offer-card', ['offer' => $offer])
-            @endforeach
-        </div>
-    @endif
+    @if($destination->media->count() > 1)<section class="site-section pt-0"><div class="site-container"><div class="site-eyebrow">GALLERY</div><div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">@foreach($destination->media->skip(1) as $media)<img src="{{ $media->url }}" alt="{{ $media->alt_text ?? $destination->name }}" loading="lazy" class="site-card aspect-[4/3] h-full w-full object-cover">@endforeach</div></div></section>@endif
+
+    <section class="site-section" style="background: var(--site-surface);"><div class="site-container"><div class="site-eyebrow">JOURNEYS IN {{ strtoupper($destination->name) }}</div><h2 class="site-heading mt-3 text-3xl sm:text-5xl">Ways to experience it</h2>@if($destination->offers->isEmpty())<div class="site-card mt-8 p-8"><p class="site-copy">No published journeys are available yet. Our travel designers can still create one around you.</p><a href="{{ app(\App\Services\PublicSiteUrl::class)->page($siteAgency, 'contact') }}" class="site-button mt-5">Start planning</a></div>@else<div class="site-card-grid mt-9">@foreach($destination->offers as $offer)@include('frontend.partials.offer-card', ['offer' => $offer])@endforeach</div>@endif</div></section>
 </article>
 @endsection

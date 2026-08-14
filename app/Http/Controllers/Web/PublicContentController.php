@@ -17,16 +17,44 @@ class PublicContentController extends Controller
     public function destinations(Request $request, MenuService $menuService)
     {
         $agency = $this->publicAgency($request);
-        $destinations = Destination::withoutGlobalScopes()
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'country' => ['nullable', 'string', 'max:100'],
+            'featured' => ['nullable', 'in:1'],
+        ]);
+        $query = Destination::withoutGlobalScopes()
             ->forAgency($agency->id)
             ->published()
-            ->with(['media'])
+            ->with(['media']);
+
+        $query->when($filters['q'] ?? null, function ($query, string $search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('country', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        });
+        $query->when($filters['country'] ?? null, fn ($query, string $country) => $query->where('country', $country));
+        $query->when($filters['featured'] ?? null, fn ($query) => $query->featured());
+
+        $destinations = $query
             ->orderByDesc('is_featured')
             ->latest()
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
+        $countries = Destination::withoutGlobalScopes()
+            ->forAgency($agency->id)
+            ->published()
+            ->whereNotNull('country')
+            ->where('country', '!=', '')
+            ->distinct()
+            ->orderBy('country')
+            ->pluck('country');
 
         return view('frontend.destinations.index', [
             'destinations' => $destinations,
+            'countries' => $countries,
+            'filters' => $filters,
             'siteAgency' => $agency,
             'menu' => $menuService->getMenu('main'),
             'metaTitle' => 'Destinations',
@@ -65,16 +93,56 @@ class PublicContentController extends Controller
     public function offers(Request $request, MenuService $menuService)
     {
         $agency = $this->publicAgency($request);
-        $offers = Offer::withoutGlobalScopes()
+        $maxPriceRules = ['nullable', 'numeric', 'min:0'];
+        if ($request->filled('min_price')) {
+            $maxPriceRules[] = 'gte:min_price';
+        }
+        $filters = $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'destination' => ['nullable', 'string', 'max:120'],
+            'min_price' => ['nullable', 'numeric', 'min:0'],
+            'max_price' => $maxPriceRules,
+            'duration' => ['nullable', 'integer', 'min:1', 'max:365'],
+            'special' => ['nullable', 'in:1'],
+        ]);
+        $query = Offer::withoutGlobalScopes()
             ->forAgency($agency->id)
             ->published()
-            ->with(['destination' => fn ($query) => $query->published(), 'media'])
+            ->with(['destination' => fn ($query) => $query->published(), 'media']);
+
+        $query->when($filters['q'] ?? null, function ($query, string $search) {
+            $query->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
+            });
+        });
+        $query->when($filters['destination'] ?? null, fn ($query, string $slug) => $query->whereHas(
+            'destination',
+            fn ($destination) => $destination->withoutGlobalScopes()
+                ->forAgency($agency->id)
+                ->published()
+                ->where('slug', $slug)
+        ));
+        $query->when($filters['min_price'] ?? null, fn ($query, $price) => $query->where('price', '>=', $price));
+        $query->when($filters['max_price'] ?? null, fn ($query, $price) => $query->where('price', '<=', $price));
+        $query->when($filters['duration'] ?? null, fn ($query, $days) => $query->where('duration_days', '<=', $days));
+        $query->when($filters['special'] ?? null, fn ($query) => $query->special());
+
+        $offers = $query
             ->orderByDesc('is_special')
             ->latest()
-            ->paginate(12);
+            ->paginate(12)
+            ->withQueryString();
+        $destinations = Destination::withoutGlobalScopes()
+            ->forAgency($agency->id)
+            ->published()
+            ->orderBy('name')
+            ->get(['id', 'name', 'slug']);
 
         return view('frontend.offers.index', [
             'offers' => $offers,
+            'destinations' => $destinations,
+            'filters' => $filters,
             'siteAgency' => $agency,
             'menu' => $menuService->getMenu('main'),
             'metaTitle' => 'Offers',
@@ -103,8 +171,18 @@ class PublicContentController extends Controller
 
         abort_if($offer->destination && $offer->destination->agency_id !== $agency->id, 404);
 
+        $relatedOffers = Offer::withoutGlobalScopes()
+            ->forAgency($agency->id)
+            ->published()
+            ->with(['destination', 'media'])
+            ->whereKeyNot($offer->id)
+            ->when($offer->destination_id, fn ($query) => $query->where('destination_id', $offer->destination_id))
+            ->limit(3)
+            ->get();
+
         return view('frontend.offers.show', [
             'offer' => $offer,
+            'relatedOffers' => $relatedOffers,
             'siteAgency' => $agency,
             'menu' => $menuService->getMenu('main'),
             'metaTitle' => $offer->title,
