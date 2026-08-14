@@ -340,7 +340,110 @@ class SiteTemplateSeeder extends Seeder
                     'url' => '/contact',
                 ]),
             ]),
+            $this->page('About', 'about', 'Meet the people behind your journey', [
+                $this->signatureHero('OUR STORY', 'Travel should feel personal', 'We pair deep local knowledge with thoughtful service to create journeys that reflect who you are.'),
+                $this->node('image-text', [
+                    'eyebrow' => 'HOW WE WORK',
+                    'title' => 'Local insight. Personal design.',
+                    'text' => 'Our travel designers listen first, then build each journey with trusted local partners and space for genuine discovery.',
+                    'image' => '/images/site-templates/culture-journey.png',
+                    'imageAlt' => 'A locally designed travel experience',
+                    'imagePosition' => 'left',
+                    'buttonText' => 'Talk to our team',
+                    'url' => '/contact',
+                ]),
+                $this->node('feature-grid', [
+                    'eyebrow' => 'OUR PROMISE',
+                    'title' => 'Designed with care, delivered with confidence',
+                    'items' => "compass|Rooted locally|We work with people who know each destination deeply.\nheart|Entirely personal|Your interests and travel style shape every decision.\ncheck-circle|Responsible choices|We favour meaningful experiences and trusted partners.",
+                    'columns' => 3,
+                ]),
+                $this->node('stats-counter', ['items' => "15+|Years of experience\n40+|Destinations\n2,500+|Happy travellers\n24/7|Local support"]),
+                $this->node('testimonials', [
+                    'eyebrow' => 'WHY IT MATTERS',
+                    'title' => 'Journeys remembered for the right reasons',
+                    'items' => "We felt looked after without ever feeling rushed.|Emma T.|Manchester|5\nThe local knowledge transformed our trip.|Noah B.|Amsterdam|5",
+                ]),
+                $this->signatureCta(),
+            ]),
+            $this->page('Contact', 'contact', 'Plan your next journey with us', [
+                $this->signatureHero('LET US BEGIN', 'Where would you like to go?', 'Share the first idea. Our local travel designers will help shape everything that follows.'),
+                $this->node('contact-info', [
+                    'title' => 'Talk to a travel designer',
+                    'text' => 'Use the agency contact details below to start planning.',
+                    'email' => '',
+                    'phone' => '',
+                    'address' => '',
+                ]),
+                $this->node('contact-form', [
+                    'title' => 'Tell us about your dream journey',
+                    'subtitle' => 'This form is a design preview in Phase 3 and does not send or store messages.',
+                    'nameLabel' => 'Your name',
+                    'emailLabel' => 'Email address',
+                    'messageLabel' => 'Where do you want to go?',
+                    'buttonText' => 'Start planning',
+                    'actionUrl' => '',
+                ]),
+                $this->node('map', ['address' => 'Marrakech, Morocco', 'height' => 440, 'zoom' => 12, 'borderRadius' => 18]),
+                $this->node('newsletter', [
+                    'title' => 'Stories worth travelling for',
+                    'text' => 'Occasional destination ideas and journeys from our travel designers.',
+                    'placeholder' => 'Email address',
+                    'buttonText' => 'Subscribe',
+                ]),
+            ]),
+            $this->page('FAQ', 'faq', 'Travel questions, clearly answered', [
+                $this->signatureHero('GOOD TO KNOW', 'Questions before you travel', 'Clear answers about planning, customisation, support, and what happens next.'),
+                $this->node('accordion', [
+                    'title' => 'Planning your journey',
+                    'items' => "How does planning work?|Tell us your ideas, timing, and travel style. We will turn them into a tailored proposal.\nCan I change an itinerary?|Yes. Dates, stays, pacing, and experiences can all be adapted before confirmation.\nDo you offer support while travelling?|Yes. Your agency remains available for practical help throughout the journey.\nAre the prices final?|Displayed prices are indicative until the agency confirms availability and your final itinerary.",
+                ]),
+                $this->signatureCta('Still have a question?', 'Our travel designers are ready to help.', 'Ask our team'),
+            ]),
+            $this->hiddenPage('Privacy Policy', 'privacy-policy', 'How we respect your privacy', [
+                $this->signatureHero('LEGAL', 'Privacy Policy', 'A clear starting point for explaining how your agency handles personal information.'),
+                $this->legalSection('<h2>1. Information we collect</h2><p>Replace this template text with the information your agency collects through its website and direct communications.</p><h2>2. How information is used</h2><p>Explain the purposes, legal basis, retention period, and service providers involved.</p><h2>3. Your choices</h2><p>Describe how visitors can request access, correction, or deletion and how they can contact your agency.</p><p><strong>Important:</strong> This template is not legal advice. Review it with a qualified professional before publishing.</p>'),
+            ]),
+            $this->hiddenPage('Terms and Conditions', 'terms-and-conditions', 'Website terms and travel conditions', [
+                $this->signatureHero('LEGAL', 'Terms and Conditions', 'A structured starting point for your website and travel service terms.'),
+                $this->legalSection('<h2>1. Using this website</h2><p>Define acceptable use, content ownership, and the limits of information displayed online.</p><h2>2. Quotes and travel services</h2><p>Explain that availability, itinerary, inclusions, price, payment, cancellation, and supplier terms must be confirmed directly by the agency.</p><h2>3. Responsibility</h2><p>Add the rules and consumer protections that apply to your business and operating country.</p><p><strong>Important:</strong> This template is not legal advice. Review it with a qualified professional before publishing.</p>'),
+            ]),
         ];
+    }
+
+    private function signatureHero(string $eyebrow, string $title, string $description): array
+    {
+        return $this->node('hero', [
+            'eyebrow' => $eyebrow,
+            'title' => $title,
+            'description' => $description,
+            'buttonText' => '',
+            'backgroundMode' => 'color',
+            'variant' => 'left',
+            'padding' => 88,
+        ]);
+    }
+
+    private function signatureCta(string $title = 'Your next story starts here', string $text = 'Tell us what you are dreaming of and we will shape the journey with you.', string $button = 'Plan my journey'): array
+    {
+        return $this->node('cta-banner', ['eyebrow' => 'START PLANNING', 'title' => $title, 'text' => $text, 'buttonText' => $button, 'url' => '/contact']);
+    }
+
+    private function legalSection(string $html): array
+    {
+        return $this->node('section', ['paddingTop' => 72, 'paddingBottom' => 72], [
+            $this->container('layout', ['maxWidth' => 860, 'paddingLeft' => 24, 'paddingRight' => 24], [
+                $this->node('richtext', ['html' => $html, 'fontSize' => 17, 'lineHeight' => 1.75, 'padding' => 0]),
+            ]),
+        ]);
+    }
+
+    private function hiddenPage(string $title, string $slug, string $metaTitle, array $structure): array
+    {
+        $page = $this->page($title, $slug, $metaTitle, $structure);
+        $page['include_in_menu'] = false;
+
+        return $page;
     }
 
     private function premiumEscapesPages(string $primary, string $dark): array
