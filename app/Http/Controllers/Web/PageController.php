@@ -153,6 +153,8 @@ class PageController extends Controller
             'html' => $html,
             'menu' => $menuItems,
             'siteAgency' => $agency,
+            'metaTitle' => data_get($page->meta, 'title') ?: $page->title,
+            'metaDescription' => data_get($page->meta, 'description') ?: str($page->title)->append(' — ', $agency->name),
         ]);
     }
 

@@ -15,7 +15,7 @@ class ThemeSeeder extends Seeder
                 'slug' => 'signature-travel',
                 'preview' => 'images/site-templates/culture-journey.png',
                 'variables' => [
-                    'primary' => '#e65f3c',
+                    'primary' => '#bd4328',
                     'secondary' => '#12372f',
                     'accent' => '#e9bd62',
                     'background' => '#fbfaf6',

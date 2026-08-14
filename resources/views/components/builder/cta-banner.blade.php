@@ -6,7 +6,7 @@
 @endphp
 <section @if($isEditor) data-type="cta-banner" data-node-id="{{ $nodeId }}" draggable="true" data-drag-action="reorder" @endif class="site-section {{ $isEditor ? 'builder-node' : '' }}" style="background: {{ $props['backgroundColor'] ?? 'var(--site-primary)' }}; color: #fff;">
     <div class="site-container flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-center">
-        <div class="max-w-3xl">@if(!empty($props['eyebrow']))<div class="site-eyebrow text-white/75">{{ $props['eyebrow'] }}</div>@endif<h2 class="site-heading mt-3 text-3xl sm:text-5xl">{{ $props['title'] ?? 'Ready for your next story?' }}</h2>@if(!empty($props['text']))<p class="mt-4 max-w-2xl text-lg text-white/85">{{ $props['text'] }}</p>@endif</div>
+        <div class="max-w-3xl">@if(!empty($props['eyebrow']))<div class="site-eyebrow text-white">{{ $props['eyebrow'] }}</div>@endif<h2 class="site-heading mt-3 text-3xl sm:text-5xl">{{ $props['title'] ?? 'Ready for your next story?' }}</h2>@if(!empty($props['text']))<p class="mt-4 max-w-2xl text-lg text-white">{{ $props['text'] }}</p>@endif</div>
         <a href="{{ $isEditor ? '#' : $buttonUrl }}" class="site-button site-button--secondary shrink-0">{{ $props['buttonText'] ?? 'Plan my trip' }}</a>
     </div>
 </section>

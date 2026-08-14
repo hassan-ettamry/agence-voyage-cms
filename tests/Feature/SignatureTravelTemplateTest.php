@@ -42,6 +42,7 @@ class SignatureTravelTemplateTest extends TestCase
             'cta-banner',
         ], $types);
         $this->assertSame('Go further. Travel deeper.', $home['structure'][0]['props']['title']);
+        $this->assertSame('/images/site-templates/mountain-adventure.webp', $home['structure'][0]['props']['backgroundImage']);
         $this->assertSame('/contact', $home['structure'][7]['props']['url']);
         $this->assertSame(['home', 'destinations', 'offers', 'about', 'contact', 'faq', 'privacy-policy', 'terms-and-conditions'], $pages->keys()->all());
         $this->assertSame('/destinations', $pages['destinations']['menu_url']);

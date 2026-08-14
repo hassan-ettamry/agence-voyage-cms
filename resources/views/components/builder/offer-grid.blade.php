@@ -94,7 +94,7 @@
                         @endif
 
                         @if($offer->is_special)
-                            <span class="rounded-full px-2 py-1 text-xs font-semibold" style="background-color: color-mix(in srgb, var(--site-accent, #f43f5e) 14%, transparent); color: var(--site-accent, #e11d48);">
+                            <span class="rounded-full px-2 py-1 text-xs font-semibold" style="background-color: var(--site-accent, #e9bd62); color: var(--site-secondary, #12372f);">
                                 Special
                             </span>
                         @endif

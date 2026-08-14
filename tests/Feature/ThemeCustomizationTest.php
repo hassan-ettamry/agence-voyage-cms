@@ -73,7 +73,7 @@ class ThemeCustomizationTest extends TestCase
 
         $this->assertSame('Signature Travel', $theme->name);
         $this->assertSame(Theme::STATUS_ACTIVE, $theme->status);
-        $this->assertSame('#e65f3c', $theme->variables['primary']);
+        $this->assertSame('#bd4328', $theme->variables['primary']);
         $this->assertSame('#12372f', $theme->variables['secondary']);
         $this->assertSame('Georgia, "Times New Roman", serif', $theme->variables['headingFont']);
         $this->assertSame(1, Theme::query()->where('slug', 'signature-travel')->count());

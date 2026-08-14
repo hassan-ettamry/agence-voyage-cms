@@ -8,6 +8,15 @@
         <meta name="description" content="{{ $metaDescription }}">
     @endif
 
+    @php
+        $heroPreload = isset($page)
+            ? data_get($page->structure, '0.props.backgroundImage')
+            : null;
+    @endphp
+    @if(is_string($heroPreload) && (str_starts_with($heroPreload, '/') || str_starts_with($heroPreload, 'http')))
+        <link rel="preload" as="image" href="{{ $heroPreload }}" fetchpriority="high">
+    @endif
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @php

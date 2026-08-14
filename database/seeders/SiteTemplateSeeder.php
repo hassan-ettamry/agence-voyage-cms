@@ -303,7 +303,7 @@ class SiteTemplateSeeder extends Seeder
                     'searchType' => 'destinations',
                     'placeholder' => 'Where would you like to go?',
                     'buttonText' => 'Explore',
-                    'backgroundImage' => '/images/site-templates/mountain-adventure.png',
+                    'backgroundImage' => '/images/site-templates/mountain-adventure.webp',
                 ]),
                 $this->node('destination-carousel', [
                     'title' => 'Places that stay with you',
