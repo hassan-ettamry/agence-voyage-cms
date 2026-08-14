@@ -340,6 +340,37 @@ class SiteTemplateSeeder extends Seeder
                     'url' => '/contact',
                 ]),
             ]),
+            $this->catalogPage('Destinations', 'destinations', '/destinations', 'Explore remarkable places', [
+                $this->signatureHero('EXPLORE THE WORLD', 'Places that move you', 'Discover handpicked destinations with local insight and room for genuine connection.'),
+                $this->node('destination-grid', [
+                    'title' => 'Choose your next chapter',
+                    'source' => 'latest',
+                    'limit' => 9,
+                    'columns' => 3,
+                ]),
+                $this->node('feature-grid', [
+                    'eyebrow' => 'TRAVEL YOUR WAY',
+                    'title' => 'More than a place on the map',
+                    'items' => "compass|Local perspective|See each place through people who know it best.\nheart|Your own pace|Balance iconic sights with time to explore freely.\ncheck-circle|Thoughtful choices|Stay and travel with partners we know and trust.",
+                    'columns' => 3,
+                ]),
+                $this->signatureCta('Found somewhere inspiring?', 'Let us turn the destination into a journey designed around you.', 'Plan my trip'),
+            ]),
+            $this->catalogPage('Offers', 'offers', '/offers', 'Curated journeys and special offers', [
+                $this->signatureHero('CURATED JOURNEYS', 'Travel offers, made personal', 'Explore inspiring itineraries, then adapt the pace, stays, and experiences with our travel designers.'),
+                $this->node('offer-grid', [
+                    'title' => 'Journeys worth taking',
+                    'source' => 'latest',
+                    'limit' => 9,
+                    'columns' => 3,
+                ]),
+                $this->node('offer-comparison', [
+                    'title' => 'Compare signature journeys',
+                    'limit' => 3,
+                    'buttonText' => 'View journey',
+                ]),
+                $this->signatureCta('Need something different?', 'Every offer can be the beginning of a journey shaped entirely around you.', 'Create my journey'),
+            ]),
             $this->page('About', 'about', 'Meet the people behind your journey', [
                 $this->signatureHero('OUR STORY', 'Travel should feel personal', 'We pair deep local knowledge with thoughtful service to create journeys that reflect who you are.'),
                 $this->node('image-text', [
@@ -442,6 +473,14 @@ class SiteTemplateSeeder extends Seeder
     {
         $page = $this->page($title, $slug, $metaTitle, $structure);
         $page['include_in_menu'] = false;
+
+        return $page;
+    }
+
+    private function catalogPage(string $title, string $slug, string $menuUrl, string $metaTitle, array $structure): array
+    {
+        $page = $this->page($title, $slug, $metaTitle, $structure);
+        $page['menu_url'] = $menuUrl;
 
         return $page;
     }

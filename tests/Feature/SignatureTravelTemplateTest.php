@@ -43,7 +43,9 @@ class SignatureTravelTemplateTest extends TestCase
         ], $types);
         $this->assertSame('Go further. Travel deeper.', $home['structure'][0]['props']['title']);
         $this->assertSame('/contact', $home['structure'][7]['props']['url']);
-        $this->assertSame(['home', 'about', 'contact', 'faq', 'privacy-policy', 'terms-and-conditions'], $pages->keys()->all());
+        $this->assertSame(['home', 'destinations', 'offers', 'about', 'contact', 'faq', 'privacy-policy', 'terms-and-conditions'], $pages->keys()->all());
+        $this->assertSame('/destinations', $pages['destinations']['menu_url']);
+        $this->assertSame('/offers', $pages['offers']['menu_url']);
         $this->assertSame(['hero', 'contact-info', 'contact-form', 'map', 'newsletter'], collect($pages['contact']['structure'])->pluck('type')->all());
         $this->assertSame(['hero', 'accordion', 'cta-banner'], collect($pages['faq']['structure'])->pluck('type')->all());
         $this->assertFalse($pages['privacy-policy']['include_in_menu']);
@@ -64,8 +66,10 @@ class SignatureTravelTemplateTest extends TestCase
 
         $pages = Page::withoutGlobalScopes()->where('agency_id', $agency->id)->get()->keyBy('slug');
         $menu = Menu::withoutGlobalScopes()->where('agency_id', $agency->id)->where('is_default', true)->firstOrFail();
-        $this->assertSame(['home', 'about', 'contact', 'faq', 'privacy-policy', 'terms-and-conditions'], $pages->keys()->all());
-        $this->assertSame(4, $menu->items()->count());
+        $this->assertSame(['home', 'destinations', 'offers', 'about', 'contact', 'faq', 'privacy-policy', 'terms-and-conditions'], $pages->keys()->all());
+        $this->assertSame(6, $menu->items()->count());
+        $this->assertDatabaseHas('menu_items', ['menu_id' => $menu->id, 'title' => 'Destinations', 'page_id' => null, 'url' => '/destinations']);
+        $this->assertDatabaseHas('menu_items', ['menu_id' => $menu->id, 'title' => 'Offers', 'page_id' => null, 'url' => '/offers']);
         $this->assertSame(Page::STATUS_DRAFT, $pages['contact']->status);
         $this->assertSame('contact-info', $pages['contact']->structure[1]['type']);
         $this->assertSame($template->theme_id, $agency->fresh()->theme_id);

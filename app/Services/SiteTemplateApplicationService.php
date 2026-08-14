@@ -71,11 +71,14 @@ class SiteTemplateApplicationService
                 $createdPages->push($page);
 
                 if (($pageData['include_in_menu'] ?? true) !== false) {
+                    $menuUrl = is_string($pageData['menu_url'] ?? null)
+                        ? $pageData['menu_url']
+                        : null;
                     MenuItem::create([
                         'menu_id' => $menu->id,
-                        'page_id' => $page->id,
+                        'page_id' => $menuUrl ? null : $page->id,
                         'title' => $pageData['menu_title'] ?? $page->title,
-                        'url' => null,
+                        'url' => $menuUrl,
                         'parent_id' => null,
                         'order' => $index + 1,
                     ]);
