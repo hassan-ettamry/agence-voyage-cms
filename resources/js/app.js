@@ -6,6 +6,7 @@ import { initPageSettingsTabs } from './modules/pageSettingsTabs';
 import { initCountdownWidgets } from './modules/countdown';
 import { initDashboardCharts } from './modules/dashboardCharts';
 import { initPublicNavigation } from './modules/public-navigation';
+import { initPublicInteractions } from './modules/public-interactions';
 import './modules/modal';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -15,4 +16,5 @@ document.addEventListener('DOMContentLoaded', () => {
     initCountdownWidgets();
     initDashboardCharts();
     initPublicNavigation();
+    initPublicInteractions();
 });

@@ -11,6 +11,7 @@ class ComponentSeeder extends Seeder
     public function run(): void
     {
         $components = [
+            ...$this->signatureComponents(),
             [
                 'type' => 'hero',
                 'name' => 'Hero',
@@ -537,5 +538,110 @@ class ComponentSeeder extends Seeder
 
         Component::whereIn('type', ['row', 'column'])->delete();
         Cache::forget('components.registry');
+    }
+
+    private function signatureComponents(): array
+    {
+        return [
+            $this->signatureComponent('search-hero', 'Search Hero', 'marketing', 'magnifying-glass', [
+                'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'YOUR JOURNEY STARTS HERE'],
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Where will you go next?'],
+                'description' => ['type' => 'textarea', 'label' => 'Description', 'default' => 'Discover thoughtful journeys created by local travel experts.'],
+                'searchType' => ['type' => 'select', 'label' => 'Search', 'default' => 'destinations', 'options' => ['destinations', 'offers']],
+                'placeholder' => ['type' => 'text', 'label' => 'Placeholder', 'default' => 'Search destinations'],
+                'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'Explore'],
+                'backgroundImage' => ['type' => 'media', 'label' => 'Background Image', 'default' => ''],
+            ]),
+            $this->signatureComponent('image-text', 'Image & Text', 'content', 'photo', [
+                'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'OUR APPROACH'],
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Travel designed around you'],
+                'text' => ['type' => 'textarea', 'label' => 'Text', 'default' => 'We combine local knowledge with personal service to create journeys that feel entirely your own.'],
+                'image' => ['type' => 'media', 'label' => 'Image', 'default' => ''],
+                'imageAlt' => ['type' => 'text', 'label' => 'Image Alt', 'default' => ''],
+                'imagePosition' => ['type' => 'select', 'label' => 'Image Position', 'default' => 'left', 'options' => ['left', 'right']],
+                'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'Discover our story'],
+                'url' => ['type' => 'text', 'label' => 'URL', 'default' => '/about'],
+            ]),
+            $this->signatureComponent('feature-grid', 'Feature Grid', 'content', 'squares-2x2', [
+                'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'WHY TRAVEL WITH US'],
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Every detail, thoughtfully handled'],
+                'items' => ['type' => 'textarea', 'label' => 'Features', 'default' => "compass|Local expertise|Travel with people who know each place deeply.\nheart|Personal service|Every journey is shaped around your interests.\ncheck-circle|Trusted support|We are with you before, during and after your trip."],
+                'columns' => ['type' => 'range', 'label' => 'Columns', 'min' => 1, 'max' => 4, 'default' => 3],
+            ]),
+            $this->signatureComponent('destination-carousel', 'Destination Carousel', 'travel', 'map', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Explore remarkable places'],
+                'limit' => ['type' => 'range', 'label' => 'Limit', 'min' => 1, 'max' => 12, 'default' => 6],
+                'source' => ['type' => 'select', 'label' => 'Source', 'default' => 'featured', 'options' => ['featured', 'latest']],
+            ]),
+            $this->signatureComponent('offer-comparison', 'Offer Comparison', 'travel', 'table-cells', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Compare our journeys'],
+                'limit' => ['type' => 'range', 'label' => 'Offers', 'min' => 2, 'max' => 4, 'default' => 3],
+                'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'View journey'],
+            ]),
+            $this->signatureComponent('testimonials', 'Testimonials', 'marketing', 'chat-bubble-left-right', [
+                'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'TRAVELLER STORIES'],
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'What our travellers say'],
+                'items' => ['type' => 'textarea', 'label' => 'Testimonials', 'default' => "An unforgettable journey from beginning to end.|Amelia R.|London|5\nEvery detail felt personal and effortless.|Daniel M.|Toronto|5\nWe discovered places we would never have found alone.|Sofia K.|Madrid|5"],
+            ]),
+            $this->signatureComponent('trust-logos', 'Trust Logos', 'marketing', 'shield-check', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Trusted by travellers and partners'],
+                'items' => ['type' => 'textarea', 'label' => 'Logos', 'default' => "IATA|\nTravelife|\nTripadvisor|"],
+            ]),
+            $this->signatureComponent('stats-counter', 'Stats Counter', 'marketing', 'chart-bar', [
+                'items' => ['type' => 'textarea', 'label' => 'Statistics', 'default' => "15+|Years of experience\n40+|Destinations\n2,500+|Happy travellers\n24/7|Local support"],
+            ]),
+            $this->signatureComponent('cta-banner', 'CTA Banner', 'marketing', 'megaphone', [
+                'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'START PLANNING'],
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Your next story starts here'],
+                'text' => ['type' => 'textarea', 'label' => 'Text', 'default' => 'Tell us where you want to go and we will shape the journey with you.'],
+                'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'Plan my journey'],
+                'url' => ['type' => 'text', 'label' => 'URL', 'default' => '/contact'],
+            ]),
+            $this->signatureComponent('newsletter', 'Newsletter', 'forms', 'envelope', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Ideas for your next journey'],
+                'text' => ['type' => 'textarea', 'label' => 'Text', 'default' => 'Occasional travel inspiration, destination stories and new departures.'],
+                'placeholder' => ['type' => 'text', 'label' => 'Placeholder', 'default' => 'Email address'],
+                'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'Subscribe'],
+                'consentText' => ['type' => 'text', 'label' => 'Consent', 'default' => 'Design preview only. No data is submitted.'],
+            ]),
+            $this->signatureComponent('accordion', 'Accordion', 'content', 'bars-arrow-down', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Helpful information'],
+                'items' => ['type' => 'textarea', 'label' => 'Items', 'default' => "How does planning work?|Share your ideas and we will propose a tailored journey.\nCan the itinerary change?|Yes. Every itinerary can be adapted before confirmation."],
+            ]),
+            $this->signatureComponent('tabs', 'Tabs', 'content', 'rectangle-group', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Know before you go'],
+                'items' => ['type' => 'textarea', 'label' => 'Tabs', 'default' => "Overview|A concise introduction to the experience.\nBest time to visit|Choose the season that matches your travel style.\nGood to know|Practical details prepared by our local team."],
+            ]),
+            $this->signatureComponent('contact-info', 'Contact Information', 'forms', 'phone', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Talk to a travel designer'],
+                'text' => ['type' => 'textarea', 'label' => 'Text', 'default' => 'We would love to hear where you are dreaming of going.'],
+                'email' => ['type' => 'text', 'label' => 'Email Override', 'default' => ''],
+                'phone' => ['type' => 'text', 'label' => 'Phone Override', 'default' => ''],
+                'address' => ['type' => 'text', 'label' => 'Address Override', 'default' => ''],
+            ]),
+            $this->signatureComponent('social-links', 'Social Links', 'content', 'share', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Follow the journey'],
+                'items' => ['type' => 'textarea', 'label' => 'Links', 'default' => "Instagram|https://instagram.com\nFacebook|https://facebook.com\nYouTube|https://youtube.com"],
+                'align' => ['type' => 'select', 'label' => 'Alignment', 'default' => 'left', 'options' => ['left', 'center', 'right']],
+            ]),
+        ];
+    }
+
+    private function signatureComponent(string $type, string $name, string $category, string $icon, array $fields): array
+    {
+        return [
+            'type' => $type,
+            'name' => $name,
+            'category' => $category,
+            'icon' => $icon,
+            'schema_json' => [
+                'tabs' => [
+                    'content' => [
+                        'title' => 'Content',
+                        'fields' => $fields,
+                    ],
+                ],
+            ],
+        ];
     }
 }
