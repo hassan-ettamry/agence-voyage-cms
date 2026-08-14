@@ -221,6 +221,21 @@ class PageController extends Controller
         ));
     }
 
+    public function preview(Page $page, PageRenderer $renderer)
+    {
+        $this->authorize('view', $page);
+        AgencyContext::set($page->agency_id);
+        $page = $this->pageService->ensureCanonicalStructure($page);
+
+        return view('frontend.page', [
+            'page' => $page,
+            'html' => $renderer->render($page->structure ?? [], 'preview'),
+            'menu' => app(MenuService::class)->menuForPagePreview($page),
+            'siteAgency' => $page->agency,
+            'previewMode' => true,
+        ]);
+    }
+
     /**
      * Update page
      */

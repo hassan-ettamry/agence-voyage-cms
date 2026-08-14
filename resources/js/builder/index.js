@@ -16,6 +16,7 @@ import './components/container-roles';
 import './viewport';
 import './storage';
 import './sidebar';
+import './component-library';
 import './right-sidebar';
 import './settings/control-schemas';
 import './schema';
@@ -250,6 +251,10 @@ document.addEventListener(
                 'widgets'
             );
 
+        }
+
+        if (window.BuilderComponentLibrary) {
+            BuilderComponentLibrary.init();
         }
 
         /*

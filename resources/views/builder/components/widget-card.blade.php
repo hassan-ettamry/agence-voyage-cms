@@ -2,6 +2,8 @@
     data-action="add-component"
 
     data-component="{{ $type }}"
+    data-component-label="{{ strtolower($label) }}"
+    data-component-category="{{ strtolower($category ?? 'other') }}"
 
     draggable="true"
 
@@ -11,7 +13,7 @@
            flex flex-col items-center justify-center
            gap-1
            h-[80px]
-           w-[114px]
+           w-full
            p-2
            rounded-md
            border border-gray-200

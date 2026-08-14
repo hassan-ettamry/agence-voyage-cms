@@ -33,6 +33,7 @@ class SignatureComponentCatalogTest extends TestCase
         foreach (self::TYPES as $type) {
             $this->assertArrayHasKey($type, $components);
             $this->assertNotEmpty(data_get($components[$type]->schema_json, 'tabs.content.fields'));
+            $this->assertNotEmpty(data_get($components[$type]->schema_json, 'tabs.responsive.fields'));
             $this->assertTrue(view()->exists("components.builder.{$type}"));
         }
     }
@@ -72,5 +73,26 @@ class SignatureComponentCatalogTest extends TestCase
             ->assertSee('Talk to a travel designer')
             ->assertSee(route('public.site.destinations.index', $agency->slug), false)
             ->assertSee(route('public.site.pages.show', [$agency->slug, 'contact']), false);
+    }
+
+    public function test_signature_component_responsive_visibility_is_rendered_as_css_classes(): void
+    {
+        $this->seed(ComponentSeeder::class);
+        $renderer = app(\App\Services\Renderer\PageRenderer::class);
+        $html = $renderer->render([[
+            'id' => 'responsive-cta',
+            'type' => 'cta-banner',
+            'props' => [
+                'title' => 'Responsive CTA',
+                'url' => '/contact',
+                'hideOnMobile' => 'yes',
+                'hideOnTablet' => 'yes',
+            ],
+            'children' => [],
+        ]], 'preview');
+
+        $this->assertStringContainsString('site-hide-mobile', $html);
+        $this->assertStringContainsString('site-hide-tablet', $html);
+        $this->assertStringContainsString('Responsive CTA', $html);
     }
 }

@@ -328,6 +328,28 @@ class PageStructureLifecycleTest extends TestCase
         );
     }
 
+    public function test_builder_exposes_search_preview_publish_and_an_authorized_draft_preview(): void
+    {
+        $agency = $this->agency();
+        $user = $this->userWithPermissions($agency, ['page.view', 'page.update']);
+        Component::create(['type' => 'text', 'name' => 'Text', 'category' => 'content', 'icon' => 'document-text', 'schema_json' => ['props' => ['text' => ['type' => 'text']]]]);
+        $page = $this->page($agency, [[
+            'id' => 'preview-text', 'type' => 'text', 'props' => ['text' => 'Private draft preview'], 'children' => [],
+        ]]);
+
+        $this->actingAs($user)->get(route('pages.builder', $page))
+            ->assertOk()
+            ->assertSee('data-component-search', false)
+            ->assertSee(route('pages.preview', $page), false)
+            ->assertSee(route('pages.publish', $page), false)
+            ->assertSee('builder-save-status', false);
+
+        $this->actingAs($user)->get(route('pages.preview', $page))
+            ->assertOk()
+            ->assertSee('Draft preview')
+            ->assertSee('Private draft preview');
+    }
+
     public function test_renderer_renders_array_roots_and_rejects_object_roots(): void
     {
         Component::create([

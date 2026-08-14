@@ -172,6 +172,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('{page}/builder', [PageController::class, 'builder'])
                 ->name('builder');
 
+            Route::get('{page}/preview', [PageController::class, 'preview'])
+                ->name('preview');
+
             /*
             |--------------------------------------------------------------------------
             | Publish

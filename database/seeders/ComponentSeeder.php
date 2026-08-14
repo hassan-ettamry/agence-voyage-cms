@@ -629,18 +629,39 @@ class ComponentSeeder extends Seeder
 
     private function signatureComponent(string $type, string $name, string $category, string $icon, array $fields): array
     {
+        $dataKeys = ['searchType', 'source', 'limit'];
+        $layoutKeys = ['columns', 'imagePosition', 'align'];
+        $styleKeys = ['backgroundImage', 'variant'];
+        $tabs = [
+            'content' => ['title' => 'Content', 'fields' => []],
+            'data' => ['title' => 'Data', 'fields' => []],
+            'layout' => ['title' => 'Layout', 'fields' => []],
+            'style' => ['title' => 'Style', 'fields' => []],
+        ];
+
+        foreach ($fields as $key => $field) {
+            $tab = in_array($key, $dataKeys, true) ? 'data'
+                : (in_array($key, $layoutKeys, true) ? 'layout'
+                    : (in_array($key, $styleKeys, true) ? 'style' : 'content'));
+            $tabs[$tab]['fields'][$key] = $field;
+        }
+
+        $tabs = array_filter($tabs, fn (array $tab) => $tab['fields'] !== []);
+        $tabs['responsive'] = [
+            'title' => 'Responsive',
+            'fields' => [
+                'hideOnMobile' => ['type' => 'toggle', 'label' => 'Hide on Mobile', 'default' => 'no'],
+                'hideOnTablet' => ['type' => 'toggle', 'label' => 'Hide on Tablet', 'default' => 'no'],
+            ],
+        ];
+
         return [
             'type' => $type,
             'name' => $name,
             'category' => $category,
             'icon' => $icon,
             'schema_json' => [
-                'tabs' => [
-                    'content' => [
-                        'title' => 'Content',
-                        'fields' => $fields,
-                    ],
-                ],
+                'tabs' => $tabs,
             ],
         ];
     }

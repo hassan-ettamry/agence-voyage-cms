@@ -107,6 +107,18 @@
     grid-template-columns: repeat(var(--site-card-columns, 3), minmax(0, 1fr));
 }
 
+@media (max-width: 639px) {
+    .site-hide-mobile {
+        display: none !important;
+    }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+    .site-hide-tablet {
+        display: none !important;
+    }
+}
+
 @media (max-width: 767px) {
     .site-card-grid {
         grid-template-columns: 1fr;

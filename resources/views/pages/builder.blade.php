@@ -15,6 +15,12 @@
     window.pageId =
         @json($page->id);
 
+    window.builderPreviewUrl =
+        @json(route('pages.preview', $page));
+
+    window.builderPageStatus =
+        @json($page->status);
+
     window.initialStructure =
         @json($builderStructure ?? []);
 

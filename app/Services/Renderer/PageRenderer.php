@@ -119,7 +119,7 @@ class PageRenderer
 
         try {
 
-            return View::make($view, [
+            $html = View::make($view, [
 
                 'props' => $props,
 
@@ -150,6 +150,8 @@ class PageRenderer
                 'siblingCount' => $siblingCount,
 
             ])->render();
+
+            return $this->applyResponsiveVisibility($html, $props);
 
         } catch (\Throwable $e) {
 
@@ -186,6 +188,23 @@ class PageRenderer
         return array_is_list($props)
             ? []
             : $props;
+    }
+
+    private function applyResponsiveVisibility(string $html, array $props): string
+    {
+        $classes = array_filter([
+            ($props['hideOnMobile'] ?? 'no') === 'yes' ? 'site-hide-mobile' : null,
+            ($props['hideOnTablet'] ?? 'no') === 'yes' ? 'site-hide-tablet' : null,
+        ]);
+
+        if ($classes === []) {
+            return $html;
+        }
+
+        $classList = implode(' ', $classes).' ';
+        $updated = preg_replace('/^(\s*<[^>]*\bclass=")/', '$1'.$classList, $html, 1, $count);
+
+        return $count === 1 ? $updated : '<div class="'.trim($classList).'">'.$html.'</div>';
     }
 
     /**
