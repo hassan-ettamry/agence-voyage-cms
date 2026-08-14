@@ -37,13 +37,13 @@
         <a
             href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->offer($offer->agency, $offer) }}"
             @if($isEditor) onclick="return false" @endif
-            class="block max-w-sm overflow-hidden border transition hover:-translate-y-0.5"
+            class="site-card group block max-w-sm overflow-hidden no-underline"
             style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"
         >
             @if($showImage)
                 <div class="aspect-video" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
                     @if($cover)
-                        <img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $offer->title }}" class="h-full w-full object-cover">
+                        <img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $offer->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                     @elseif($isEditor)
                         <div class="flex h-full items-center justify-center text-sm" style="color: var(--site-muted, #94a3b8);">
                             Offer image
@@ -54,7 +54,7 @@
 
             <div class="p-5">
                 @if($showTitle)
-                    <h3 class="text-lg font-semibold" style="color: var(--site-text, #111827); font-family: var(--site-heading-font, ui-sans-serif, system-ui, sans-serif);">
+                    <h3 class="site-heading text-xl font-semibold" style="color: var(--site-text, #111827);">
                         {{ $offer->title }}
                     </h3>
                 @endif
@@ -77,8 +77,8 @@
                 @endif
 
                 @if($showCta)
-                    <span class="mt-4 inline-flex text-sm font-semibold" style="color: var(--site-primary, #2563eb);">
-                        {{ $buttonText }}
+                    <span class="mt-5 inline-flex items-center gap-2 text-sm font-bold" style="color: var(--site-primary, #2563eb);">
+                        {{ $buttonText }} <span aria-hidden="true">&rarr;</span>
                     </span>
                 @endif
             </div>

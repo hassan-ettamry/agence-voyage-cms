@@ -40,16 +40,16 @@
                 contenteditable="true"
                 data-field="title"
             @endif
-            class="{{ $isEditor ? 'outline-none' : '' }} mb-5 text-2xl font-bold"
+            class="{{ $isEditor ? 'outline-none' : '' }} site-heading mb-7 text-3xl font-bold"
             style="color: var(--site-text, #0f172a);"
         >
             {{ $props['title'] ?? 'Frequently asked questions' }}
         </h3>
 
-        <div class="divide-y border" style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #e2e8f0); border-radius: var(--site-radius, 14px);">
+        <div class="site-card divide-y" style="border-color: var(--site-border, #e2e8f0);">
             @foreach($items as $index => $item)
                 <details
-                    class="group p-4"
+                    class="group p-5 sm:p-6"
                     @if(! $allowMultiple)
                         name="{{ $exclusiveName }}"
                     @endif

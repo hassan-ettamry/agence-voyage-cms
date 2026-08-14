@@ -53,30 +53,30 @@
     style="padding-top: {{ $sectionPadding }}px; padding-bottom: {{ $sectionPadding }}px; margin-top: {{ $marginTop }}px; margin-bottom: {{ $marginBottom }}px;"
 >
     @if(!empty($props['title']))
-        <h2 class="mb-6 text-2xl font-bold" style="color: var(--site-text, #111827); font-family: var(--site-heading-font, ui-sans-serif, system-ui, sans-serif);">
+        <h2 class="site-heading mb-8 text-3xl font-bold" style="color: var(--site-text, #111827);">
             {{ $props['title'] }}
         </h2>
     @endif
 
-    @if($offers->isEmpty() && $isEditor)
-        <div class="rounded-lg border border-dashed border-gray-300 p-6 text-center text-sm text-gray-400">
-            No published offers match this source.
+    @if($offers->isEmpty())
+        <div class="site-card border-dashed p-8 text-center text-sm" style="color: var(--site-muted);">
+            {{ $isEditor ? 'No published offers match this source.' : 'New travel offers are coming soon.' }}
         </div>
     @endif
 
-    <div class="grid" style="grid-template-columns: repeat({{ $columns }}, minmax(0, 1fr)); gap: {{ $gap }}px;">
+    <div class="site-card-grid grid" style="--site-card-columns: {{ $columns }}; gap: {{ $gap }}px;">
         @foreach($offers as $offer)
             @php($cover = $offer->media ?: $offer->destination?->media?->first())
             <a
                 href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->offer($offer->agency, $offer) }}"
                 @if($isEditor) onclick="return false" @endif
-                class="overflow-hidden border transition hover:-translate-y-0.5"
+                class="site-card group overflow-hidden no-underline"
                 style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"
             >
                 @if($showImage)
                     <div class="aspect-video" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
                         @if($cover)
-                            <img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $offer->title }}" class="h-full w-full object-cover">
+                            <img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $offer->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                         @elseif($isEditor)
                             <div class="flex h-full items-center justify-center text-sm" style="color: var(--site-muted, #94a3b8);">
                                 Offer image
@@ -88,7 +88,7 @@
                 <div class="p-5">
                     <div class="flex items-start justify-between gap-3">
                         @if($showTitle)
-                            <h3 class="text-lg font-semibold" style="color: var(--site-text, #111827); font-family: var(--site-heading-font, ui-sans-serif, system-ui, sans-serif);">
+                            <h3 class="site-heading text-xl font-semibold" style="color: var(--site-text, #111827);">
                                 {{ $offer->title }}
                             </h3>
                         @endif
@@ -118,8 +118,8 @@
                     @endif
 
                     @if($showCta)
-                        <span class="mt-4 inline-flex text-sm font-semibold" style="color: var(--site-primary, #2563eb);">
-                            {{ $buttonText }}
+                        <span class="mt-5 inline-flex items-center gap-2 text-sm font-bold" style="color: var(--site-primary, #2563eb);">
+                            {{ $buttonText }} <span aria-hidden="true">&rarr;</span>
                         </span>
                     @endif
                 </div>

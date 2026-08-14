@@ -11,6 +11,7 @@ use App\Models\Page;
 use App\Services\PublicContentCache;
 use App\Support\AgencyContext;
 use Database\Seeders\PublicTenancyDemoSeeder;
+use Database\Seeders\ComponentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -128,6 +129,36 @@ class PublicTenancyTest extends TestCase
             ->assertSee('Marrakech, Morocco')
             ->assertSee(route('public.site.offers.index', $agency->slug), false)
             ->assertSee(route('public.site.pages.show', [$agency->slug, 'privacy-policy']), false);
+    }
+
+    public function test_hero_component_renders_a_tenant_aware_call_to_action(): void
+    {
+        $this->seed(ComponentSeeder::class);
+        $agency = $this->agency('Hero Atlas');
+        Page::withoutGlobalScopes()->create([
+            'agency_id' => $agency->id,
+            'slug' => 'home',
+            'title' => 'Hero home',
+            'status' => Page::STATUS_PUBLISHED,
+            'structure' => [[
+                'type' => 'hero',
+                'props' => [
+                    'title' => 'Travel deeper',
+                    'description' => 'A signature journey.',
+                    'buttonText' => 'Explore offers',
+                    'linkType' => 'external',
+                    'url' => '/offers',
+                ],
+                'children' => [],
+            ]],
+        ]);
+
+        $this->get(route('public.site.home', $agency->slug))
+            ->assertOk()
+            ->assertSee('Travel deeper')
+            ->assertSee('A signature journey.')
+            ->assertSee('Explore offers')
+            ->assertSee(route('public.site.offers.index', $agency->slug), false);
     }
 
     public function test_public_caches_are_tenant_aware_and_invalidated_after_update(): void

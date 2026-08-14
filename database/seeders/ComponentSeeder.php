@@ -12,6 +12,23 @@ class ComponentSeeder extends Seeder
     {
         $components = [
             [
+                'type' => 'hero',
+                'name' => 'Hero',
+                'category' => 'marketing',
+                'icon' => 'sparkles',
+                'schema_json' => ['props' => [
+                    'eyebrow' => ['type' => 'text'],
+                    'title' => ['type' => 'text'],
+                    'description' => ['type' => 'text'],
+                    'buttonText' => ['type' => 'text'],
+                    'url' => ['type' => 'text'],
+                    'backgroundMode' => ['type' => 'text'],
+                    'backgroundColor' => ['type' => 'color'],
+                    'backgroundImage' => ['type' => 'image'],
+                    'textColor' => ['type' => 'color'],
+                ]],
+            ],
+            [
                 'type' => 'section',
                 'name' => 'Section',
                 'category' => 'layout',
