@@ -4,12 +4,87 @@ namespace Database\Seeders;
 
 use App\Models\Component;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Cache;
 
 class ComponentSeeder extends Seeder
 {
     public function run(): void
     {
         $components = [
+            [
+                'type' => 'section',
+                'name' => 'Section',
+                'category' => 'layout',
+                'icon' => 'rectangle-stack',
+                'schema_json' => ['props' => [
+                    'title' => ['type' => 'text'],
+                    'backgroundMode' => ['type' => 'text'],
+                    'backgroundColor' => ['type' => 'color'],
+                    'backgroundImage' => ['type' => 'image'],
+                    'paddingTop' => ['type' => 'number'],
+                    'paddingBottom' => ['type' => 'number'],
+                    'maxWidth' => ['type' => 'number'],
+                ]],
+            ],
+            [
+                'type' => 'heading',
+                'name' => 'Heading',
+                'category' => 'content',
+                'icon' => 'h1',
+                'schema_json' => ['props' => [
+                    'text' => ['type' => 'text'],
+                    'tag' => ['type' => 'text'],
+                    'color' => ['type' => 'color'],
+                    'fontSize' => ['type' => 'number'],
+                    'fontWeight' => ['type' => 'number'],
+                    'lineHeight' => ['type' => 'number'],
+                    'align' => ['type' => 'text'],
+                ]],
+            ],
+            [
+                'type' => 'text',
+                'name' => 'Text',
+                'category' => 'content',
+                'icon' => 'bars-3-bottom-left',
+                'schema_json' => ['props' => [
+                    'text' => ['type' => 'text'],
+                    'content' => ['type' => 'text'],
+                    'color' => ['type' => 'color'],
+                    'fontSize' => ['type' => 'number'],
+                    'fontWeight' => ['type' => 'number'],
+                    'lineHeight' => ['type' => 'number'],
+                    'align' => ['type' => 'text'],
+                ]],
+            ],
+            [
+                'type' => 'button',
+                'name' => 'Button',
+                'category' => 'content',
+                'icon' => 'cursor-arrow-rays',
+                'schema_json' => ['props' => [
+                    'text' => ['type' => 'text'],
+                    'url' => ['type' => 'text'],
+                    'target' => ['type' => 'text'],
+                    'backgroundColor' => ['type' => 'color'],
+                    'textColor' => ['type' => 'color'],
+                    'borderRadius' => ['type' => 'number'],
+                    'align' => ['type' => 'text'],
+                ]],
+            ],
+            [
+                'type' => 'image',
+                'name' => 'Image',
+                'category' => 'media',
+                'icon' => 'photo',
+                'schema_json' => ['props' => [
+                    'src' => ['type' => 'image'],
+                    'altText' => ['type' => 'text'],
+                    'title' => ['type' => 'text'],
+                    'caption' => ['type' => 'text'],
+                    'height' => ['type' => 'number'],
+                    'borderRadius' => ['type' => 'number'],
+                ]],
+            ],
             [
                 'type' => 'container',
                 'name' => 'Container',
@@ -444,5 +519,6 @@ class ComponentSeeder extends Seeder
         }
 
         Component::whereIn('type', ['row', 'column'])->delete();
+        Cache::forget('components.registry');
     }
 }

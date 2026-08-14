@@ -35,14 +35,14 @@
             loading="lazy"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
             allowfullscreen
-            class="block w-full border-0 bg-slate-100"
-            style="height: {{ $height }}px; border-radius: {{ $radius }}px;"
+            class="block aspect-video w-full border-0 bg-slate-100"
+            style="max-height: {{ $height }}px; border-radius: {{ $radius }}px;"
         ></iframe>
     @elseif($directUrl)
         <video
             src="{{ $directUrl }}"
-            class="block w-full bg-slate-100"
-            style="height: {{ $height }}px; border-radius: {{ $radius }}px;"
+            class="block aspect-video w-full bg-slate-100 object-cover"
+            style="max-height: {{ $height }}px; border-radius: {{ $radius }}px;"
             @if($controls) controls @endif
             @if($autoplay) autoplay muted loop playsinline @endif
         ></video>

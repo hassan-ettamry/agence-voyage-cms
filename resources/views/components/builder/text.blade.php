@@ -18,6 +18,7 @@
 
     class="
         {{ $isEditor ? 'outline-none builder-node' : '' }}
+        site-copy
         transition-all
         duration-150
     "
@@ -43,6 +44,6 @@
     "
 >
 
-    {{ $props['text'] ?? 'Text here' }}
+    {{ $props['text'] ?? $props['content'] ?? 'Text here' }}
 
 </p>

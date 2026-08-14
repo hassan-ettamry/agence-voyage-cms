@@ -23,7 +23,7 @@
 
     @endif
 
-    class="{{ $isEditor ? 'outline-none builder-node' : '' }} transition-all duration-150"
+    class="{{ $isEditor ? 'outline-none builder-node' : '' }} site-heading transition-all duration-150"
 
     style="
         color: {{ $props['color'] ?? 'var(--site-text, #111827)' }};

@@ -16,6 +16,13 @@
 
     if ($linkType === 'external') {
         $href = trim((string) ($props['url'] ?? '#')) ?: '#';
+
+        if (!$isEditor && \App\Support\AgencyContext::has()) {
+            $publicAgency = \App\Models\Agency::query()->find(\App\Support\AgencyContext::get());
+            $href = $publicAgency
+                ? app(\App\Services\PublicSiteUrl::class)->fromStoredUrl($publicAgency, $href)
+                : $href;
+        }
     } elseif ($linkType === 'email' && !empty($props['email'])) {
         $href = 'mailto:' . trim((string) $props['email']);
     } elseif ($linkType === 'phone' && !empty($props['phone'])) {
@@ -68,6 +75,8 @@
                     src="{{ $src }}"
                     alt="{{ $alt }}"
                     title="{{ $title }}"
+                    loading="lazy"
+                    decoding="async"
                     class="h-full w-full"
                     style="object-fit: {{ $objectFit }};"
                 >

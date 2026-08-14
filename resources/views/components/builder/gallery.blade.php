@@ -49,23 +49,24 @@
 >
     @if($images->isNotEmpty())
         <div
-            class="grid"
-            style="grid-template-columns: repeat({{ $columns }}, minmax(0, 1fr)); gap: {{ $gap }}px;"
+            class="site-gallery-grid grid"
+            style="--site-gallery-columns: {{ $columns }}; gap: {{ $gap }}px;"
         >
             @foreach($images as $image)
                 <img
                     src="{{ $image['url'] }}"
                     alt="{{ $image['alt'] }}"
                     loading="lazy"
-                    class="w-full object-cover"
+                    decoding="async"
+                    class="w-full object-cover transition duration-300 hover:scale-[1.015]"
                     style="height: {{ $height }}px; border-radius: {{ $radius }}px;"
                 >
             @endforeach
         </div>
     @elseif($isEditor)
         <div
-            class="grid"
-            style="grid-template-columns: repeat({{ $columns }}, minmax(0, 1fr)); gap: {{ $gap }}px;"
+            class="site-gallery-grid grid"
+            style="--site-gallery-columns: {{ $columns }}; gap: {{ $gap }}px;"
         >
             @for($i = 0; $i < min($columns, 3); $i++)
                 <div

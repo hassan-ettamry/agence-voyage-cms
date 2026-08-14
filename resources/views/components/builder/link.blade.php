@@ -5,6 +5,13 @@
     if ($linkType === 'external') {
         $rawUrl = trim((string) ($props['url'] ?? '#'));
         $url = $rawUrl === '' ? '#' : $rawUrl;
+
+        if (!$isEditor && \App\Support\AgencyContext::has()) {
+            $publicAgency = \App\Models\Agency::query()->find(\App\Support\AgencyContext::get());
+            $url = $publicAgency
+                ? app(\App\Services\PublicSiteUrl::class)->fromStoredUrl($publicAgency, $url)
+                : $url;
+        }
     } elseif ($linkType === 'email' && !empty($props['email'])) {
         $url = 'mailto:' . trim((string) $props['email']);
     } elseif ($linkType === 'phone' && !empty($props['phone'])) {
@@ -45,7 +52,7 @@
             data-field="text"
             onclick="return false"
         @endif
-        class="{{ $isEditor ? 'outline-none' : '' }} inline-flex items-center gap-2"
+        class="{{ $isEditor ? 'outline-none' : '' }} inline-flex items-center gap-2 font-bold transition-all hover:-translate-y-px"
         style="
             color: {{ $props['color'] ?? 'var(--site-primary, #2563eb)' }};
             font-size: {{ $fontSize }}px;

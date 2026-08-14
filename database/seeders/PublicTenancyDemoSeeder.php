@@ -15,6 +15,7 @@ class PublicTenancyDemoSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(ComponentSeeder::class);
         $this->call(ThemeSeeder::class);
 
         $this->seedAgency(
@@ -63,7 +64,7 @@ class PublicTenancyDemoSeeder extends Seeder
                 'status' => Page::STATUS_PUBLISHED,
                 'structure' => [[
                     'type' => 'text',
-                    'props' => ['content' => $homeTitle],
+                    'props' => ['text' => $homeTitle],
                     'children' => [],
                 ]],
                 'published_at' => now(),

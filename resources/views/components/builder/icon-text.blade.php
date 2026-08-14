@@ -18,7 +18,7 @@
         draggable="true"
         data-drag-action="reorder"
     @endif
-    class="{{ $isEditor ? 'builder-node' : '' }} flex p-4 transition-all duration-150"
+    class="{{ $isEditor ? 'builder-node' : '' }} flex rounded-[var(--site-radius)] p-4 transition-all duration-150"
     style="
         flex-direction: {{ $direction }};
         align-items: {{ $items }};
@@ -50,7 +50,7 @@
                 contenteditable="true"
                 data-field="title"
             @endif
-            class="{{ $isEditor ? 'outline-none' : '' }} text-lg font-semibold"
+            class="{{ $isEditor ? 'outline-none' : '' }} site-heading text-lg font-semibold"
             style="color: {{ $props['titleColor'] ?? 'var(--site-text, #111827)' }};"
         >
             {{ $props['title'] ?? 'Icon title' }}

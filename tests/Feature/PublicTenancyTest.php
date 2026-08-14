@@ -195,6 +195,7 @@ class PublicTenancyTest extends TestCase
         $this->get('/sites/agence-atlas')
             ->assertOk()
             ->assertSee('Atlas: aventures au Maroc')
+            ->assertSee('site-copy', false)
             ->assertSee('Accueil Atlas');
         $this->get('/sites/agence-ocean')
             ->assertOk()

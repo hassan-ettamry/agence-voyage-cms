@@ -94,7 +94,7 @@
             data-field="text"
             onclick="return false"
         @endif
-        class="{{ $isEditor ? 'outline-none' : '' }} inline-flex items-center gap-2 border font-semibold transition-colors {{ $sizeClasses }} {{ $fullWidth ? 'w-full justify-center' : '' }}"
+        class="{{ $isEditor ? 'outline-none' : '' }} inline-flex min-h-11 items-center gap-2 border font-bold no-underline transition-all hover:-translate-y-0.5 {{ $sizeClasses }} {{ $fullWidth ? 'w-full justify-center' : '' }}"
         style="{{ $buttonStyle }} border-radius: {{ $radius }};"
         onmouseenter="{{ $hoverEnter }}"
         onmouseleave="{{ $hoverLeave }}"

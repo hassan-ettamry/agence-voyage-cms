@@ -35,7 +35,7 @@
     @endif
 
     class="
-        w-full
+        w-full site-builder-section
         mx-auto
         relative
         {{ $isEditor ? 'min-h-[220px] builder-node' : '' }}
@@ -171,7 +171,7 @@
                 @endif
 
                 class="
-                    text-3xl
+                    site-heading text-3xl
                     font-bold
                     mb-6
                     {{ $isEditor ? 'outline-none' : '' }}

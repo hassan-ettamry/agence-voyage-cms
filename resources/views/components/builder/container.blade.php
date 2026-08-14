@@ -79,6 +79,7 @@
         mx-auto
         relative
         {{ $isEditor ? 'min-h-[120px] builder-node' : '' }}
+        {{ $isCard ? 'site-card' : '' }}
         transition-all
         duration-150
         {{ $customClass }}
