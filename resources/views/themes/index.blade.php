@@ -20,8 +20,9 @@
     $currentVariables = array_replace($defaults, $effectiveVariables ?? []);
 
     $preferredOrder = collect([
-        'sunset-luxe' => 0,
-        'ocean-blue' => 1,
+        'signature-travel' => 0,
+        'sunset-luxe' => 1,
+        'ocean-blue' => 2,
         'mountain-escape' => 2,
         'city-journey' => 3,
         'desert-roads' => 4,
@@ -36,10 +37,19 @@
 
     $themes = $themes
         ->sortBy(fn ($theme) => $preferredOrder->get($theme->slug, 100 + abs(crc32($theme->slug))))
-        ->take(12)
         ->values();
 
     $visuals = [
+        'signature-travel' => [
+            'brand' => 'Signature Travel',
+            'heading' => 'Journeys with a story to tell',
+            'description' => 'A complete editorial travel system balancing clear discovery with a refined, premium atmosphere',
+            'image' => 'images/site-templates/culture-journey.png',
+            'nav' => ['Home', 'Destinations', 'Offers', 'About'],
+            'category' => 'Luxury',
+            'pages' => 8,
+            'sections' => 30,
+        ],
         'sunset-luxe' => [
             'brand' => 'Sunset Luxe',
             'heading' => 'Premium stays and private tours',

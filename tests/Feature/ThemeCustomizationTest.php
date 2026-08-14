@@ -10,6 +10,7 @@ use App\Models\Theme;
 use App\Models\User;
 use App\Services\AgencyThemeService;
 use App\Support\AgencyContext;
+use Database\Seeders\ThemeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -61,6 +62,21 @@ class ThemeCustomizationTest extends TestCase
         ]);
 
         $this->assertSame(['accent' => '#010203'], $agency->fresh()->theme_overrides);
+    }
+
+    public function test_signature_travel_theme_is_seeded_idempotently_with_expected_tokens(): void
+    {
+        $this->seed(ThemeSeeder::class);
+        $this->seed(ThemeSeeder::class);
+
+        $theme = Theme::query()->where('slug', 'signature-travel')->sole();
+
+        $this->assertSame('Signature Travel', $theme->name);
+        $this->assertSame(Theme::STATUS_ACTIVE, $theme->status);
+        $this->assertSame('#e65f3c', $theme->variables['primary']);
+        $this->assertSame('#12372f', $theme->variables['secondary']);
+        $this->assertSame('Georgia, "Times New Roman", serif', $theme->variables['headingFont']);
+        $this->assertSame(1, Theme::query()->where('slug', 'signature-travel')->count());
     }
 
     public function test_theme_overrides_are_isolated_between_agencies(): void

@@ -11,6 +11,26 @@ class ThemeSeeder extends Seeder
     {
         $themes = [
             [
+                'name' => 'Signature Travel',
+                'slug' => 'signature-travel',
+                'preview' => 'images/site-templates/culture-journey.png',
+                'variables' => [
+                    'primary' => '#e65f3c',
+                    'secondary' => '#12372f',
+                    'accent' => '#e9bd62',
+                    'background' => '#fbfaf6',
+                    'surface' => '#ffffff',
+                    'text' => '#152b27',
+                    'muted' => '#66766f',
+                    'border' => '#dfe5df',
+                    'bodyFont' => '"Trebuchet MS", ui-sans-serif, sans-serif',
+                    'headingFont' => 'Georgia, "Times New Roman", serif',
+                    'radius' => '10px',
+                    'shadow' => 'medium',
+                ],
+                'status' => Theme::STATUS_ACTIVE,
+            ],
+            [
                 'name' => 'Ocean Blue',
                 'slug' => 'ocean-blue',
                 'preview' => 'images/site-templates/ocean-blue.png',

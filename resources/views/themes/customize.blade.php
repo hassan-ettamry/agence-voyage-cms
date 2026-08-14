@@ -107,7 +107,7 @@
         </aside>
 
         <section class="overflow-hidden border border-slate-200 bg-slate-100 p-5 shadow-sm">
-            <div data-theme-preview class="mx-auto min-h-full max-w-5xl overflow-hidden border" style="{{ $previewThemeCss }} background: var(--site-background); border-color: var(--site-border); color: var(--site-text); font-family: var(--site-body-font);">
+            <div data-theme-preview class="site-shell mx-auto min-h-full max-w-5xl overflow-hidden border" style="{{ $previewThemeCss }} border-color: var(--site-border);">
                 <nav class="flex items-center justify-between border-b px-6 py-4" style="border-color: var(--site-border); background: var(--site-surface);">
                     <strong style="font-family: var(--site-heading-font);">Voyage Studio</strong>
                     <div class="flex gap-5 text-sm" style="color: var(--site-muted);"><span>Destinations</span><span>Offers</span><span>Contact</span></div>
@@ -133,6 +133,21 @@
                                 <p class="mt-2 text-sm leading-6" style="color: var(--site-muted);">Curated travel experiences for modern explorers.</p>
                             </article>
                         @endforeach
+                    </div>
+                    <div class="mt-8 grid gap-5 border-t pt-8 md:grid-cols-[1.2fr_.8fr]" style="border-color: var(--site-border);">
+                        <div>
+                            <span class="site-eyebrow">Design system preview</span>
+                            <h3 class="mt-3 text-3xl font-bold">Made for meaningful journeys</h3>
+                            <p class="site-lead mt-3">Typography, spacing, surfaces, buttons and accessible focus states share one consistent visual language.</p>
+                        </div>
+                        <div class="site-card p-5">
+                            <div class="text-sm font-bold">Plan your next escape</div>
+                            <p class="mt-2 text-sm" style="color: var(--site-muted);">A reusable call-to-action card for every public page.</p>
+                            <div class="mt-5 flex flex-wrap gap-3">
+                                <button type="button" class="site-button">Start planning</button>
+                                <button type="button" class="site-button site-button--secondary">Learn more</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
