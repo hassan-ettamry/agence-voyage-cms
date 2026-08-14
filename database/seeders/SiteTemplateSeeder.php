@@ -19,11 +19,21 @@ class SiteTemplateSeeder extends Seeder
                 'urban-blue',
                 'coastal-glow',
                 'heritage-rose',
+                'signature-travel',
             ])
             ->get()
             ->keyBy('slug');
 
         $templates = [
+            [
+                'name' => 'Signature Travel',
+                'slug' => 'signature-travel',
+                'description' => 'A confident, editorial travel website combining local expertise, premium journeys, and clear discovery paths.',
+                'preview' => 'images/site-templates/sunset-luxe.png',
+                'theme_id' => $themes->get('signature-travel')?->id,
+                'pages' => $this->signatureTravelPages(),
+                'status' => SiteTemplate::STATUS_ACTIVE,
+            ],
             [
                 'name' => 'Premium Escapes',
                 'slug' => 'premium-escapes',
@@ -278,6 +288,57 @@ class SiteTemplateSeeder extends Seeder
             $this->page('Contact', 'contact', 'Plan your next trip', [
                 $this->simpleIntroSection('Plan your next trip', 'Let visitors contact the agency and find your location quickly.', $dark),
                 $this->contactSection($primary),
+            ]),
+        ];
+    }
+
+    private function signatureTravelPages(): array
+    {
+        return [
+            $this->page('Home', 'home', 'Thoughtful journeys, designed around you', [
+                $this->node('search-hero', [
+                    'eyebrow' => 'YOUR JOURNEY STARTS HERE',
+                    'title' => 'Go further. Travel deeper.',
+                    'description' => 'Thoughtful journeys shaped by local experts and designed entirely around you.',
+                    'searchType' => 'destinations',
+                    'placeholder' => 'Where would you like to go?',
+                    'buttonText' => 'Explore',
+                    'backgroundImage' => '/images/site-templates/mountain-adventure.png',
+                ]),
+                $this->node('destination-carousel', [
+                    'title' => 'Places that stay with you',
+                    'limit' => 6,
+                    'source' => 'featured',
+                ]),
+                $this->node('special-offers', [
+                    'title' => 'Journeys worth taking now',
+                    'limit' => 3,
+                ]),
+                $this->node('feature-grid', [
+                    'eyebrow' => 'WHY TRAVEL WITH US',
+                    'title' => 'Every detail, thoughtfully handled',
+                    'items' => "compass|Local expertise|Travel with people who know each place deeply.\nheart|Designed for you|Every journey is shaped around your interests and rhythm.\ncheck-circle|Support that travels|We are with you before, during and after your trip.",
+                    'columns' => 3,
+                ]),
+                $this->node('stats-counter', [
+                    'items' => "15+|Years of experience\n40+|Destinations\n2,500+|Happy travellers\n24/7|Local support",
+                ]),
+                $this->node('testimonials', [
+                    'eyebrow' => 'TRAVELLER STORIES',
+                    'title' => 'Travel that stays with you',
+                    'items' => "An unforgettable journey from beginning to end.|Amelia R.|London|5\nEvery detail felt personal and effortless.|Daniel M.|Toronto|5\nWe discovered places we would never have found alone.|Sofia K.|Madrid|5",
+                ]),
+                $this->node('trust-logos', [
+                    'title' => 'Trusted by travellers and travel partners',
+                    'items' => "IATA|\nTravelife|\nTripadvisor|",
+                ]),
+                $this->node('cta-banner', [
+                    'eyebrow' => 'START PLANNING',
+                    'title' => 'Your next story starts here',
+                    'text' => 'Tell us what you are dreaming of and our travel designers will shape the journey with you.',
+                    'buttonText' => 'Plan my journey',
+                    'url' => '/contact',
+                ]),
             ]),
         ];
     }
