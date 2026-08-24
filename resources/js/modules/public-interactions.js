@@ -32,5 +32,11 @@ export function initPublicInteractions(root = document) {
 
         previous.addEventListener('click', () => scroll(-1));
         next.addEventListener('click', () => scroll(1));
+        track.addEventListener('keydown', (event) => {
+            if (!['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+
+            event.preventDefault();
+            scroll(event.key === 'ArrowRight' ? 1 : -1);
+        });
     });
 }

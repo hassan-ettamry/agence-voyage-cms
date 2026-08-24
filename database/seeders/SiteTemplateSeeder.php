@@ -446,7 +446,7 @@ class SiteTemplateSeeder extends Seeder
                 ]),
                 $this->node('contact-form', [
                     'title' => 'Tell us about your dream journey',
-                    'subtitle' => 'This form is a design preview in Phase 3 and does not send or store messages.',
+                    'subtitle' => 'Share your first ideas and our travel designers will help shape the next step.',
                     'nameLabel' => 'Your name',
                     'emailLabel' => 'Email address',
                     'messageLabel' => 'Where do you want to go?',

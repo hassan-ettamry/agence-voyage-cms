@@ -53,6 +53,10 @@ class SignatureTravelTemplateTest extends TestCase
         $this->assertSame('/destinations', $pages['destinations']['menu_url']);
         $this->assertSame('/offers', $pages['offers']['menu_url']);
         $this->assertSame(['hero', 'contact-info', 'contact-form', 'map', 'newsletter'], collect($pages['contact']['structure'])->pluck('type')->all());
+        $this->assertSame(
+            'Share your first ideas and our travel designers will help shape the next step.',
+            $pages['contact']['structure'][2]['props']['subtitle'],
+        );
         $this->assertSame(['hero', 'accordion', 'cta-banner'], collect($pages['faq']['structure'])->pluck('type')->all());
         $this->assertFalse($pages['privacy-policy']['include_in_menu']);
         $this->assertFalse($pages['terms-and-conditions']['include_in_menu']);
