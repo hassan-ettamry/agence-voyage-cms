@@ -2,10 +2,11 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-use App\Models\Page;
-use App\Policies\PagePolicy;
+use Illuminate\Support\Str;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -22,6 +23,19 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('login', function (Request $request) {
+            $email = Str::lower(trim((string) $request->input('email')));
+
+            return Limit::perMinute(5)->by($email.'|'.$request->ip());
+        });
+
+        RateLimiter::for('register', fn (Request $request) => Limit::perHour(3)
+            ->by((string) $request->ip()));
+
+        RateLimiter::for('password-reset', function (Request $request) {
+            $email = Str::lower(trim((string) $request->input('email')));
+
+            return Limit::perMinute(3)->by($email.'|'.$request->ip());
+        });
     }
 }

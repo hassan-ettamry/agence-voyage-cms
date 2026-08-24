@@ -10,6 +10,7 @@ use App\Http\Controllers\Web\MediaController;
 use App\Http\Controllers\Web\OfferController;
 use App\Http\Controllers\Web\OnboardingController;
 use App\Http\Controllers\Web\PageController;
+use App\Http\Controllers\Web\PasswordResetController;
 use App\Http\Controllers\Web\PermissionController;
 use App\Http\Controllers\Web\PublicContentController;
 use App\Http\Controllers\Web\RoleController;
@@ -48,7 +49,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])
         ->name('login');
 
-    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:login');
 
     /*
     |--------------------------------------------------------------------------
@@ -59,7 +61,22 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegisterForm'])
         ->name('register');
 
-    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/register', [AuthController::class, 'register'])
+        ->middleware('throttle:register');
+
+    Route::get('/forgot-password', [PasswordResetController::class, 'create'])
+        ->name('password.request');
+
+    Route::post('/forgot-password', [PasswordResetController::class, 'store'])
+        ->middleware('throttle:password-reset')
+        ->name('password.email');
+
+    Route::get('/reset-password/{token}', [PasswordResetController::class, 'edit'])
+        ->name('password.reset');
+
+    Route::post('/reset-password', [PasswordResetController::class, 'update'])
+        ->middleware('throttle:password-reset')
+        ->name('password.update');
 });
 
 /*
