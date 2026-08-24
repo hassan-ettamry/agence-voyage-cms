@@ -214,20 +214,29 @@ function mediaFields(sourceKey = 'src') {
 }
 
 function dataSourceFields(sourceDefault = 'latest', entity = 'offers') {
+    const isDestination = entity === 'destinations';
+    const sourceOptions = BuilderControlOptions.source.filter(({ value }) => (
+        isDestination
+            ? ['latest', 'featured', 'manual'].includes(value)
+            : ['latest', 'special', 'manual'].includes(value)
+    ));
+    const sortOptions = BuilderControlOptions.sort.filter(({ value }) => (
+        !isDestination || !['price_low', 'price_high'].includes(value)
+    ));
+
     return {
         source: {
             type: 'select',
             label: 'Source',
             default: sourceDefault,
-            options: BuilderControlOptions.source
+            options: sourceOptions
         },
-        destination_id: {
+        ...(!isDestination ? { destination_id: {
             type: 'entity-select',
             entity: 'destinations',
-            label: 'Destination',
-            default: '',
-            when: { key: 'source', is: 'by_destination' }
-        },
+            label: 'Destination Filter',
+            default: ''
+        } } : {}),
         manual_ids: {
             type: 'entity-multiselect',
             entity,
@@ -266,9 +275,14 @@ function dataSourceFields(sourceDefault = 'latest', entity = 'offers') {
             type: 'select',
             label: 'Sort',
             default: 'latest',
-            options: BuilderControlOptions.sort
+            options: sortOptions
         }
     };
+}
+
+function fixedSourceFields(source, entity) {
+    const { source: ignoredSource, manual_ids: ignoredManual, ...fields } = dataSourceFields(source, entity);
+    return fields;
 }
 
 function cardPartsFields() {
@@ -303,6 +317,45 @@ function cardPartsFields() {
             label: 'CTA Text',
             default: 'View details',
             when: { key: 'showCta', isNot: 'no' }
+        }
+    };
+}
+
+function destinationPartsFields() {
+    const { showMeta: ignoredMeta, ...parts } = cardPartsFields();
+    return {
+        ...parts,
+        showLocation: {
+            type: 'toggle',
+            label: 'Show Location',
+            default: 'yes'
+        },
+        showTravelTypes: {
+            type: 'toggle',
+            label: 'Show Travel Types',
+            default: 'yes'
+        }
+    };
+}
+
+function offerPartsFields() {
+    const { showMeta: ignoredMeta, ...parts } = cardPartsFields();
+    return {
+        ...parts,
+        showDestination: {
+            type: 'toggle',
+            label: 'Show Destination',
+            default: 'yes'
+        },
+        showPrice: {
+            type: 'toggle',
+            label: 'Show Price',
+            default: 'yes'
+        },
+        showDuration: {
+            type: 'toggle',
+            label: 'Show Duration',
+            default: 'yes'
         }
     };
 }
@@ -917,17 +970,21 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Destinations' },
-                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' },
-                ...dataSourceFields('latest', 'destinations')
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' }
             }
+        },
+        data: {
+            title: 'Data',
+            fields: dataSourceFields('latest', 'destinations')
         },
         style: {
             title: 'Style',
             fields: {
                 cardVariant: { type: 'select', label: 'Card Variant', default: 'standard', options: ['standard', 'compact', 'featured'] },
+                imageRatio: { type: 'select', label: 'Image Ratio', default: '16/9', options: ['square', '4/3', '16/9'] },
                 columns: { type: 'range', label: 'Columns', min: 1, max: 4, default: 3 },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 24 },
-                ...cardPartsFields()
+                ...destinationPartsFields()
             }
         },
         layout: {
@@ -945,22 +1002,57 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Featured Destinations' },
-                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' },
-                limit: { type: 'range', label: 'Limit', min: 1, max: 12, default: 6 },
-                sort: { type: 'select', label: 'Sort', default: 'latest', options: BuilderControlOptions.sort }
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' }
             }
+        },
+        data: {
+            title: 'Data',
+            fields: fixedSourceFields('featured', 'destinations')
         },
         style: {
             title: 'Style',
             fields: {
+                cardVariant: { type: 'select', label: 'Card Variant', default: 'featured', options: ['standard', 'compact', 'featured'] },
+                imageRatio: { type: 'select', label: 'Image Ratio', default: '4/3', options: ['square', '4/3', '16/9'] },
                 columns: { type: 'range', label: 'Columns', min: 1, max: 4, default: 3 },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 24 },
-                ...cardPartsFields()
+                ...destinationPartsFields()
             }
         },
         layout: {
             title: 'Layout',
             fields: spacingFields(40)
+        },
+        advanced: {
+            title: 'Advanced',
+            fields: advancedFields()
+        }
+    }),
+
+    'destination-carousel': tabs({
+        content: {
+            title: 'Content',
+            fields: {
+                title: { type: 'text', label: 'Title', default: 'Explore remarkable places' },
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' },
+                buttonText: { type: 'text', label: 'CTA Text', default: 'View destination' }
+            }
+        },
+        data: {
+            title: 'Data',
+            fields: dataSourceFields('featured', 'destinations')
+        },
+        style: {
+            title: 'Style',
+            fields: {
+                cardVariant: { type: 'select', label: 'Card Variant', default: 'overlay', options: ['overlay', 'compact'] },
+                gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 20 },
+                ...destinationPartsFields()
+            }
+        },
+        layout: {
+            title: 'Layout',
+            fields: spacingFields(64)
         },
         advanced: {
             title: 'Advanced',
@@ -973,19 +1065,21 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Offers' },
-                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
-                ...dataSourceFields('latest', 'offers')
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' }
             }
+        },
+        data: {
+            title: 'Data',
+            fields: dataSourceFields('latest', 'offers')
         },
         style: {
             title: 'Style',
             fields: {
                 cardVariant: { type: 'select', label: 'Card Variant', default: 'standard', options: ['standard', 'compact', 'deal'] },
+                imageRatio: { type: 'select', label: 'Image Ratio', default: '16/9', options: ['square', '4/3', '16/9'] },
                 columns: { type: 'range', label: 'Columns', min: 1, max: 4, default: 3 },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 24 },
-                showPrice: { type: 'toggle', label: 'Show Price', default: 'yes' },
-                showDuration: { type: 'toggle', label: 'Show Duration', default: 'yes' },
-                ...cardPartsFields()
+                ...offerPartsFields()
             }
         },
         layout: {
@@ -998,24 +1092,56 @@ const BuilderControlSchemaMap = {
         }
     }),
 
+    'offer-comparison': tabs({
+        content: {
+            title: 'Content',
+            fields: {
+                title: { type: 'text', label: 'Title', default: 'Compare our journeys' },
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
+                buttonText: { type: 'text', label: 'CTA Text', default: 'View journey' }
+            }
+        },
+        data: {
+            title: 'Data',
+            fields: {
+                ...dataSourceFields('latest', 'offers'),
+                limit: { type: 'range', label: 'Offers', min: 2, max: 4, default: 3 }
+            }
+        },
+        style: {
+            title: 'Style',
+            fields: offerPartsFields()
+        },
+        layout: {
+            title: 'Layout',
+            fields: spacingFields(64)
+        },
+        advanced: {
+            title: 'Advanced',
+            fields: advancedFields()
+        }
+    }),
+
     'special-offers': tabs({
         content: {
             title: 'Content',
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Special Offers' },
-                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
-                limit: { type: 'range', label: 'Limit', min: 1, max: 12, default: 6 },
-                sort: { type: 'select', label: 'Sort', default: 'latest', options: BuilderControlOptions.sort }
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' }
             }
+        },
+        data: {
+            title: 'Data',
+            fields: fixedSourceFields('special', 'offers')
         },
         style: {
             title: 'Style',
             fields: {
+                cardVariant: { type: 'select', label: 'Card Variant', default: 'deal', options: ['standard', 'compact', 'deal'] },
+                imageRatio: { type: 'select', label: 'Image Ratio', default: '16/9', options: ['square', '4/3', '16/9'] },
                 columns: { type: 'range', label: 'Columns', min: 1, max: 4, default: 3 },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 24 },
-                showPrice: { type: 'toggle', label: 'Show Price', default: 'yes' },
-                showDuration: { type: 'toggle', label: 'Show Duration', default: 'yes' },
-                ...cardPartsFields()
+                ...offerPartsFields()
             }
         },
         layout: {
@@ -1043,9 +1169,9 @@ const BuilderControlSchemaMap = {
         style: {
             title: 'Style',
             fields: {
-                showPrice: { type: 'toggle', label: 'Show Price', default: 'yes' },
-                showDuration: { type: 'toggle', label: 'Show Duration', default: 'yes' },
-                ...cardPartsFields()
+                cardVariant: { type: 'select', label: 'Card Variant', default: 'standard', options: ['standard', 'compact', 'deal'] },
+                imageRatio: { type: 'select', label: 'Image Ratio', default: '16/9', options: ['square', '4/3', '16/9'] },
+                ...offerPartsFields()
             }
         },
         layout: {

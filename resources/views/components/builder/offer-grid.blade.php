@@ -26,7 +26,7 @@
         $query->special();
     }
 
-    if ($source === 'by_destination' && $destinationId) {
+    if ($destinationId) {
         $query->where('destination_id', $destinationId);
     }
 
@@ -50,16 +50,28 @@
         default => $query->latest(),
     };
 
-    $offers = $query->limit($limit)->get();
+    $offers = $source === 'manual'
+        ? $query->get()->sortBy(fn ($offer) => array_search($offer->id, $manualIds, true))->take($limit)->values()
+        : $query->limit($limit)->get();
 
     $showImage = $show('showImage');
     $showTitle = $show('showTitle');
     $showDescription = $show('showDescription');
     $showMeta = $show('showMeta');
-    $showPrice = $show('showPrice');
-    $showDuration = $show('showDuration');
+    $showDestination = array_key_exists('showDestination', $props) ? $show('showDestination') : $showMeta;
+    $showPrice = array_key_exists('showPrice', $props) ? $show('showPrice') : $showMeta;
+    $showDuration = array_key_exists('showDuration', $props) ? $show('showDuration') : $showMeta;
     $showCta = $show('showCta');
     $buttonText = $props['buttonText'] ?? 'View offer';
+    $cardVariant = in_array(($props['cardVariant'] ?? 'standard'), ['standard', 'compact', 'deal'], true)
+        ? ($props['cardVariant'] ?? 'standard')
+        : 'standard';
+    $cardPadding = $cardVariant === 'compact' ? 'p-4' : 'p-5';
+    $imageRatio = match ($props['imageRatio'] ?? '16/9') {
+        'square' => 'aspect-square',
+        '4/3' => 'aspect-[4/3]',
+        default => 'aspect-video',
+    };
     $fallbackImage = trim((string) ($props['fallbackImage'] ?? '/images/site-templates/sunset-luxe.png'));
     $sectionPadding = max(0, min((int) ($props['padding'] ?? 40), 120));
     $marginTop = is_numeric($props['marginTop'] ?? null) ? (int) $props['marginTop'] : 0;
@@ -94,10 +106,10 @@
                 href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->offer($offer->agency, $offer) }}"
                 @if($isEditor) onclick="return false" @endif
                 class="site-card group overflow-hidden no-underline"
-                style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"
+                style="background-color: var(--site-surface, #ffffff); border-color: {{ $cardVariant === 'deal' ? 'var(--site-accent, #e9bd62)' : 'var(--site-border, #f3f4f6)' }}; border-radius: var(--site-radius, 14px); box-shadow: {{ $cardVariant === 'deal' ? '0 16px 40px rgba(15, 23, 42, .12)' : 'var(--site-shadow, none)' }};"
             >
                 @if($showImage)
-                    <div class="aspect-video" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
+                    <div class="{{ $imageRatio }}" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
                         @if($coverUrl)
                             <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $offer->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                         @elseif($isEditor)
@@ -108,7 +120,7 @@
                     </div>
                 @endif
 
-                <div class="p-5">
+                <div class="{{ $cardPadding }}">
                     <div class="flex items-start justify-between gap-3">
                         @if($showTitle)
                             <h3 class="site-heading text-xl font-semibold" style="color: var(--site-text, #111827);">
@@ -123,13 +135,19 @@
                         @endif
                     </div>
 
+                    @if($showDestination && $offer->destination)
+                        <div class="mt-2 text-xs font-semibold uppercase tracking-wide" style="color: var(--site-primary, #059669);">
+                            {{ $offer->destination->name }}
+                        </div>
+                    @endif
+
                     @if($showDescription)
                         <p class="mt-2 line-clamp-2 text-sm" style="color: var(--site-muted, #6b7280);">
                             {{ $offer->summary ?: $offer->description }}
                         </p>
                     @endif
 
-                    @if($showMeta && ($showPrice || $showDuration))
+                    @if($showPrice || $showDuration)
                         <div class="mt-4 flex items-center justify-between text-sm">
                             @if($showPrice)
                                 <span class="font-semibold" style="color: var(--site-primary, #059669);">

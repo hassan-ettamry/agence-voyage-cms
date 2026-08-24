@@ -593,20 +593,42 @@ class ComponentSeeder extends Seeder
             $this->signatureComponent('destination-carousel', 'Destination Carousel', 'travel', 'map', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Explore remarkable places'],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
+                'buttonText' => ['type' => 'text', 'label' => 'CTA Text', 'default' => 'View destination'],
                 'limit' => ['type' => 'range', 'label' => 'Limit', 'min' => 1, 'max' => 12, 'default' => 6],
-                'source' => ['type' => 'select', 'label' => 'Source', 'default' => 'featured', 'options' => ['featured', 'latest']],
+                'source' => ['type' => 'select', 'label' => 'Source', 'default' => 'featured', 'options' => ['latest', 'featured', 'manual']],
+                'manual_ids' => ['type' => 'entity-multiselect', 'entity' => 'destinations', 'label' => 'Manual Selection', 'default' => [], 'when' => ['key' => 'source', 'is' => 'manual']],
                 'continent' => ['type' => 'select', 'label' => 'Continent', 'default' => '', 'options' => ['', 'africa', 'asia', 'europe', 'north-america', 'south-america', 'oceania', 'antarctica']],
                 'travelType' => ['type' => 'select', 'label' => 'Travel Type', 'default' => '', 'options' => ['', 'beach', 'mountain', 'cultural', 'adventure', 'city', 'desert', 'nature', 'wellness', 'family']],
                 'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month', 'default' => ''],
+                'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => ['latest', 'oldest', 'name']],
+                'cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'overlay', 'options' => ['overlay', 'compact']],
+                'gap' => ['type' => 'range', 'label' => 'Gap', 'min' => 8, 'max' => 48, 'default' => 20],
+                'showImage' => ['type' => 'toggle', 'label' => 'Show Image', 'default' => 'yes'],
+                'showTitle' => ['type' => 'toggle', 'label' => 'Show Title', 'default' => 'yes'],
+                'showDescription' => ['type' => 'toggle', 'label' => 'Show Description', 'default' => 'yes'],
+                'showLocation' => ['type' => 'toggle', 'label' => 'Show Location', 'default' => 'yes'],
+                'showTravelTypes' => ['type' => 'toggle', 'label' => 'Show Travel Types', 'default' => 'yes'],
+                'showCta' => ['type' => 'toggle', 'label' => 'Show CTA', 'default' => 'yes'],
             ]),
             $this->signatureComponent('offer-comparison', 'Offer Comparison', 'travel', 'table-cells', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Compare our journeys'],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
                 'limit' => ['type' => 'range', 'label' => 'Offers', 'min' => 2, 'max' => 4, 'default' => 3],
                 'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'View journey'],
+                'source' => ['type' => 'select', 'label' => 'Source', 'default' => 'latest', 'options' => ['latest', 'special', 'manual']],
+                'manual_ids' => ['type' => 'entity-multiselect', 'entity' => 'offers', 'label' => 'Manual Selection', 'default' => [], 'when' => ['key' => 'source', 'is' => 'manual']],
+                'destination_id' => ['type' => 'entity-select', 'entity' => 'destinations', 'label' => 'Destination Filter', 'default' => ''],
                 'continent' => ['type' => 'select', 'label' => 'Continent', 'default' => '', 'options' => ['', 'africa', 'asia', 'europe', 'north-america', 'south-america', 'oceania', 'antarctica']],
                 'travelType' => ['type' => 'select', 'label' => 'Travel Type', 'default' => '', 'options' => ['', 'beach', 'mountain', 'cultural', 'adventure', 'city', 'desert', 'nature', 'wellness', 'family']],
                 'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month', 'default' => ''],
+                'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => ['latest', 'oldest', 'name', 'price_low', 'price_high']],
+                'showImage' => ['type' => 'toggle', 'label' => 'Show Image', 'default' => 'yes'],
+                'showTitle' => ['type' => 'toggle', 'label' => 'Show Title', 'default' => 'yes'],
+                'showDescription' => ['type' => 'toggle', 'label' => 'Show Description', 'default' => 'yes'],
+                'showDestination' => ['type' => 'toggle', 'label' => 'Show Destination', 'default' => 'yes'],
+                'showPrice' => ['type' => 'toggle', 'label' => 'Show Price', 'default' => 'yes'],
+                'showDuration' => ['type' => 'toggle', 'label' => 'Show Duration', 'default' => 'yes'],
+                'showCta' => ['type' => 'toggle', 'label' => 'Show CTA', 'default' => 'yes'],
             ]),
             $this->signatureComponent('testimonials', 'Testimonials', 'marketing', 'chat-bubble-left-right', [
                 'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'TRAVELLER STORIES'],
@@ -670,9 +692,13 @@ class ComponentSeeder extends Seeder
 
     private function signatureComponent(string $type, string $name, string $category, string $icon, array $fields): array
     {
-        $dataKeys = ['searchType', 'source', 'limit'];
-        $layoutKeys = ['columns', 'imagePosition', 'imageRatio', 'contentAlign', 'minHeight', 'align'];
-        $styleKeys = ['backgroundImage', 'backgroundColor', 'backgroundPosition', 'overlayOpacity', 'objectFit', 'variant'];
+        $dataKeys = ['searchType', 'source', 'manual_ids', 'destination_id', 'continent', 'travelType', 'idealMonth', 'limit', 'sort'];
+        $layoutKeys = ['columns', 'gap', 'imagePosition', 'contentAlign', 'minHeight', 'align'];
+        $styleKeys = [
+            'backgroundImage', 'backgroundColor', 'backgroundPosition', 'overlayOpacity', 'objectFit',
+            'variant', 'cardVariant', 'imageRatio', 'showImage', 'showTitle', 'showDescription',
+            'showLocation', 'showTravelTypes', 'showDestination', 'showPrice', 'showDuration', 'showCta',
+        ];
         $tabs = [
             'content' => ['title' => 'Content', 'fields' => []],
             'data' => ['title' => 'Data', 'fields' => []],
@@ -736,16 +762,26 @@ class ComponentSeeder extends Seeder
     {
         $continents = ['', 'africa', 'asia', 'europe', 'north-america', 'south-america', 'oceania', 'antarctica'];
         $travelTypes = ['', 'beach', 'mountain', 'cultural', 'adventure', 'city', 'desert', 'nature', 'wellness', 'family'];
-        $sort = ['latest', 'oldest', 'name', 'price_low', 'price_high'];
+        $destinationSort = ['latest', 'oldest', 'name'];
+        $offerSort = [...$destinationSort, 'price_low', 'price_high'];
         $cardFields = [
             'columns' => ['type' => 'range', 'label' => 'Columns', 'min' => 1, 'max' => 4, 'default' => 3],
             'gap' => ['type' => 'range', 'label' => 'Gap', 'min' => 8, 'max' => 64, 'default' => 24],
+            'imageRatio' => ['type' => 'select', 'label' => 'Image Ratio', 'default' => '16/9', 'options' => ['square', '4/3', '16/9']],
             'showImage' => ['type' => 'toggle', 'label' => 'Show Image', 'default' => 'yes'],
             'showTitle' => ['type' => 'toggle', 'label' => 'Show Title', 'default' => 'yes'],
             'showDescription' => ['type' => 'toggle', 'label' => 'Show Description', 'default' => 'yes'],
-            'showMeta' => ['type' => 'toggle', 'label' => 'Show Meta', 'default' => 'yes'],
             'showCta' => ['type' => 'toggle', 'label' => 'Show CTA', 'default' => 'yes'],
             'buttonText' => ['type' => 'text', 'label' => 'CTA Text', 'default' => 'View details'],
+        ];
+        $destinationCardFields = $cardFields + [
+            'showLocation' => ['type' => 'toggle', 'label' => 'Show Location', 'default' => 'yes'],
+            'showTravelTypes' => ['type' => 'toggle', 'label' => 'Show Travel Types', 'default' => 'yes'],
+        ];
+        $offerCardFields = $cardFields + [
+            'showDestination' => ['type' => 'toggle', 'label' => 'Show Destination', 'default' => 'yes'],
+            'showPrice' => ['type' => 'toggle', 'label' => 'Show Price', 'default' => 'yes'],
+            'showDuration' => ['type' => 'toggle', 'label' => 'Show Duration', 'default' => 'yes'],
         ];
 
         $destinationData = [
@@ -755,12 +791,15 @@ class ComponentSeeder extends Seeder
             'travelType' => ['type' => 'select', 'label' => 'Travel Type', 'default' => '', 'options' => $travelTypes],
             'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month', 'min' => 1, 'max' => 12, 'default' => ''],
             'limit' => ['type' => 'range', 'label' => 'Limit', 'min' => 1, 'max' => 12, 'default' => 6],
-            'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => $sort],
+            'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => $destinationSort],
         ];
         $offerData = $destinationData;
-        $offerData['source']['options'] = ['latest', 'special', 'by_destination', 'manual'];
+        $offerData['source']['options'] = ['latest', 'special', 'manual'];
         $offerData['manual_ids']['entity'] = 'offers';
-        $offerData['destination_id'] = ['type' => 'entity-select', 'entity' => 'destinations', 'label' => 'Destination', 'default' => '', 'when' => ['key' => 'source', 'is' => 'by_destination']];
+        $offerData['destination_id'] = ['type' => 'entity-select', 'entity' => 'destinations', 'label' => 'Destination Filter', 'default' => ''];
+        $offerData['sort']['options'] = $offerSort;
+        $fixedDestinationData = array_diff_key($destinationData, array_flip(['source', 'manual_ids']));
+        $fixedOfferData = array_diff_key($offerData, array_flip(['source', 'manual_ids']));
 
         $make = function (string $type, string $name, string $icon, array $content, array $data = [], array $style = []) {
             $fields = $content + $data + $style;
@@ -784,22 +823,19 @@ class ComponentSeeder extends Seeder
             $make('destination-grid', 'Destination Grid', 'map', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Destinations'],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
-            ], $destinationData, $cardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'featured']]]),
+            ], $destinationData, $destinationCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'featured']]]),
             $make('featured-destinations', 'Featured Destinations', 'star', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Featured Destinations'],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
-            ], ['limit' => $destinationData['limit'], 'sort' => $destinationData['sort']], $cardFields),
+            ], $fixedDestinationData, $destinationCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'featured', 'options' => ['standard', 'compact', 'featured']]]),
             $make('offer-grid', 'Offer Grid', 'tag', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Offers'],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
-            ], $offerData, $cardFields + [
-                'showPrice' => ['type' => 'toggle', 'label' => 'Show Price', 'default' => 'yes'],
-                'showDuration' => ['type' => 'toggle', 'label' => 'Show Duration', 'default' => 'yes'],
-            ]),
+            ], $offerData, $offerCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'deal']]]),
             $make('special-offers', 'Special Offers', 'sparkles', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Special Offers'],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
-            ], ['limit' => $offerData['limit'], 'sort' => $offerData['sort']], $cardFields),
+            ], $fixedOfferData, $offerCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'deal', 'options' => ['standard', 'compact', 'deal']]]),
             $make('offer-card', 'Offer Card', 'ticket', [
                 'offer_id' => ['type' => 'entity-select', 'entity' => 'offers', 'label' => 'Offer', 'default' => ''],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
@@ -807,7 +843,7 @@ class ComponentSeeder extends Seeder
                 'description' => ['type' => 'textarea', 'label' => 'Fallback Description', 'default' => ''],
                 'price' => ['type' => 'number', 'label' => 'Fallback Price', 'default' => ''],
                 'buttonText' => ['type' => 'text', 'label' => 'CTA Text', 'default' => 'View offer'],
-            ], [], $cardFields),
+            ], [], $offerCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'deal']]]),
         ];
     }
 }

@@ -29,8 +29,20 @@
     $showTitle = $show('showTitle');
     $showDescription = $show('showDescription');
     $showMeta = $show('showMeta');
+    $showDestination = array_key_exists('showDestination', $props) ? $show('showDestination') : $showMeta;
+    $showPrice = array_key_exists('showPrice', $props) ? $show('showPrice') : $showMeta;
+    $showDuration = array_key_exists('showDuration', $props) ? $show('showDuration') : $showMeta;
     $showCta = $show('showCta');
     $buttonText = $props['buttonText'] ?? 'View offer';
+    $cardVariant = in_array(($props['cardVariant'] ?? 'standard'), ['standard', 'compact', 'deal'], true)
+        ? ($props['cardVariant'] ?? 'standard')
+        : 'standard';
+    $cardPadding = $cardVariant === 'compact' ? 'p-4' : 'p-5';
+    $imageRatio = match ($props['imageRatio'] ?? '16/9') {
+        'square' => 'aspect-square',
+        '4/3' => 'aspect-[4/3]',
+        default => 'aspect-video',
+    };
     $fallbackImage = trim((string) ($props['fallbackImage'] ?? '/images/site-templates/sunset-luxe.png'));
 @endphp
 
@@ -45,10 +57,10 @@
             href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->offer($offer->agency, $offer) }}"
             @if($isEditor) onclick="return false" @endif
             class="site-card group block max-w-sm overflow-hidden no-underline"
-            style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"
+            style="background-color: var(--site-surface, #ffffff); border-color: {{ $cardVariant === 'deal' ? 'var(--site-accent, #e9bd62)' : 'var(--site-border, #f3f4f6)' }}; border-radius: var(--site-radius, 14px); box-shadow: {{ $cardVariant === 'deal' ? '0 16px 40px rgba(15, 23, 42, .12)' : 'var(--site-shadow, none)' }};"
         >
             @if($showImage)
-                <div class="aspect-video" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
+                <div class="{{ $imageRatio }}" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
                     @if($coverUrl)
                         <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $offer->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                     @elseif($isEditor)
@@ -59,11 +71,17 @@
                 </div>
             @endif
 
-            <div class="p-5">
+            <div class="{{ $cardPadding }}">
                 @if($showTitle)
                     <h3 class="site-heading text-xl font-semibold" style="color: var(--site-text, #111827);">
                         {{ $offer->title }}
                     </h3>
+                @endif
+
+                @if($showDestination && $offer->destination)
+                    <div class="mt-2 text-xs font-semibold uppercase tracking-wide" style="color: var(--site-primary, #059669);">
+                        {{ $offer->destination->name }}
+                    </div>
                 @endif
 
                 @if($showDescription)
@@ -72,14 +90,18 @@
                     </p>
                 @endif
 
-                @if($showMeta)
+                @if($showPrice || $showDuration)
                     <div class="mt-4 flex items-center justify-between text-sm">
-                        <span class="font-semibold" style="color: var(--site-primary, #059669);">
-                            {{ number_format((float) $offer->price, 2) }} {{ $offer->agency->catalogCurrency() }}
-                        </span>
-                        <span style="color: var(--site-muted, #9ca3af);">
-                            {{ $offer->duration_days }} days
-                        </span>
+                        @if($showPrice)
+                            <span class="font-semibold" style="color: var(--site-primary, #059669);">
+                                {{ number_format((float) $offer->price, 2) }} {{ $offer->agency->catalogCurrency() }}
+                            </span>
+                        @endif
+                        @if($showDuration)
+                            <span style="color: var(--site-muted, #9ca3af);">
+                                {{ $offer->duration_days }} days
+                            </span>
+                        @endif
                     </div>
                 @endif
 
