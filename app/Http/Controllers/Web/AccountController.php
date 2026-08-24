@@ -3,12 +3,21 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Account\UpdateEmailRequest;
+use App\Http\Requests\Account\UpdatePasswordRequest;
 use App\Http\Requests\Account\UpdateProfileRequest;
 use App\Http\Requests\Account\UpdateSettingsRequest;
+use App\Services\AccountSessionService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 
 class AccountController extends Controller
 {
+    public function __construct(private AccountSessionService $sessionService)
+    {
+    }
+
     public function editProfile()
     {
         $user = request()->user()->loadMissing(['role', 'agency']);
@@ -51,6 +60,8 @@ class AccountController extends Controller
         return view('account.settings', [
             'user' => $user,
             'preferences' => $this->preferences($user),
+            'activeSessionCount' => $this->sessionService->count($user, request()),
+            'sessionManagementAvailable' => $this->sessionService->supportsManagement(),
         ]);
     }
 
@@ -73,6 +84,82 @@ class AccountController extends Controller
         ]);
 
         return back()->with('success', 'Account settings updated');
+    }
+
+    public function editPassword()
+    {
+        return view('account.security.password', ['user' => request()->user()]);
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request)
+    {
+        $request->user()->forceFill([
+            'password' => $request->validated('password'),
+            'remember_token' => Str::random(60),
+            'password_changed_at' => now(),
+        ])->save();
+
+        $this->sessionService->revokeOthers($request->user(), $request->session()->getId());
+
+        return redirect()
+            ->route('account.settings.edit')
+            ->with('success', 'Password updated and other sessions signed out.');
+    }
+
+    public function editEmail()
+    {
+        return view('account.security.email', ['user' => request()->user()]);
+    }
+
+    public function updateEmail(UpdateEmailRequest $request)
+    {
+        $email = $request->validated('email');
+
+        if ($email === $request->user()->email) {
+            return back()->with('success', 'Your email address is already up to date.');
+        }
+
+        $request->user()->forceFill([
+            'email' => $email,
+            'email_verified_at' => null,
+        ])->save();
+        $request->user()->sendEmailVerificationNotification();
+
+        return redirect()
+            ->route('verification.notice')
+            ->with('status', 'verification-link-sent');
+    }
+
+    public function sessions(Request $request)
+    {
+        return view('account.security.sessions', [
+            'sessions' => $this->sessionService->sessions($request->user(), $request),
+            'managementAvailable' => $this->sessionService->supportsManagement(),
+        ]);
+    }
+
+    public function destroySession(Request $request, string $session)
+    {
+        abort_unless(
+            $this->sessionService->revoke(
+                $request->user(),
+                $session,
+                $request->session()->getId()
+            ),
+            404
+        );
+
+        return back()->with('success', 'Session signed out.');
+    }
+
+    public function destroyOtherSessions(Request $request)
+    {
+        $count = $this->sessionService->revokeOthers(
+            $request->user(),
+            $request->session()->getId()
+        );
+
+        return back()->with('success', "{$count} other session(s) signed out.");
     }
 
     private function preferences($user): array

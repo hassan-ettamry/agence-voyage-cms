@@ -149,6 +149,27 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::put('/settings', [AccountController::class, 'updateSettings'])
                 ->name('settings.update');
+
+            Route::get('/security/password', [AccountController::class, 'editPassword'])
+                ->name('security.password.edit');
+
+            Route::put('/security/password', [AccountController::class, 'updatePassword'])
+                ->name('security.password.update');
+
+            Route::get('/security/email', [AccountController::class, 'editEmail'])
+                ->name('security.email.edit');
+
+            Route::put('/security/email', [AccountController::class, 'updateEmail'])
+                ->name('security.email.update');
+
+            Route::get('/security/sessions', [AccountController::class, 'sessions'])
+                ->name('security.sessions.index');
+
+            Route::delete('/security/sessions', [AccountController::class, 'destroyOtherSessions'])
+                ->name('security.sessions.destroy-others');
+
+            Route::delete('/security/sessions/{session}', [AccountController::class, 'destroySession'])
+                ->name('security.sessions.destroy');
         });
 
     Route::get('/dashboard/stats', [DashboardController::class, 'stats'])

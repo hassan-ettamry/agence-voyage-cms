@@ -555,17 +555,6 @@
                     @endforeach
                 </div>
 
-                <div class="account-settings-nav-divider h-px bg-[#e6edf5]"></div>
-
-                <button type="button" class="account-settings-nav-danger rounded-[10px] text-left text-red-600 transition hover:bg-red-50">
-                    <span class="account-settings-nav-icon grid place-items-center rounded-[8px] bg-red-50">
-                        <x-dynamic-component component="heroicon-o-user-minus" class="h-4 w-4" />
-                    </span>
-                    <span class="account-settings-nav-danger-copy">
-                        <span class="block text-[13px] font-bold">Deactivate account</span>
-                        <span class="mt-0.5 block text-[12px] font-medium text-[#64748b]">Temporarily disable your account</span>
-                    </span>
-                </button>
             </aside>
 
             <div class="account-main-column account-settings-main">
@@ -670,9 +659,9 @@
                                     <div class="text-[13px] font-black text-[#0f172a]">Change password</div>
                                     <div class="mt-0.5 text-[11px] font-medium text-[#64748b]">Update your password regularly</div>
                                 </div>
-                                <button type="button" class="account-settings-security-action inline-flex items-center justify-center rounded-[8px] border border-[#9b87ff] bg-white text-[12px] font-bold text-[#5b3ff1] transition hover:bg-[#f6f3ff]">
+                                <a href="{{ route('account.security.password.edit') }}" class="account-settings-security-action inline-flex items-center justify-center rounded-[8px] border border-[#9b87ff] bg-white text-[12px] font-bold text-[#5b3ff1] transition hover:bg-[#f6f3ff]">
                                     Change password
-                                </button>
+                                </a>
                             </div>
 
                             <div class="account-settings-security-row">
@@ -682,44 +671,41 @@
 
                             <div class="account-settings-security-row">
                                 <div class="account-settings-security-copy">
-                                    <div class="text-[13px] font-black text-[#0f172a]">Active sessions</div>
-                                    <div class="mt-0.5 text-[11px] font-medium text-[#64748b]">1 active session</div>
+                                    <div class="text-[13px] font-black text-[#0f172a]">Email address</div>
+                                    <div class="mt-0.5 text-[11px] font-medium text-[#64748b]">{{ $user->email }}</div>
                                 </div>
-                                <button type="button" class="account-settings-security-action inline-flex items-center justify-center rounded-[8px] border border-[#9b87ff] bg-white text-[12px] font-bold text-[#5b3ff1] transition hover:bg-[#f6f3ff]">
+                                <a href="{{ route('account.security.email.edit') }}" class="account-settings-security-action inline-flex items-center justify-center rounded-[8px] border border-[#9b87ff] bg-white text-[12px] font-bold text-[#5b3ff1] transition hover:bg-[#f6f3ff]">
+                                    Change email
+                                </a>
+                            </div>
+
+                            <div class="account-settings-security-row">
+                                <div class="account-settings-security-copy">
+                                    <div class="text-[13px] font-black text-[#0f172a]">Active sessions</div>
+                                    <div class="mt-0.5 text-[11px] font-medium text-[#64748b]">
+                                        {{ $activeSessionCount }} active session(s)
+                                        @unless($sessionManagementAvailable) · database sessions not enabled @endunless
+                                    </div>
+                                </div>
+                                <a href="{{ route('account.security.sessions.index') }}" class="account-settings-security-action inline-flex items-center justify-center rounded-[8px] border border-[#9b87ff] bg-white text-[12px] font-bold text-[#5b3ff1] transition hover:bg-[#f6f3ff]">
                                     View sessions
-                                </button>
+                                </a>
                             </div>
 
                             <div class="account-settings-security-row">
                                 <div class="account-settings-security-copy">
                                     <div class="text-[13px] font-black text-[#0f172a]">Two-factor authentication</div>
-                                    <div class="mt-0.5 text-[11px] font-medium text-[#64748b]">Add an extra layer of security</div>
+                                    <div class="mt-0.5 text-[11px] font-medium text-[#64748b]">Planned for a future security phase</div>
                                 </div>
                                 <span class="account-settings-security-status inline-flex items-center gap-2 rounded-full border border-orange-300 bg-orange-50 px-3 py-1.5 text-[11px] font-bold text-orange-600">
                                     <x-dynamic-component component="heroicon-o-exclamation-triangle" class="h-3.5 w-3.5" />
-                                    2FA not enabled
+                                    Not available yet
                                 </span>
                             </div>
                         </div>
                     </section>
                 </div>
 
-                <section class="account-settings-danger border border-red-300 bg-red-50/30">
-                    <div class="account-settings-danger-content">
-                        <div class="account-settings-danger-copy">
-                            <span class="grid h-9 w-9 shrink-0 place-items-center rounded-[10px] text-red-600">
-                                <x-dynamic-component component="heroicon-o-exclamation-triangle" class="h-7 w-7" />
-                            </span>
-                            <div class="account-settings-danger-text">
-                                <h2 class="text-[15px] font-black text-[#0f172a]">Deactivate Account</h2>
-                                <p class="account-settings-danger-description mt-0.5 text-[12px] font-medium text-[#64748b]">Temporarily disable your account and restrict access to the CMS. You can reactivate your account anytime by signing in again.</p>
-                            </div>
-                        </div>
-                        <button type="button" class="account-settings-danger-button inline-flex items-center justify-center rounded-[8px] border border-red-500 bg-white text-[12px] font-bold text-red-600 transition hover:bg-red-50">
-                            Deactivate account
-                        </button>
-                    </div>
-                </section>
             </div>
         </div>
     </form>

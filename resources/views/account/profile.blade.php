@@ -324,7 +324,8 @@
 
                         <label class="block">
                             <span class="mb-1.5 block text-[11px] font-bold text-[#52627a]">Email address</span>
-                            <input name="email" type="email" value="{{ old('email', $user->email) }}" required class="account-field account-profile-input">
+                            <input type="email" value="{{ $user->email }}" disabled class="account-field account-profile-input bg-slate-50 text-slate-500">
+                            <a href="{{ route('account.security.email.edit') }}" class="mt-1.5 inline-block text-[12px] font-bold text-[#5b3ff1] hover:underline">Change email securely</a>
                         </label>
 
                         <label class="block">
