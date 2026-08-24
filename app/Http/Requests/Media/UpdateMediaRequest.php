@@ -16,6 +16,9 @@ class UpdateMediaRequest extends FormRequest
         return [
             'title' => ['nullable', 'string', 'max:255'],
             'alt_text' => ['nullable', 'string', 'max:255'],
+            'copyright_holder' => ['nullable', 'string', 'max:255'],
+            'license' => ['nullable', 'string', 'max:100'],
+            'source_url' => ['nullable', 'url:http,https', 'max:2048'],
         ];
     }
 }

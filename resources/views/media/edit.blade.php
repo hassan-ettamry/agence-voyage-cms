@@ -21,7 +21,7 @@
             <p class="text-xs font-black uppercase tracking-[0.28em] text-indigo-200">Media details</p>
             <h1 class="mt-2 text-3xl font-black tracking-tight">Edit image metadata</h1>
             <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-300">
-                Keep titles and alt text clean so images remain easy to reuse across destinations, offers and pages.
+                Keep accessibility, source and licensing details clear so images remain safe to reuse across destinations, offers and pages.
             </p>
         </div>
 

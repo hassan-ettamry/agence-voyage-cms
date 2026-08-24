@@ -172,13 +172,14 @@
                     <path stroke-linecap="round" stroke-linejoin="round" d="M20 16.5V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2.5" />
                 </svg>
             </span>
-            <span class="mt-4 block text-base font-black text-slate-950">Drop your image here or click to upload</span>
-            <span class="mt-1 block text-sm text-slate-500">JPG, PNG or WEBP up to 5 MB. Use the upload button if you want to add title and alt text immediately.</span>
+            <span class="mt-4 block text-base font-black text-slate-950">Drop images here or click to upload</span>
+            <span class="mt-1 block text-sm text-slate-500">Up to 10 JPG, PNG or WEBP images, 5 MB each. Use the upload button for detailed metadata.</span>
         </label>
         <input id="quick-media-upload"
                type="file"
-               name="file"
+               name="files[]"
                accept="image/jpeg,image/png,image/webp"
+               multiple
                class="sr-only"
                onchange="if (this.files.length) this.form.submit()">
     </form>

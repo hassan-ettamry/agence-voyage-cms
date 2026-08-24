@@ -25,7 +25,9 @@ class MediaIndexService
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('title', 'like', "%{$search}%")
                         ->orWhere('original_name', 'like', "%{$search}%")
-                        ->orWhere('alt_text', 'like', "%{$search}%");
+                        ->orWhere('alt_text', 'like', "%{$search}%")
+                        ->orWhere('copyright_holder', 'like', "%{$search}%")
+                        ->orWhere('license', 'like', "%{$search}%");
                 });
             });
 
@@ -86,6 +88,9 @@ class MediaIndexService
                 'alt_text' => $media->alt_text,
                 'url' => $media->url,
                 'path' => $media->path,
+                'copyright_holder' => $media->copyright_holder,
+                'license' => $media->license,
+                'source_url' => $media->source_url,
             ])
             ->all();
     }

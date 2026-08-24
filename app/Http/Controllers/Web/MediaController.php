@@ -49,19 +49,41 @@ class MediaController extends Controller
     {
         $this->authorize('create', MediaAsset::class);
 
-        $media = $this->mediaService->upload($request->file('file'), $request->validated(), $request->user());
+        $files = $request->file('files', []);
+        $files = is_array($files) ? $files : [];
+        $singleFile = $request->file('file');
+
+        if ($singleFile) {
+            $files = [$singleFile];
+        }
+
+        $metadata = collect($request->validated())
+            ->except(['file', 'files'])
+            ->all();
+
+        if (count($files) > 1) {
+            unset($metadata['title'], $metadata['alt_text']);
+        }
+
+        $mediaAssets = $this->mediaService->uploadMany($files, $metadata, $request->user());
 
         if ($request->expectsJson()) {
-            return response()->json([
+            $items = $mediaAssets->map(fn (MediaAsset $media) => [
                 'id' => $media->id,
                 'title' => $media->title,
                 'alt_text' => $media->alt_text,
                 'url' => $media->url,
                 'path' => $media->path,
-            ], 201);
+            ])->values();
+
+            return response()->json($items->count() === 1 ? $items->first() : ['items' => $items], 201);
         }
 
-        return redirect()->route('media.index')->with('success', 'Media ajoute avec succes.');
+        $message = $mediaAssets->count() === 1
+            ? 'Media ajoute avec succes.'
+            : $mediaAssets->count().' medias ajoutes avec succes.';
+
+        return redirect()->route('media.index')->with('success', $message);
     }
 
     public function edit(MediaAsset $medium)

@@ -22,6 +22,9 @@ class MediaAsset extends Model
         'size',
         'title',
         'alt_text',
+        'copyright_holder',
+        'license',
+        'source_url',
     ];
 
     protected static function boot()
