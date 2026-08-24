@@ -16,7 +16,7 @@ class AuthService
             $agency = Agency::create([
                 'name' => $data['agency_name'],
                 'email' => $data['email'],
-                'slug' => Str::slug($data['agency_name']),
+                'slug' => $this->uniqueAgencySlug($data['agency_name']),
                 'status' => 'active',
                 'plan' => 'free',
                 'onboarding_status' => Agency::ONBOARDING_PENDING,
@@ -35,5 +35,19 @@ class AuthService
                 'role_id' => $adminRole->id,
             ]);
         });
+    }
+
+    private function uniqueAgencySlug(string $name): string
+    {
+        $baseSlug = Str::slug($name) ?: 'agency';
+        $slug = $baseSlug;
+        $suffix = 2;
+
+        while (Agency::query()->where('slug', $slug)->exists()) {
+            $slug = "{$baseSlug}-{$suffix}";
+            $suffix++;
+        }
+
+        return $slug;
     }
 }

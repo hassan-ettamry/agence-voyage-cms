@@ -6,8 +6,8 @@ use App\Models\Agency;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
 
 class AdminAuthorizationTest extends TestCase
@@ -235,7 +235,7 @@ class AdminAuthorizationTest extends TestCase
             ->assertSessionHasErrors('actions');
     }
 
-    public function test_admin_role_bypasses_administration_permissions(): void
+    public function test_admin_role_grants_administration_permissions(): void
     {
         $admin = $this->adminUser();
 
@@ -247,7 +247,7 @@ class AdminAuthorizationTest extends TestCase
     private function userWithPermissions(array $permissionSlugs = [], ?Agency $agency = null): User
     {
         $agency ??= $this->agency();
-        $role = $this->role('Member ' . uniqid(), $agency);
+        $role = $this->role('Member '.uniqid(), $agency);
 
         foreach ($permissionSlugs as $slug) {
             $role->permissions()->attach($this->permission($slug, $slug));
@@ -278,7 +278,7 @@ class AdminAuthorizationTest extends TestCase
 
     private function agency(): Agency
     {
-        $name = fake()->company() . ' ' . uniqid();
+        $name = fake()->company().' '.uniqid();
 
         return Agency::create([
             'name' => $name,
@@ -311,7 +311,7 @@ class AdminAuthorizationTest extends TestCase
         return [
             'name' => 'Managed User',
             'email' => $email,
-            'password' => 'password',
+            'password' => 'StrongPass1!',
             'role_id' => $role->id,
         ];
     }

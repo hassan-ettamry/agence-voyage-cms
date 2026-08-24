@@ -30,8 +30,13 @@ class UserPolicy
 
     public function delete(User $user, User $model): bool
     {
-        return $this->sameAgency($user, $model)
-            && $user->hasPermission('user.delete');
+        if (! $this->sameAgency($user, $model)
+            || ! $user->hasPermission('user.delete')
+            || $user->is($model)) {
+            return false;
+        }
+
+        return ! $model->isOnlyAgencyAdmin();
     }
 
     protected function sameAgency(User $user, User $model): bool

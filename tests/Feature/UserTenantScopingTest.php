@@ -73,7 +73,7 @@ class UserTenantScopingTest extends TestCase
             ->post(route('users.store'), [
                 'name' => 'Created User',
                 'email' => 'created@example.com',
-                'password' => 'password',
+                'password' => 'StrongPass1!',
                 'role_id' => $role->id,
             ])
             ->assertRedirect();
@@ -97,7 +97,7 @@ class UserTenantScopingTest extends TestCase
             ->post(route('users.store'), [
                 'name' => 'Invalid Role User',
                 'email' => 'invalid-role@example.com',
-                'password' => 'password',
+                'password' => 'StrongPass1!',
                 'role_id' => $foreignRole->id,
             ])
             ->assertSessionHasErrors('role_id');
@@ -136,7 +136,7 @@ class UserTenantScopingTest extends TestCase
 
     private function agency(string $name): Agency
     {
-        $name = $name . ' ' . uniqid();
+        $name = $name.' '.uniqid();
 
         return Agency::create([
             'name' => $name,
@@ -147,7 +147,7 @@ class UserTenantScopingTest extends TestCase
 
     private function userWithPermissions(Agency $agency, array $permissionSlugs): User
     {
-        $role = $this->role($agency, 'Member ' . uniqid());
+        $role = $this->role($agency, 'Member '.uniqid());
 
         foreach ($permissionSlugs as $slug) {
             $role->permissions()->attach($this->permission($slug));
@@ -163,7 +163,7 @@ class UserTenantScopingTest extends TestCase
 
     private function user(Agency $agency, string $email, ?Role $role = null): User
     {
-        $role ??= $this->role($agency, 'Member ' . uniqid());
+        $role ??= $this->role($agency, 'Member '.uniqid());
 
         return tap(User::create([
             'name' => fake()->name(),

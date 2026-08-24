@@ -2,25 +2,25 @@
 
 namespace App\Providers;
 
-use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
-use Illuminate\Support\Facades\Gate;
-
-use App\Models\Page;
-use App\Models\Permission;
-use App\Models\Role;
-use App\Models\User;
 use App\Models\Destination;
 use App\Models\MediaAsset;
 use App\Models\Offer;
+use App\Models\Page;
+use App\Models\Permission;
+use App\Models\Role;
+use App\Models\SiteTemplate;
+use App\Models\Theme;
+use App\Models\User;
 use App\Policies\DestinationPolicy;
 use App\Policies\MediaAssetPolicy;
 use App\Policies\OfferPolicy;
 use App\Policies\PagePolicy;
 use App\Policies\PermissionPolicy;
 use App\Policies\RolePolicy;
-use App\Policies\UserPolicy;
-use App\Models\Theme;
+use App\Policies\SiteTemplatePolicy;
 use App\Policies\ThemePolicy;
+use App\Policies\UserPolicy;
+use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -36,15 +36,11 @@ class AuthServiceProvider extends ServiceProvider
         Role::class => RolePolicy::class,
         User::class => UserPolicy::class,
         Theme::class => ThemePolicy::class,
+        SiteTemplate::class => SiteTemplatePolicy::class,
     ];
 
     public function boot(): void
     {
         $this->registerPolicies();
-
-        // SUPER ADMIN
-        Gate::before(function ($user, $ability) {
-            return $user->isAdmin() ? true : null;
-        });
     }
 }

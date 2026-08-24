@@ -3,16 +3,16 @@
 namespace App\Models;
 
 // Importation des classes nécessaires
+use App\Scopes\AgencyScope;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use App\Scopes\AgencyScope;
+use Illuminate\Support\Str;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable implements MustVerifyEmailContract
 {
@@ -90,7 +90,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
          * Génération automatique d'un identifiant UUID si absent
          */
         static::creating(function ($model) {
-            if (!$model->id) {
+            if (! $model->id) {
                 $model->id = (string) Str::uuid();
             }
         });
@@ -122,9 +122,14 @@ class User extends Authenticatable implements MustVerifyEmailContract
     /**
      * Vérifier si l'utilisateur est administrateur
      */
-    public function isAdmin()
+    public function isAdmin(): bool
     {
-        return $this->role?->slug === 'admin';
+        $role = $this->relationLoaded('role')
+            ? $this->getRelation('role')
+            : $this->role()->withoutGlobalScopes()->first();
+
+        return $role?->agency_id === $this->agency_id
+            && $role->slug === 'admin';
     }
 
     /**
@@ -147,15 +152,34 @@ class User extends Authenticatable implements MustVerifyEmailContract
 
     /**
      * Vérifier si l'utilisateur possède une permission donnée
-     *
-     * @param string $permission
-     * @return bool
      */
     public function hasPermission(string $permission): bool
     {
-        if (!$this->role) return false;
+        if ($this->isAdmin()) {
+            return true;
+        }
+
+        if (! $this->role) {
+            return false;
+        }
 
         return in_array($permission, $this->getPermissions());
+    }
+
+    public function isOnlyAgencyAdmin(): bool
+    {
+        if (! $this->isAdmin()) {
+            return false;
+        }
+
+        return static::withoutGlobalScopes()
+            ->where('agency_id', $this->agency_id)
+            ->whereHas('role', function ($query) {
+                $query->withoutGlobalScopes()
+                    ->where('agency_id', $this->agency_id)
+                    ->where('slug', 'admin');
+            })
+            ->count() === 1;
     }
 
     /**
@@ -163,8 +187,6 @@ class User extends Authenticatable implements MustVerifyEmailContract
      *
      * Utilise un cache pour améliorer les performances
      * et éviter les requêtes répétées
-     *
-     * @return array
      */
     public function getPermissions(): array
     {
@@ -174,7 +196,7 @@ class User extends Authenticatable implements MustVerifyEmailContract
         return \Cache::remember(
             "user_permissions_v1_{$this->id}",
             3600,
-            fn() => $this->role?->permissions->pluck('slug')->toArray() ?? []
+            fn () => $this->role?->permissions->pluck('slug')->toArray() ?? []
         );
     }
 }

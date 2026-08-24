@@ -1,7 +1,9 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\User;
+use Illuminate\Support\Str;
 
 class UserService
 {
@@ -17,6 +19,9 @@ class UserService
     {
         if (empty($data['password'])) {
             unset($data['password']);
+        } else {
+            $data['password_changed_at'] = now();
+            $data['remember_token'] = Str::random(60);
         }
 
         $user->update($data);

@@ -54,10 +54,9 @@ class RegisterFlowTest extends TestCase
         // 4. Test du symptôme réel : l'utilisateur peut accéder à la zone
         //    protégée. /pages applique 'auth' + PagePolicy::viewAny, qui
         //    exigerait normalement la permission 'page.view'. Le passage est
-        //    garanti soit par les permissions attachées au rôle admin, soit
-        //    par le Gate::before admin-bypass — peu importe, ce que valide
-        //    le test est qu'un nouveau compte ne reste pas verrouillé hors
-        //    de son propre back-office.
+        //    garanti par le rôle administrateur de sa propre agence. Ce que
+        //    valide le test est qu'un nouveau compte ne reste pas verrouillé
+        //    hors de son propre back-office.
         $this->actingAs($user)
             ->get(route('pages.index'))
             ->assertRedirect(route('verification.notice'));

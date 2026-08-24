@@ -17,6 +17,7 @@
     <div class="mb-4">
         <label class="text-sm text-gray-600">Password</label>
         <input name="password" type="password" class="w-full border rounded-lg px-3 py-2 mt-1">
+        <p class="mt-1 text-xs text-gray-500">At least 8 characters with uppercase, lowercase, number and symbol.</p>
     </div>
 
     <div class="mb-4">

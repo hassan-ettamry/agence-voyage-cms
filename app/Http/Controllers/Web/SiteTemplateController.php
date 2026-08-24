@@ -19,6 +19,8 @@ class SiteTemplateController extends Controller
 
     public function index(Request $request, AgencyThemeService $themeService)
     {
+        $this->authorize('viewAny', SiteTemplate::class);
+
         $templates = SiteTemplate::active()
             ->with('theme')
             ->orderBy('name')
@@ -42,6 +44,7 @@ class SiteTemplateController extends Controller
         SiteTemplateApplicationService $applicationService,
         AgencyThemeService $themeService
     ) {
+        $this->authorize('apply', $siteTemplate);
         abort_unless($siteTemplate->status === SiteTemplate::STATUS_ACTIVE, 404);
 
         if ($this->agencyHasPages($request)) {

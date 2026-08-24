@@ -2,8 +2,8 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
 use App\Support\AgencyContext;
+use Closure;
 
 class SetAgencyContext
 {
@@ -16,19 +16,16 @@ class SetAgencyContext
      */
     public function handle($request, Closure $next)
     {
-        /**
-         * Si un utilisateur est authentifié,
-         * on injecte son agency_id dans le contexte global
-         */
-        if (auth()->check()) {
-            AgencyContext::set(auth()->user()->agency_id);
-        } else {
-            AgencyContext::clear();
+        AgencyContext::clear();
+
+        if ($request->user()) {
+            AgencyContext::set($request->user()->agency_id);
         }
 
-        /**
-         * Continuer le cycle de la requête
-         */
-        return $next($request);
+        try {
+            return $next($request);
+        } finally {
+            AgencyContext::clear();
+        }
     }
 }

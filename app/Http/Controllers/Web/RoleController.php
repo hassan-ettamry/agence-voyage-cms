@@ -90,7 +90,34 @@ class RoleController extends Controller
     {
         $this->authorize('update', $role);
 
-        $role->update($request->all());
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'permissions' => ['nullable', 'array'],
+            'permissions.*' => ['string', Rule::exists('permissions', 'id')],
+        ]);
+
+        $slug = $role->slug === 'admin'
+            ? 'admin'
+            : Str::slug($validated['name']);
+
+        if (Role::withoutGlobalScopes()
+            ->where('agency_id', $request->user()->agency_id)
+            ->where('slug', $slug)
+            ->whereKeyNot($role->getKey())
+            ->exists()) {
+            return back()
+                ->withInput()
+                ->withErrors(['name' => 'A role with this name already exists.']);
+        }
+
+        $role->update([
+            'name' => $validated['name'],
+            'slug' => $slug,
+        ]);
+
+        if (array_key_exists('permissions', $validated)) {
+            $role->syncPermissions($validated['permissions'] ?? []);
+        }
 
         return redirect()->route('roles.index')
             ->with('success', 'Role updated successfully');
