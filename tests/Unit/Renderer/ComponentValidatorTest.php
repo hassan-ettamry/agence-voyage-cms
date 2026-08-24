@@ -18,6 +18,29 @@ class ComponentValidatorTest extends TestCase
         $this->validator = new ComponentValidator;
     }
 
+    public function test_it_accepts_guided_sparse_responsive_design_values(): void
+    {
+        $this->validator->validate('heading', [
+            'text' => 'Responsive heading',
+            'design' => [
+                'desktop' => ['fontSize' => 56, 'alignment' => 'left', 'textColor' => '#12372f'],
+                'tablet' => ['fontSize' => 42],
+                'mobile' => ['fontSize' => 30, 'visibility' => 'visible'],
+            ],
+        ], ['props' => ['text' => ['type' => 'text']]]);
+
+        $this->assertTrue(true);
+    }
+
+    public function test_it_rejects_free_css_inside_guided_design_values(): void
+    {
+        $this->expectException(ValidationException::class);
+
+        $this->validator->validate('heading', [
+            'design' => ['desktop' => ['customCss' => 'position:fixed']],
+        ], null);
+    }
+
     #[DataProvider('safeImageUrls')]
     public function test_it_accepts_safe_image_urls(string $url): void
     {
