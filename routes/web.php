@@ -6,6 +6,7 @@ use App\Http\Controllers\Web\ComponentController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DemoContentController;
 use App\Http\Controllers\Web\DestinationController;
+use App\Http\Controllers\Web\EmailVerificationController;
 use App\Http\Controllers\Web\MediaController;
 use App\Http\Controllers\Web\OfferController;
 use App\Http\Controllers\Web\OnboardingController;
@@ -89,13 +90,26 @@ Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [EmailVerificationController::class, 'notice'])
+        ->name('verification.notice');
+
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:email-verification'])
+        ->name('verification.verify');
+
+    Route::post('/email/verification-notification', [EmailVerificationController::class, 'send'])
+        ->middleware('throttle:email-verification')
+        ->name('verification.send');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Protected Routes
 |--------------------------------------------------------------------------
 */
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::prefix('onboarding')
         ->name('onboarding.')

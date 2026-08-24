@@ -47,12 +47,19 @@ class OnboardingFlowTest extends TestCase
             'password_confirmation' => 'Passw0rd!',
         ]);
 
-        $response->assertRedirect(route('onboarding.profile'));
+        $response->assertRedirect(route('verification.notice'));
 
         $agency = Agency::where('email', 'fresh@example.test')->firstOrFail();
+        $user = User::withoutGlobalScopes()->where('email', 'fresh@example.test')->firstOrFail();
         $this->assertSame(Agency::ONBOARDING_PENDING, $agency->onboarding_status);
         $this->assertSame(Agency::ONBOARDING_STEP_PROFILE, $agency->onboarding_step);
         $this->assertTrue($agency->onboarding_auto_start);
+        $this->assertFalse($user->hasVerifiedEmail());
+
+        $user->markEmailAsVerified();
+        $this->actingAs($user)
+            ->get(route('onboarding.index'))
+            ->assertRedirect(route('onboarding.profile'));
     }
 
     public function test_progress_is_restored_after_logout_and_login(): void
@@ -242,13 +249,17 @@ class OnboardingFlowTest extends TestCase
 
     private function user(Agency $agency, Role $role): User
     {
-        return User::withoutGlobalScopes()->create([
+        $user = User::withoutGlobalScopes()->create([
             'name' => 'Agency User',
             'email' => Str::lower(Str::random(8)).'@user.test',
             'password' => 'Passw0rd!',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
         ]);
+
+        $user->markEmailAsVerified();
+
+        return $user;
     }
 
     private function theme(string $name): Theme

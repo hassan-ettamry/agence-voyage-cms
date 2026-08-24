@@ -504,12 +504,12 @@ class PageStructureLifecycleTest extends TestCase
 
     private function user(Agency $agency): User
     {
-        return User::create([
+        return tap(User::create([
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password',
             'agency_id' => $agency->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function userWithPermissions(Agency $agency, array $permissionSlugs): User
@@ -528,13 +528,13 @@ class PageStructureLifecycleTest extends TestCase
             );
         }
 
-        return User::create([
+        return tap(User::create([
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function page(Agency $agency, array $structure): Page

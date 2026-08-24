@@ -37,5 +37,8 @@ class AppServiceProvider extends ServiceProvider
 
             return Limit::perMinute(3)->by($email.'|'.$request->ip());
         });
+
+        RateLimiter::for('email-verification', fn (Request $request) => Limit::perMinute(6)
+            ->by(($request->user()?->getAuthIdentifier() ?? 'guest').'|'.$request->ip()));
     }
 }

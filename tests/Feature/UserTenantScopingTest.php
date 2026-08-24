@@ -165,13 +165,13 @@ class UserTenantScopingTest extends TestCase
     {
         $role ??= $this->role($agency, 'Member ' . uniqid());
 
-        return User::create([
+        return tap(User::create([
             'name' => fake()->name(),
             'email' => $email,
             'password' => 'password',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function role(Agency $agency, string $name, ?string $slug = null): Role

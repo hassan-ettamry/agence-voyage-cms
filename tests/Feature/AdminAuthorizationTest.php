@@ -253,13 +253,13 @@ class AdminAuthorizationTest extends TestCase
             $role->permissions()->attach($this->permission($slug, $slug));
         }
 
-        return User::create([
+        return tap(User::create([
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function adminUser(): User
@@ -267,13 +267,13 @@ class AdminAuthorizationTest extends TestCase
         $agency = $this->agency();
         $role = $this->role('Admin', $agency, 'admin');
 
-        return User::create([
+        return tap(User::create([
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function agency(): Agency

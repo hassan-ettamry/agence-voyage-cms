@@ -33,9 +33,9 @@ class RegisterFlowTest extends TestCase
             'password_confirmation' => 'Passw0rd!',
         ];
 
-        // 1. Une nouvelle agence commence directement son onboarding guidé.
+        // 1. Une nouvelle agence doit d'abord vérifier son adresse email.
         $response = $this->post('/register', $payload);
-        $response->assertRedirect(route('onboarding.profile'));
+        $response->assertRedirect(route('verification.notice'));
 
         // 2. L'utilisateur existe et est lié à un rôle (régression sur B1 :
         //    auparavant role_id restait null parce qu'AuthService passait
@@ -49,6 +49,7 @@ class RegisterFlowTest extends TestCase
         $this->assertSame($user->agency_id, $user->role->agency_id);
         $this->assertTrue($user->agency->onboarding_auto_start);
         $this->assertSame('pending', $user->agency->onboarding_status);
+        $this->assertFalse($user->hasVerifiedEmail());
 
         // 4. Test du symptôme réel : l'utilisateur peut accéder à la zone
         //    protégée. /pages applique 'auth' + PagePolicy::viewAny, qui
@@ -57,6 +58,12 @@ class RegisterFlowTest extends TestCase
         //    par le Gate::before admin-bypass — peu importe, ce que valide
         //    le test est qu'un nouveau compte ne reste pas verrouillé hors
         //    de son propre back-office.
+        $this->actingAs($user)
+            ->get(route('pages.index'))
+            ->assertRedirect(route('verification.notice'));
+
+        $user->markEmailAsVerified();
+
         $this->actingAs($user)
             ->get(route('pages.index'))
             ->assertOk();

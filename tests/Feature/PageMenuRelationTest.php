@@ -177,12 +177,12 @@ class PageMenuRelationTest extends TestCase
             );
         }
 
-        return User::create([
+        return tap(User::create([
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 }

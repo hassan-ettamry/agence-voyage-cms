@@ -243,13 +243,13 @@ class ThemeCustomizationTest extends TestCase
             $role->permissions()->attach($permission);
         }
 
-        return User::withoutGlobalScopes()->create([
+        return tap(User::withoutGlobalScopes()->create([
             'name' => 'Theme User',
             'email' => Str::random(8).'@user.test',
             'password' => 'password',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function admin(Agency $agency): User
@@ -260,13 +260,13 @@ class ThemeCustomizationTest extends TestCase
             'slug' => 'admin',
         ]);
 
-        return User::withoutGlobalScopes()->create([
+        return tap(User::withoutGlobalScopes()->create([
             'name' => 'Theme Admin',
             'email' => Str::random(8).'@admin.test',
             'password' => 'password',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function themePayload(string $primary = '#112233'): array

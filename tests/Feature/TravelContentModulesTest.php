@@ -164,13 +164,13 @@ class TravelContentModulesTest extends TestCase
             'slug' => 'admin',
         ]);
 
-        return User::create([
+        return tap(User::create([
             'agency_id' => $agency->id,
             'role_id' => $role->id,
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
             'password' => 'password',
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function fakePng(string $name): UploadedFile

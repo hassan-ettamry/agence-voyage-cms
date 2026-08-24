@@ -43,6 +43,10 @@ class AuthController extends Controller
         $request->session()->regenerate();
         $request->user()->forceFill(['last_login_at' => now()])->save();
 
+        if (! $request->user()->hasVerifiedEmail()) {
+            return redirect()->route('verification.notice');
+        }
+
         if ($request->user()->agency?->shouldAutoStartOnboarding()) {
             return redirect()->route('onboarding.index');
         }
@@ -57,10 +61,12 @@ class AuthController extends Controller
     {
         $user = $this->authService->register($request->validated());
         Auth::login($user);
+        $request->session()->regenerate();
+        $user->sendEmailVerificationNotification();
 
         return redirect()
-            ->route('onboarding.profile')
-            ->with('success', 'Bienvenue ! Votre agence a été créée.');
+            ->route('verification.notice')
+            ->with('success', 'Votre agence a été créée. Vérifiez maintenant votre adresse email.');
     }
 
     /**

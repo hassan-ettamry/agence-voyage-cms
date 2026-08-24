@@ -245,13 +245,13 @@ class SiteTemplateApplicationTest extends TestCase
             'slug' => 'admin',
         ]);
 
-        return User::withoutGlobalScopes()->create([
+        return tap(User::withoutGlobalScopes()->create([
             'name' => 'Template Admin',
             'email' => Str::random(8).'@example.com',
             'password' => 'password',
             'agency_id' => $agency->id,
             'role_id' => $role->id,
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function theme(string $name): Theme

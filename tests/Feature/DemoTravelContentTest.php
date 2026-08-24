@@ -219,13 +219,13 @@ class DemoTravelContentTest extends TestCase
             'slug' => $slug,
         ]);
 
-        return User::withoutGlobalScopes()->create([
+        return tap(User::withoutGlobalScopes()->create([
             'agency_id' => $agency->id,
             'role_id' => $role->id,
             'name' => $name.' User',
             'email' => Str::random(8).'@example.com',
             'password' => 'password',
-        ]);
+        ]), fn (User $user) => $user->markEmailAsVerified());
     }
 
     private function node(string $type, array $props = [], array $children = []): array

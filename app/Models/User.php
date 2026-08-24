@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // Importation des classes nécessaires
+use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail as MustVerifyEmailContract;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -12,7 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Scopes\AgencyScope;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmailContract
 {
     /**
      * Traits Laravel utilisés pour les fonctionnalités supplémentaires
@@ -20,7 +22,7 @@ class User extends Authenticatable
      * - HasFactory : support des factories pour les tests
      * - Notifiable : gestion des notifications
      */
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, MustVerifyEmail, Notifiable;
 
     /**
      * Désactiver l'auto-incrément (UUID utilisé comme clé primaire)
