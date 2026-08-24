@@ -33,6 +33,7 @@ class SignatureTravelTemplateTest extends TestCase
         $this->assertSame(Theme::query()->where('slug', 'signature-travel')->value('id'), $template->theme_id);
         $this->assertSame([
             'search-hero',
+            'image-text',
             'destination-carousel',
             'special-offers',
             'feature-grid',
@@ -43,7 +44,11 @@ class SignatureTravelTemplateTest extends TestCase
         ], $types);
         $this->assertSame('Go further. Travel deeper.', $home['structure'][0]['props']['title']);
         $this->assertSame('/images/site-templates/mountain-adventure.webp', $home['structure'][0]['props']['backgroundImage']);
-        $this->assertSame('/contact', $home['structure'][7]['props']['url']);
+        $this->assertSame(700, $home['structure'][0]['props']['minHeight']);
+        $this->assertSame('Your journey should feel like your own', $home['structure'][1]['props']['title']);
+        $this->assertSame(4, $home['structure'][2]['props']['limit']);
+        $this->assertSame('surface', $home['structure'][3]['props']['sectionTone']);
+        $this->assertSame('/contact', $home['structure'][8]['props']['url']);
         $this->assertSame(['home', 'destinations', 'offers', 'about', 'contact', 'faq', 'privacy-policy', 'terms-and-conditions'], $pages->keys()->all());
         $this->assertSame('/destinations', $pages['destinations']['menu_url']);
         $this->assertSame('/offers', $pages['offers']['menu_url']);

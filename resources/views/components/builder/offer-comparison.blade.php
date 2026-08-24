@@ -41,12 +41,16 @@
     $showPrice = array_key_exists('showPrice', $props) ? $show('showPrice') : $showMeta;
     $showDuration = array_key_exists('showDuration', $props) ? $show('showDuration') : $showMeta;
     $showCta = $show('showCta');
+    $sectionTone = in_array(($props['sectionTone'] ?? 'default'), ['default', 'surface', 'soft', 'dark'], true)
+        ? ($props['sectionTone'] ?? 'default')
+        : 'default';
+    $toneClass = $sectionTone === 'default' ? '' : 'site-section--'.$sectionTone;
 @endphp
 
-<section @if($isEditor) data-type="offer-comparison" data-node-id="{{ $nodeId }}" draggable="true" data-drag-action="reorder" @endif class="site-section {{ $isEditor ? 'builder-node' : '' }}">
+<section @if($isEditor) data-type="offer-comparison" data-node-id="{{ $nodeId }}" draggable="true" data-drag-action="reorder" @endif class="site-section {{ $toneClass }} {{ $isEditor ? 'builder-node' : '' }}">
     <div class="site-container">
-        <h2 class="site-heading text-[clamp(2.25rem,5vw,4rem)] font-bold">{{ $props['title'] ?? 'Compare our journeys' }}</h2>
-        <div class="mt-9 grid gap-5 lg:grid-cols-3">
+        @include('components.builder.partials.travel-section-heading', ['props' => $props, 'type' => 'offer-comparison', 'isEditor' => $isEditor])
+        <div class="grid gap-5 lg:grid-cols-3">
             @forelse($offers as $offer)
                 @php
                     $cover = $offer->media ?: $offer->destination?->media?->first();
@@ -72,7 +76,7 @@
                     </div>
                 </article>
             @empty
-                <div class="site-card border-dashed p-8 text-center lg:col-span-3" style="color: var(--site-muted);">{{ $isEditor ? 'Add published offers to compare.' : 'New offers are coming soon.' }}</div>
+                <div class="site-empty-state lg:col-span-3" style="color: var(--site-muted);">{{ $isEditor ? 'Add published offers to compare.' : 'New offers are coming soon.' }}</div>
             @endforelse
         </div>
     </div>

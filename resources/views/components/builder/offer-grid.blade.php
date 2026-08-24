@@ -73,24 +73,28 @@
         default => 'aspect-video',
     };
     $fallbackImage = trim((string) ($props['fallbackImage'] ?? '/images/site-templates/sunset-luxe.png'));
-    $sectionPadding = max(0, min((int) ($props['padding'] ?? 40), 120));
+    $sectionPadding = is_numeric($props['padding'] ?? null)
+        ? max(0, min((int) $props['padding'], 120))
+        : null;
     $marginTop = is_numeric($props['marginTop'] ?? null) ? (int) $props['marginTop'] : 0;
     $marginBottom = is_numeric($props['marginBottom'] ?? null) ? (int) $props['marginBottom'] : 0;
+    $sectionTone = in_array(($props['sectionTone'] ?? 'default'), ['default', 'surface', 'soft', 'dark'], true)
+        ? ($props['sectionTone'] ?? 'default')
+        : 'default';
+    $toneClass = $sectionTone === 'default' ? '' : 'site-section--'.$sectionTone;
 @endphp
 
 <section
     data-node-id="{{ $nodeId }}"
     data-type="{{ $type }}"
-    style="padding-top: {{ $sectionPadding }}px; padding-bottom: {{ $sectionPadding }}px; margin-top: {{ $marginTop }}px; margin-bottom: {{ $marginBottom }}px;"
+    class="site-section {{ $toneClass }} {{ $isEditor ? 'builder-node' : '' }}"
+    style="@if($sectionPadding !== null) padding-top: {{ $sectionPadding }}px; padding-bottom: {{ $sectionPadding }}px; @endif margin-top: {{ $marginTop }}px; margin-bottom: {{ $marginBottom }}px;"
 >
-    @if(!empty($props['title']))
-        <h2 class="site-heading mb-8 text-3xl font-bold" style="color: var(--site-text, #111827);">
-            {{ $props['title'] }}
-        </h2>
-    @endif
+    <div class="site-container">
+    @include('components.builder.partials.travel-section-heading', compact('props', 'type', 'isEditor'))
 
     @if($offers->isEmpty())
-        <div class="site-card border-dashed p-8 text-center text-sm" style="color: var(--site-muted);">
+        <div class="site-empty-state text-sm" style="color: var(--site-muted);">
             {{ $isEditor ? 'No published offers match this source.' : 'New travel offers are coming soon.' }}
         </div>
     @endif
@@ -170,5 +174,6 @@
                 </div>
             </a>
         @endforeach
+    </div>
     </div>
 </section>

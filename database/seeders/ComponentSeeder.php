@@ -591,7 +591,11 @@ class ComponentSeeder extends Seeder
                 'columns' => ['type' => 'range', 'label' => 'Columns', 'min' => 1, 'max' => 4, 'default' => 3],
             ]),
             $this->signatureComponent('destination-carousel', 'Destination Carousel', 'travel', 'map', [
+                'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'FEATURED DESTINATIONS'],
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Explore remarkable places'],
+                'intro' => ['type' => 'textarea', 'label' => 'Introduction', 'default' => 'Handpicked places with the character, culture and experiences that make a journey memorable.'],
+                'showViewAll' => ['type' => 'toggle', 'label' => 'Show View All', 'default' => 'yes'],
+                'viewAllLabel' => ['type' => 'text', 'label' => 'View All Label', 'default' => 'View all destinations'],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
                 'buttonText' => ['type' => 'text', 'label' => 'CTA Text', 'default' => 'View destination'],
                 'limit' => ['type' => 'range', 'label' => 'Limit', 'min' => 1, 'max' => 12, 'default' => 6],
@@ -602,6 +606,7 @@ class ComponentSeeder extends Seeder
                 'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month', 'default' => ''],
                 'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => ['latest', 'oldest', 'name']],
                 'cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'overlay', 'options' => ['overlay', 'compact']],
+                'sectionTone' => ['type' => 'select', 'label' => 'Section Tone', 'default' => 'default', 'options' => ['default', 'surface', 'dark']],
                 'gap' => ['type' => 'range', 'label' => 'Gap', 'min' => 8, 'max' => 48, 'default' => 20],
                 'showImage' => ['type' => 'toggle', 'label' => 'Show Image', 'default' => 'yes'],
                 'showTitle' => ['type' => 'toggle', 'label' => 'Show Title', 'default' => 'yes'],
@@ -611,7 +616,11 @@ class ComponentSeeder extends Seeder
                 'showCta' => ['type' => 'toggle', 'label' => 'Show CTA', 'default' => 'yes'],
             ]),
             $this->signatureComponent('offer-comparison', 'Offer Comparison', 'travel', 'table-cells', [
+                'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'COMPARE JOURNEYS'],
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Compare our journeys'],
+                'intro' => ['type' => 'textarea', 'label' => 'Introduction', 'default' => 'Compare pace, destination and price before opening the full itinerary.'],
+                'showViewAll' => ['type' => 'toggle', 'label' => 'Show View All', 'default' => 'yes'],
+                'viewAllLabel' => ['type' => 'text', 'label' => 'View All Label', 'default' => 'View all journeys'],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
                 'limit' => ['type' => 'range', 'label' => 'Offers', 'min' => 2, 'max' => 4, 'default' => 3],
                 'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'View journey'],
@@ -622,6 +631,7 @@ class ComponentSeeder extends Seeder
                 'travelType' => ['type' => 'select', 'label' => 'Travel Type', 'default' => '', 'options' => ['', 'beach', 'mountain', 'cultural', 'adventure', 'city', 'desert', 'nature', 'wellness', 'family']],
                 'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month', 'default' => ''],
                 'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => ['latest', 'oldest', 'name', 'price_low', 'price_high']],
+                'sectionTone' => ['type' => 'select', 'label' => 'Section Tone', 'default' => 'surface', 'options' => ['default', 'surface', 'dark']],
                 'showImage' => ['type' => 'toggle', 'label' => 'Show Image', 'default' => 'yes'],
                 'showTitle' => ['type' => 'toggle', 'label' => 'Show Title', 'default' => 'yes'],
                 'showDescription' => ['type' => 'toggle', 'label' => 'Show Description', 'default' => 'yes'],
@@ -696,7 +706,7 @@ class ComponentSeeder extends Seeder
         $layoutKeys = ['columns', 'gap', 'imagePosition', 'contentAlign', 'minHeight', 'align'];
         $styleKeys = [
             'backgroundImage', 'backgroundColor', 'backgroundPosition', 'overlayOpacity', 'objectFit',
-            'variant', 'cardVariant', 'imageRatio', 'showImage', 'showTitle', 'showDescription',
+            'variant', 'cardVariant', 'imageRatio', 'sectionTone', 'showImage', 'showTitle', 'showDescription',
             'showLocation', 'showTravelTypes', 'showDestination', 'showPrice', 'showDuration', 'showCta',
         ];
         $tabs = [
@@ -800,6 +810,16 @@ class ComponentSeeder extends Seeder
         $offerData['sort']['options'] = $offerSort;
         $fixedDestinationData = array_diff_key($destinationData, array_flip(['source', 'manual_ids']));
         $fixedOfferData = array_diff_key($offerData, array_flip(['source', 'manual_ids']));
+        $sectionContent = static fn (string $eyebrow, string $title, string $intro, string $viewAllLabel) => [
+            'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => $eyebrow],
+            'title' => ['type' => 'text', 'label' => 'Title', 'default' => $title],
+            'intro' => ['type' => 'textarea', 'label' => 'Introduction', 'default' => $intro],
+            'showViewAll' => ['type' => 'toggle', 'label' => 'Show View All', 'default' => 'yes'],
+            'viewAllLabel' => ['type' => 'text', 'label' => 'View All Label', 'default' => $viewAllLabel],
+        ];
+        $sectionStyle = [
+            'sectionTone' => ['type' => 'select', 'label' => 'Section Tone', 'default' => 'default', 'options' => ['default', 'surface', 'dark']],
+        ];
 
         $make = function (string $type, string $name, string $icon, array $content, array $data = [], array $style = []) {
             $fields = $content + $data + $style;
@@ -820,22 +840,38 @@ class ComponentSeeder extends Seeder
         };
 
         return [
-            $make('destination-grid', 'Destination Grid', 'map', [
-                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Destinations'],
+            $make('destination-grid', 'Destination Grid', 'map', $sectionContent(
+                'EXPLORE THE WORLD',
+                'Destinations worth the journey',
+                'Discover places selected for their character, culture and unforgettable landscapes.',
+                'View all destinations'
+            ) + [
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
-            ], $destinationData, $destinationCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'featured']]]),
-            $make('featured-destinations', 'Featured Destinations', 'star', [
-                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Featured Destinations'],
+            ], $destinationData, $destinationCardFields + $sectionStyle + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'featured']]]),
+            $make('featured-destinations', 'Featured Destinations', 'star', $sectionContent(
+                'FEATURED DESTINATIONS',
+                'Places that stay with you',
+                'A considered selection of remarkable destinations for your next story.',
+                'View all destinations'
+            ) + [
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
-            ], $fixedDestinationData, $destinationCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'featured', 'options' => ['standard', 'compact', 'featured']]]),
-            $make('offer-grid', 'Offer Grid', 'tag', [
-                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Offers'],
+            ], $fixedDestinationData, $destinationCardFields + $sectionStyle + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'featured', 'options' => ['standard', 'compact', 'featured']]]),
+            $make('offer-grid', 'Offer Grid', 'tag', $sectionContent(
+                'CURATED JOURNEYS',
+                'Journeys designed around discovery',
+                'Thoughtful itineraries with room to make the experience entirely your own.',
+                'View all journeys'
+            ) + [
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
-            ], $offerData, $offerCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'deal']]]),
-            $make('special-offers', 'Special Offers', 'sparkles', [
-                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Special Offers'],
+            ], $offerData, $offerCardFields + $sectionStyle + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'deal']]]),
+            $make('special-offers', 'Special Offers', 'sparkles', $sectionContent(
+                'LIMITED-TIME INSPIRATION',
+                'Journeys worth taking now',
+                'Seasonal ideas and signature experiences selected by our travel designers.',
+                'View all journeys'
+            ) + [
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
-            ], $fixedOfferData, $offerCardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'deal', 'options' => ['standard', 'compact', 'deal']]]),
+            ], $fixedOfferData, $offerCardFields + $sectionStyle + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'deal', 'options' => ['standard', 'compact', 'deal']]]),
             $make('offer-card', 'Offer Card', 'ticket', [
                 'offer_id' => ['type' => 'entity-select', 'entity' => 'offers', 'label' => 'Offer', 'default' => ''],
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],

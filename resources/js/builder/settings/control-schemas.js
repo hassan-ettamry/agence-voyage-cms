@@ -285,6 +285,27 @@ function fixedSourceFields(source, entity) {
     return fields;
 }
 
+function travelSectionContent(eyebrow, title, intro, viewAllLabel) {
+    return {
+        eyebrow: { type: 'text', label: 'Eyebrow', default: eyebrow },
+        title: { type: 'text', label: 'Title', default: title },
+        intro: { type: 'textarea', label: 'Introduction', default: intro },
+        showViewAll: { type: 'toggle', label: 'Show View All', default: 'yes' },
+        viewAllLabel: { type: 'text', label: 'View All Label', default: viewAllLabel }
+    };
+}
+
+function travelSectionTone(defaultTone = 'default') {
+    return {
+        sectionTone: {
+            type: 'select',
+            label: 'Section Tone',
+            default: defaultTone,
+            options: ['default', 'surface', 'dark']
+        }
+    };
+}
+
 function cardPartsFields() {
     return {
         showImage: {
@@ -969,7 +990,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
-                title: { type: 'text', label: 'Title', default: 'Destinations' },
+                ...travelSectionContent('EXPLORE THE WORLD', 'Destinations worth the journey', 'Discover places selected for their character, culture and unforgettable landscapes.', 'View all destinations'),
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' }
             }
         },
@@ -984,6 +1005,7 @@ const BuilderControlSchemaMap = {
                 imageRatio: { type: 'select', label: 'Image Ratio', default: '16/9', options: ['square', '4/3', '16/9'] },
                 columns: { type: 'range', label: 'Columns', min: 1, max: 4, default: 3 },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 24 },
+                ...travelSectionTone(),
                 ...destinationPartsFields()
             }
         },
@@ -1001,7 +1023,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
-                title: { type: 'text', label: 'Title', default: 'Featured Destinations' },
+                ...travelSectionContent('FEATURED DESTINATIONS', 'Places that stay with you', 'A considered selection of remarkable destinations for your next story.', 'View all destinations'),
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' }
             }
         },
@@ -1016,6 +1038,7 @@ const BuilderControlSchemaMap = {
                 imageRatio: { type: 'select', label: 'Image Ratio', default: '4/3', options: ['square', '4/3', '16/9'] },
                 columns: { type: 'range', label: 'Columns', min: 1, max: 4, default: 3 },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 24 },
+                ...travelSectionTone(),
                 ...destinationPartsFields()
             }
         },
@@ -1033,7 +1056,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
-                title: { type: 'text', label: 'Title', default: 'Explore remarkable places' },
+                ...travelSectionContent('FEATURED DESTINATIONS', 'Explore remarkable places', 'Handpicked places with the character, culture and experiences that make a journey memorable.', 'View all destinations'),
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' },
                 buttonText: { type: 'text', label: 'CTA Text', default: 'View destination' }
             }
@@ -1047,6 +1070,7 @@ const BuilderControlSchemaMap = {
             fields: {
                 cardVariant: { type: 'select', label: 'Card Variant', default: 'overlay', options: ['overlay', 'compact'] },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 20 },
+                ...travelSectionTone(),
                 ...destinationPartsFields()
             }
         },
@@ -1064,7 +1088,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
-                title: { type: 'text', label: 'Title', default: 'Offers' },
+                ...travelSectionContent('CURATED JOURNEYS', 'Journeys designed around discovery', 'Thoughtful itineraries with room to make the experience entirely your own.', 'View all journeys'),
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' }
             }
         },
@@ -1079,6 +1103,7 @@ const BuilderControlSchemaMap = {
                 imageRatio: { type: 'select', label: 'Image Ratio', default: '16/9', options: ['square', '4/3', '16/9'] },
                 columns: { type: 'range', label: 'Columns', min: 1, max: 4, default: 3 },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 24 },
+                ...travelSectionTone(),
                 ...offerPartsFields()
             }
         },
@@ -1096,7 +1121,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
-                title: { type: 'text', label: 'Title', default: 'Compare our journeys' },
+                ...travelSectionContent('COMPARE JOURNEYS', 'Compare our journeys', 'Compare pace, destination and price before opening the full itinerary.', 'View all journeys'),
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
                 buttonText: { type: 'text', label: 'CTA Text', default: 'View journey' }
             }
@@ -1110,7 +1135,10 @@ const BuilderControlSchemaMap = {
         },
         style: {
             title: 'Style',
-            fields: offerPartsFields()
+            fields: {
+                ...travelSectionTone('surface'),
+                ...offerPartsFields()
+            }
         },
         layout: {
             title: 'Layout',
@@ -1126,7 +1154,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
-                title: { type: 'text', label: 'Title', default: 'Special Offers' },
+                ...travelSectionContent('LIMITED-TIME INSPIRATION', 'Journeys worth taking now', 'Seasonal ideas and signature experiences selected by our travel designers.', 'View all journeys'),
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' }
             }
         },
@@ -1141,6 +1169,7 @@ const BuilderControlSchemaMap = {
                 imageRatio: { type: 'select', label: 'Image Ratio', default: '16/9', options: ['square', '4/3', '16/9'] },
                 columns: { type: 'range', label: 'Columns', min: 1, max: 4, default: 3 },
                 gap: { type: 'range', label: 'Gap', min: 8, max: 48, default: 24 },
+                ...travelSectionTone(),
                 ...offerPartsFields()
             }
         },

@@ -34,14 +34,22 @@
     $cardVariant = ($props['cardVariant'] ?? 'overlay') === 'compact' ? 'compact' : 'overlay';
     $cardHeight = $cardVariant === 'compact' ? 'min-h-[340px]' : 'min-h-[420px]';
     $gap = max(8, min(48, (int) ($props['gap'] ?? 20)));
+    $sectionTone = in_array(($props['sectionTone'] ?? 'default'), ['default', 'surface', 'soft', 'dark'], true)
+        ? ($props['sectionTone'] ?? 'default')
+        : 'default';
+    $toneClass = $sectionTone === 'default' ? '' : 'site-section--'.$sectionTone;
 @endphp
 
-<section @if($isEditor) data-type="destination-carousel" data-node-id="{{ $nodeId }}" draggable="true" data-drag-action="reorder" @endif class="site-section overflow-hidden {{ $isEditor ? 'builder-node' : '' }}">
+<section @if($isEditor) data-type="destination-carousel" data-node-id="{{ $nodeId }}" draggable="true" data-drag-action="reorder" @endif class="site-section overflow-hidden {{ $toneClass }} {{ $isEditor ? 'builder-node' : '' }}" data-site-carousel>
     <div class="site-container">
-        @if(!empty($props['title']))
-            <h2 class="site-heading text-[clamp(2.25rem,5vw,4rem)] font-bold">{{ $props['title'] }}</h2>
+        @include('components.builder.partials.travel-section-heading', ['props' => $props, 'type' => 'destination-carousel', 'isEditor' => $isEditor])
+        @if($destinations->isNotEmpty())
+            <div class="mb-5 flex justify-end gap-2" aria-label="Destination carousel controls">
+                <button type="button" class="grid h-11 w-11 place-items-center border bg-white text-lg" style="border-color: var(--site-border); border-radius: var(--site-radius); color: var(--site-secondary);" data-site-carousel-prev aria-label="Previous destinations">&larr;</button>
+                <button type="button" class="grid h-11 w-11 place-items-center border bg-white text-lg" style="border-color: var(--site-border); border-radius: var(--site-radius); color: var(--site-secondary);" data-site-carousel-next aria-label="Next destinations">&rarr;</button>
+            </div>
         @endif
-        <div class="mt-9 flex snap-x snap-mandatory overflow-x-auto pb-6" style="scrollbar-width: thin; gap: {{ $gap }}px;">
+        <div class="flex snap-x snap-mandatory overflow-x-auto pb-6" style="scrollbar-width: thin; gap: {{ $gap }}px;" data-site-carousel-track tabindex="0" aria-label="Destinations">
             @forelse($destinations as $destination)
                 @php
                     $cover = $destination->media->first();
@@ -59,7 +67,7 @@
                     </div>
                 </a>
             @empty
-                <div class="site-card w-full border-dashed p-8 text-center" style="color: var(--site-muted);">{{ $isEditor ? 'Add published destinations to populate this carousel.' : 'New destinations are coming soon.' }}</div>
+                <div class="site-empty-state w-full" style="color: var(--site-muted);">{{ $isEditor ? 'Add published destinations to populate this carousel.' : 'New destinations are coming soon.' }}</div>
             @endforelse
         </div>
     </div>

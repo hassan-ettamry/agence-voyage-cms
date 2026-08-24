@@ -146,4 +146,58 @@ class SignatureComponentCatalogTest extends TestCase
             ->assertSee('/images/destination-fallback.jpg', false)
             ->assertSee('/images/offer-fallback.jpg', false);
     }
+
+    public function test_travel_sections_expose_editorial_controls_and_render_inside_tenant_aware_containers(): void
+    {
+        $this->seed(ComponentSeeder::class);
+        $agency = Agency::create([
+            'name' => 'Professional Atlas',
+            'slug' => 'professional-atlas',
+            'email' => 'hello@professional-atlas.test',
+            'status' => 'active',
+        ]);
+
+        Destination::withoutGlobalScopes()->create([
+            'agency_id' => $agency->id,
+            'name' => 'Atlas Mountains',
+            'slug' => 'atlas-mountains',
+            'country' => 'Morocco',
+            'description' => 'Mountain landscapes and village trails.',
+            'status' => Destination::STATUS_PUBLISHED,
+        ]);
+
+        $component = Component::query()->where('type', 'destination-grid')->firstOrFail();
+        $this->assertSame('EXPLORE THE WORLD', data_get($component->schema_json, 'tabs.content.fields.eyebrow.default'));
+        $this->assertSame('yes', data_get($component->schema_json, 'tabs.content.fields.showViewAll.default'));
+        $this->assertSame(['default', 'surface', 'dark'], data_get($component->schema_json, 'tabs.style.fields.sectionTone.options'));
+
+        Page::withoutGlobalScopes()->create([
+            'agency_id' => $agency->id,
+            'title' => 'Professional home',
+            'slug' => 'home',
+            'status' => Page::STATUS_PUBLISHED,
+            'structure' => [[
+                'id' => 'professional-destinations',
+                'type' => 'destination-grid',
+                'props' => [
+                    'eyebrow' => 'CURATED FOR YOU',
+                    'title' => 'Places with a story',
+                    'intro' => 'A focused collection of memorable places.',
+                    'sectionTone' => 'dark',
+                    'showViewAll' => 'yes',
+                    'viewAllLabel' => 'Explore every destination',
+                ],
+                'children' => [],
+            ]],
+        ]);
+
+        $this->get(route('public.site.home', $agency->slug))
+            ->assertOk()
+            ->assertSee('site-section--dark', false)
+            ->assertSee('site-container', false)
+            ->assertSee('CURATED FOR YOU')
+            ->assertSee('A focused collection of memorable places.')
+            ->assertSee('Explore every destination')
+            ->assertSee(route('public.site.destinations.index', $agency->slug), false);
+    }
 }
