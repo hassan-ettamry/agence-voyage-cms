@@ -23,7 +23,7 @@ class ThemeSeeder extends Seeder
                     'text' => '#17231f',
                     'muted' => '#69736e',
                     'border' => '#d9ded8',
-                    'bodyFont' => 'ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif',
+                    'bodyFont' => 'ui-sans-serif, system-ui, sans-serif',
                     'headingFont' => 'Georgia, "Times New Roman", serif',
                     'radius' => '6px',
                     'shadow' => 'soft',

@@ -96,7 +96,7 @@ class PublicTenancyTest extends TestCase
 
         $response = $this->get(route('public.site.home', $agency->slug));
         $response->assertOk();
-        $response->assertSee(route('public.site.pages.show', [$agency->slug, 'home']), false);
+        $response->assertSee(route('public.site.home', $agency->slug), false);
         $response->assertSee(route('public.site.offers.index', $agency->slug), false);
     }
 
@@ -128,7 +128,8 @@ class PublicTenancyTest extends TestCase
             ->assertSee('+212 500 000 000')
             ->assertSee('Marrakech, Morocco')
             ->assertSee(route('public.site.offers.index', $agency->slug), false)
-            ->assertSee(route('public.site.pages.show', [$agency->slug, 'privacy-policy']), false);
+            ->assertSee(route('public.site.pages.show', [$agency->slug, 'privacy-policy']), false)
+            ->assertSee(route('public.site.pages.show', [$agency->slug, 'terms-and-conditions']), false);
     }
 
     public function test_hero_component_renders_a_tenant_aware_call_to_action(): void

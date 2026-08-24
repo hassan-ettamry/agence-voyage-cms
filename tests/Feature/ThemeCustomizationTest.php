@@ -76,6 +76,7 @@ class ThemeCustomizationTest extends TestCase
         $this->assertSame('#c84c2f', $theme->variables['primary']);
         $this->assertSame('#102a2f', $theme->variables['secondary']);
         $this->assertSame('#f7f4ed', $theme->variables['background']);
+        $this->assertSame('ui-sans-serif, system-ui, sans-serif', $theme->variables['bodyFont']);
         $this->assertSame('6px', $theme->variables['radius']);
         $this->assertSame('soft', $theme->variables['shadow']);
         $this->assertSame('Georgia, "Times New Roman", serif', $theme->variables['headingFont']);

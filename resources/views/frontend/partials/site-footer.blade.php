@@ -7,7 +7,7 @@
         ->filter(fn ($url) => is_string($url) && preg_match('/^https?:\/\//i', $url) === 1);
     $legalLinks = $publicAgency ? [
         ['title' => 'Privacy policy', 'url' => $publicUrls->page($publicAgency, 'privacy-policy')],
-        ['title' => 'Terms & conditions', 'url' => $publicUrls->page($publicAgency, 'terms')],
+        ['title' => 'Terms & conditions', 'url' => $publicUrls->page($publicAgency, 'terms-and-conditions')],
     ] : [];
 @endphp
 

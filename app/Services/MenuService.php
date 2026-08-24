@@ -61,7 +61,9 @@ class MenuService
                 return [
                     'title' => $item->title,
                     'url' => $item->page
-                        ? $this->publicUrls->page($agency, $item->page)
+                        ? ($item->page->slug === 'home'
+                            ? $this->publicUrls->home($agency)
+                            : $this->publicUrls->page($agency, $item->page))
                         : $this->publicUrls->fromStoredUrl($agency, $item->url),
                 ];
             })->toArray();
