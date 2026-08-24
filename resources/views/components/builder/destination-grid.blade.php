@@ -9,6 +9,7 @@
         return !in_array($props[$key], ['no', 'false', false, 0, '0'], true);
     };
 
+    $catalogMode = $show('catalogMode', false);
     $limit = max(1, min((int) ($props['limit'] ?? 6), 12));
     $columns = max(1, min((int) ($props['columns'] ?? 3), 4));
     $gap = max(8, min((int) ($props['gap'] ?? 24), 64));
@@ -19,29 +20,38 @@
     $idealMonth = (int) ($props['idealMonth'] ?? 0);
     $manualIds = collect($props['manual_ids'] ?? [])->filter(fn ($id) => is_string($id))->values()->all();
 
-    $query = \App\Models\Destination::published()
-        ->with(['agency', 'media'])
-        ->inContinent($continent)
-        ->ofTravelType($travelType)
-        ->idealInMonth($idealMonth ?: null);
+    $catalog = null;
 
-    if ($source === 'featured') {
-        $query->featured();
+    if ($catalogMode) {
+        $agencyId = request()->attributes->get('publicAgency')?->id ?: \App\Support\AgencyContext::get();
+        $catalog = request()->attributes->get('destinationCatalog')
+            ?: app(\App\Services\PublicCatalogService::class)->destinations(request(), (string) $agencyId, $props);
+        $destinations = $catalog['items'];
+    } else {
+        $query = \App\Models\Destination::published()
+            ->with(['agency', 'media'])
+            ->inContinent($continent)
+            ->ofTravelType($travelType)
+            ->idealInMonth($idealMonth ?: null);
+
+        if ($source === 'featured') {
+            $query->featured();
+        }
+
+        if ($source === 'manual') {
+            $query->whereIn('id', $manualIds ?: ['']);
+        }
+
+        match ($sort) {
+            'oldest' => $query->oldest(),
+            'name' => $query->orderBy('name'),
+            default => $query->latest(),
+        };
+
+        $destinations = $source === 'manual'
+            ? $query->get()->sortBy(fn ($destination) => array_search($destination->id, $manualIds, true))->take($limit)->values()
+            : $query->limit($limit)->get();
     }
-
-    if ($source === 'manual') {
-        $query->whereIn('id', $manualIds ?: ['']);
-    }
-
-    match ($sort) {
-        'oldest' => $query->oldest(),
-        'name' => $query->orderBy('name'),
-        default => $query->latest(),
-    };
-
-    $destinations = $source === 'manual'
-        ? $query->get()->sortBy(fn ($destination) => array_search($destination->id, $manualIds, true))->take($limit)->values()
-        : $query->limit($limit)->get();
 
     $showImage = $show('showImage');
     $showTitle = $show('showTitle');
@@ -81,13 +91,17 @@
     <div class="site-container">
     @include('components.builder.partials.travel-section-heading', compact('props', 'type', 'isEditor'))
 
+    @if($catalogMode)
+        @include('components.builder.partials.catalog-toolbar', ['catalogType' => 'destinations', 'catalog' => $catalog, 'props' => $props, 'isEditor' => $isEditor])
+    @endif
+
     @if($destinations->isEmpty())
         <div class="site-empty-state text-sm" style="color: var(--site-muted);">
-            {{ $isEditor ? 'No published destinations match this source.' : 'New destinations are coming soon.' }}
+            {{ $isEditor ? 'No published destinations match this source.' : 'No destinations found. Try adjusting your filters.' }}
         </div>
     @endif
 
-    <div class="site-card-grid grid" style="--site-card-columns: {{ $columns }}; gap: {{ $gap }}px;">
+    <div class="{{ $catalogMode && $catalog['view'] === 'list' ? 'site-catalog-list' : 'site-card-grid' }}" style="--site-card-columns: {{ $columns }}; gap: {{ $gap }}px;">
         @foreach($destinations as $destination)
             @php
                 $cover = $destination->media->first();
@@ -96,13 +110,13 @@
             <a
                 href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->destination($destination->agency, $destination) }}"
                 @if($isEditor) onclick="return false" @endif
-                class="site-card group overflow-hidden no-underline"
+                class="site-card site-catalog-card {{ $showImage ? '' : 'site-catalog-card--no-media' }} group h-full overflow-hidden no-underline"
                 style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"
             >
                 @if($showImage)
-                    <div class="{{ $imageRatio }}" style="background-color: color-mix(in srgb, var(--site-primary, #2563eb) 12%, white);">
+                    <div class="site-catalog-card__media {{ $imageRatio }} overflow-hidden" style="background-color: color-mix(in srgb, var(--site-primary, #2563eb) 12%, white);">
                         @if($coverUrl)
-                            <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $destination->name }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                            <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $destination->name }}" loading="{{ $loop->index < $columns ? 'eager' : 'lazy' }}" @if($loop->first) fetchpriority="high" @endif decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                         @elseif($isEditor)
                             <div class="flex h-full items-center justify-center text-sm" style="color: var(--site-muted, #94a3b8);">
                                 Destination image
@@ -111,7 +125,7 @@
                     </div>
                 @endif
 
-                <div class="{{ $cardPadding }}">
+                <div class="{{ $cardPadding }} flex h-full flex-col">
                     @if($showLocation && $destination->country)
                         <div class="text-xs font-semibold uppercase" style="color: var(--site-primary, #6366f1);">
                             {{ collect([$destination->region, $destination->country])->filter()->join(', ') }}
@@ -139,7 +153,7 @@
                     @endif
 
                     @if($showCta)
-                        <span class="mt-5 inline-flex items-center gap-2 text-sm font-bold" style="color: var(--site-primary, #2563eb);">
+                        <span class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-bold" style="color: var(--site-primary, #2563eb);">
                             {{ $buttonText }} <span aria-hidden="true">&rarr;</span>
                         </span>
                     @endif
@@ -147,5 +161,8 @@
             </a>
         @endforeach
     </div>
+    @if($catalogMode && $destinations->hasPages())
+        <div class="mt-10">{{ $destinations->onEachSide(1)->links() }}</div>
+    @endif
     </div>
 </section>

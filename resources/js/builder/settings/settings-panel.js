@@ -273,6 +273,10 @@ window.BuilderSettingsPanel = {
 
         const actual = BuilderObjectPath.get(props, condition.key);
 
+        if (Array.isArray(condition.all)) {
+            return condition.all.every(candidate => this.shouldRenderField({ when: candidate }, node));
+        }
+
         if (
             Object.prototype.hasOwnProperty.call(
                 condition,

@@ -103,6 +103,14 @@ class PageController extends Controller
     ) {
         $agency = $this->publicAgency($request);
 
+        if ($pageSlug === 'destinations') {
+            return redirect()->to(app(PublicSiteUrl::class)->destinations($agency), 301);
+        }
+
+        if ($pageSlug === 'offers') {
+            return redirect()->to(app(PublicSiteUrl::class)->offers($agency), 301);
+        }
+
         $cacheKey = PublicContentCache::pageKey($agency->id, $pageSlug);
         $page = Cache::remember($cacheKey, now()->addHour(), fn () => Page::withoutGlobalScopes()
             ->forAgency($agency->id)
@@ -129,6 +137,14 @@ class PageController extends Controller
         abort_unless($pages->count() === 1, 404);
 
         $page = $pages->first();
+
+        if ($slug === 'destinations') {
+            return redirect()->to($urls->destinations($page->agency), 301);
+        }
+
+        if ($slug === 'offers') {
+            return redirect()->to($urls->offers($page->agency), 301);
+        }
 
         return redirect()->to($urls->page($page->agency, $page), 301);
     }

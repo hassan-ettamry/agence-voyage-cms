@@ -223,19 +223,22 @@ function dataSourceFields(sourceDefault = 'latest', entity = 'offers') {
     const sortOptions = BuilderControlOptions.sort.filter(({ value }) => (
         !isDestination || !['price_low', 'price_high'].includes(value)
     ));
+    const nonCatalog = { key: 'catalogMode', isNot: 'yes' };
 
     return {
         source: {
             type: 'select',
             label: 'Source',
             default: sourceDefault,
-            options: sourceOptions
+            options: sourceOptions,
+            when: nonCatalog
         },
         ...(!isDestination ? { destination_id: {
             type: 'entity-select',
             entity: 'destinations',
             label: 'Destination Filter',
-            default: ''
+            default: '',
+            when: nonCatalog
         } } : {}),
         manual_ids: {
             type: 'entity-multiselect',
@@ -243,40 +246,81 @@ function dataSourceFields(sourceDefault = 'latest', entity = 'offers') {
             label: 'Manual Selection',
             default: [],
             help: 'Choose published items from this agency.',
-            when: { key: 'source', is: 'manual' }
+            when: { all: [nonCatalog, { key: 'source', is: 'manual' }] }
         },
         continent: {
             type: 'select',
             label: 'Continent',
             default: '',
-            options: ['', 'africa', 'asia', 'europe', 'north-america', 'south-america', 'oceania', 'antarctica']
+            options: ['', 'africa', 'asia', 'europe', 'north-america', 'south-america', 'oceania', 'antarctica'],
+            when: nonCatalog
         },
         travelType: {
             type: 'select',
             label: 'Travel Type',
             default: '',
-            options: ['', 'beach', 'mountain', 'cultural', 'adventure', 'city', 'desert', 'nature', 'wellness', 'family']
+            options: ['', 'beach', 'mountain', 'cultural', 'adventure', 'city', 'desert', 'nature', 'wellness', 'family'],
+            when: nonCatalog
         },
         idealMonth: {
             type: 'number',
             label: 'Ideal Month (1-12)',
             default: '',
             min: 1,
-            max: 12
+            max: 12,
+            when: nonCatalog
         },
         limit: {
             type: 'range',
             label: 'Limit',
             min: 1,
             max: 12,
-            default: 6
+            default: 6,
+            when: nonCatalog
         },
         sort: {
             type: 'select',
             label: 'Sort',
             default: 'latest',
-            options: sortOptions
+            options: sortOptions,
+            when: nonCatalog
         }
+    };
+}
+
+function catalogModeFields(entity) {
+    const isDestination = entity === 'destinations';
+    const catalogOnly = { key: 'catalogMode', is: 'yes' };
+    const filter = (label) => ({ type: 'toggle', label, default: 'yes', when: catalogOnly });
+
+    return {
+        catalogMode: {
+            type: 'toggle',
+            label: 'Catalog Page Mode',
+            default: 'no',
+            help: 'Adds visitor filters, sorting, Grid/List and pagination for a catalog page.'
+        },
+        defaultView: { type: 'select', label: 'Default View', default: 'grid', options: ['grid', 'list'], when: catalogOnly },
+        defaultSort: {
+            type: 'select',
+            label: 'Default Sort',
+            default: isDestination ? 'featured' : 'special',
+            options: isDestination
+                ? ['featured', 'latest', 'name_asc', 'name_desc']
+                : ['special', 'latest', 'price_asc', 'price_desc', 'duration_asc', 'duration_desc', 'name_asc'],
+            when: catalogOnly
+        },
+        itemsPerPage: { type: 'select', label: 'Items Per Page', default: '9', options: ['6', '9', '12'], when: catalogOnly },
+        showSearchFilter: filter('Search Filter'),
+        ...(isDestination ? { showCountryFilter: filter('Country Filter') } : {
+            showDestinationFilter: filter('Destination Filter'),
+            showPriceFilter: filter('Price Filter'),
+            showDurationFilter: filter('Duration Filter')
+        }),
+        showContinentFilter: filter('Continent Filter'),
+        showTravelTypeFilter: filter('Travel Style Filter'),
+        showMonthFilter: filter('Month Filter'),
+        ...(isDestination ? { showFeaturedFilter: filter('Featured Filter') } : { showSpecialFilter: filter('Special Filter') })
     };
 }
 
@@ -808,6 +852,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
+                presentation: { type: 'select', label: 'Presentation', default: 'embedded', options: ['embedded', 'standalone'] },
                 address: { type: 'text', label: 'Address', default: 'Marrakech, Morocco' },
                 embedUrl: { type: 'text', label: 'Custom Embed URL', default: '' },
                 markerLabel: { type: 'text', label: 'Marker Label', default: '' },
@@ -836,6 +881,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
+                presentation: { type: 'select', label: 'Presentation', default: 'standalone', options: ['standalone', 'embedded'] },
                 title: { type: 'text', label: 'Title', default: 'Contact us' },
                 subtitle: { type: 'textarea', label: 'Subtitle', default: 'Send us a message and we will reply soon.' },
                 nameLabel: { type: 'text', label: 'Name Label', default: 'Name' },
@@ -996,7 +1042,10 @@ const BuilderControlSchemaMap = {
         },
         data: {
             title: 'Data',
-            fields: dataSourceFields('latest', 'destinations')
+            fields: {
+                ...catalogModeFields('destinations'),
+                ...dataSourceFields('latest', 'destinations')
+            }
         },
         style: {
             title: 'Style',
@@ -1094,7 +1143,10 @@ const BuilderControlSchemaMap = {
         },
         data: {
             title: 'Data',
-            fields: dataSourceFields('latest', 'offers')
+            fields: {
+                ...catalogModeFields('offers'),
+                ...dataSourceFields('latest', 'offers')
+            }
         },
         style: {
             title: 'Style',

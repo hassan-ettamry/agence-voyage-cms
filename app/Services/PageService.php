@@ -40,7 +40,8 @@ class PageService
 
     public function __construct(
         PageStructureValidator $validator,
-        private MenuService $menuService
+        private MenuService $menuService,
+        private CatalogPageStructure $catalogPages
     )
     {
         $this->validator = $validator;
@@ -209,6 +210,7 @@ class PageService
         $structure = $this->canonicalizeStructure($page->structure);
 
         $this->validator->validate($structure);
+        $this->catalogPages->assertPublishable($page, $structure);
 
         $page->update([
             'structure' => $structure,

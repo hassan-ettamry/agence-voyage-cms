@@ -6,67 +6,42 @@ use App\Http\Controllers\Controller;
 use App\Models\Agency;
 use App\Models\Destination;
 use App\Models\Offer;
+use App\Models\Page;
+use App\Services\CatalogPageStructure;
 use App\Services\MenuService;
+use App\Services\PageService;
+use App\Services\PublicCatalogService;
 use App\Services\PublicContentCache;
 use App\Services\PublicSiteUrl;
-use App\Support\TravelCatalog;
+use App\Services\Renderer\PageRenderer;
+use App\Support\AgencyContext;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
 class PublicContentController extends Controller
 {
-    public function destinations(Request $request, MenuService $menuService)
+    public function destinations(
+        Request $request,
+        MenuService $menuService,
+        PublicCatalogService $catalogService,
+        CatalogPageStructure $catalogPages,
+        PageRenderer $renderer,
+        PageService $pageService
+    )
     {
         $agency = $this->publicAgency($request);
-        $filters = $request->validate([
-            'q' => ['nullable', 'string', 'max:100'],
-            'country' => ['nullable', 'string', 'max:100'],
-            'continent' => ['nullable', 'in:'.implode(',', array_keys(TravelCatalog::CONTINENTS))],
-            'type' => ['nullable', 'in:'.implode(',', array_keys(TravelCatalog::TRAVEL_TYPES))],
-            'month' => ['nullable', 'integer', 'between:1,12'],
-            'featured' => ['nullable', 'in:1'],
-        ]);
-        $query = Destination::withoutGlobalScopes()
-            ->forAgency($agency->id)
-            ->published()
-            ->with(['media']);
+        $page = $this->catalogPage($agency, 'destinations');
+        $node = $page ? $catalogPages->catalogNode($page->structure ?? [], 'destinations') : null;
+        $props = $node['props'] ?? $this->destinationCatalogDefaults();
+        $catalog = $catalogService->destinations($request, $agency->id, $props);
+        $request->attributes->set('destinationCatalog', $catalog);
 
-        $query->when($filters['q'] ?? null, function ($query, string $search) {
-            $query->where(function ($query) use ($search) {
-                $query->where('name', 'like', "%{$search}%")
-                    ->orWhere('country', 'like', "%{$search}%")
-                    ->orWhere('region', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('practical_information', 'like', "%{$search}%");
-            });
-        });
-        $query->when($filters['country'] ?? null, fn ($query, string $country) => $query->where('country', $country));
-        $query->inContinent($filters['continent'] ?? null)
-            ->ofTravelType($filters['type'] ?? null)
-            ->idealInMonth($filters['month'] ?? null);
-        $query->when($filters['featured'] ?? null, fn ($query) => $query->featured());
-
-        $destinations = $query
-            ->orderByDesc('is_featured')
-            ->latest()
-            ->paginate(12)
-            ->withQueryString();
-        $countries = Destination::withoutGlobalScopes()
-            ->forAgency($agency->id)
-            ->published()
-            ->whereNotNull('country')
-            ->where('country', '!=', '')
-            ->distinct()
-            ->orderBy('country')
-            ->pluck('country');
+        if ($page && $node) {
+            return $this->renderCatalogPage($page, $agency, $renderer, $pageService, $menuService);
+        }
 
         return view('frontend.destinations.index', [
-            'destinations' => $destinations,
-            'countries' => $countries,
-            'continents' => TravelCatalog::CONTINENTS,
-            'travelTypes' => TravelCatalog::TRAVEL_TYPES,
-            'months' => TravelCatalog::MONTHS,
-            'filters' => $filters,
+            'catalogProps' => $props,
             'siteAgency' => $agency,
             'menu' => $menuService->getMenu('main'),
             'metaTitle' => 'Destinations',
@@ -102,85 +77,94 @@ class PublicContentController extends Controller
         ]);
     }
 
-    public function offers(Request $request, MenuService $menuService)
+    public function offers(
+        Request $request,
+        MenuService $menuService,
+        PublicCatalogService $catalogService,
+        CatalogPageStructure $catalogPages,
+        PageRenderer $renderer,
+        PageService $pageService
+    )
     {
         $agency = $this->publicAgency($request);
-        $maxPriceRules = ['nullable', 'numeric', 'min:0'];
-        if ($request->filled('min_price')) {
-            $maxPriceRules[] = 'gte:min_price';
+        $page = $this->catalogPage($agency, 'offers');
+        $node = $page ? $catalogPages->catalogNode($page->structure ?? [], 'offers') : null;
+        $props = $node['props'] ?? $this->offerCatalogDefaults();
+        $catalog = $catalogService->offers($request, $agency->id, $props);
+        $request->attributes->set('offerCatalog', $catalog);
+
+        if ($page && $node) {
+            return $this->renderCatalogPage($page, $agency, $renderer, $pageService, $menuService);
         }
-        $filters = $request->validate([
-            'q' => ['nullable', 'string', 'max:100'],
-            'destination' => ['nullable', 'string', 'max:120'],
-            'min_price' => ['nullable', 'numeric', 'min:0'],
-            'max_price' => $maxPriceRules,
-            'duration' => ['nullable', 'integer', 'min:1', 'max:365'],
-            'continent' => ['nullable', 'in:'.implode(',', array_keys(TravelCatalog::CONTINENTS))],
-            'type' => ['nullable', 'in:'.implode(',', array_keys(TravelCatalog::TRAVEL_TYPES))],
-            'month' => ['nullable', 'integer', 'between:1,12'],
-            'special' => ['nullable', 'in:1'],
-        ]);
-        $query = Offer::withoutGlobalScopes()
-            ->forAgency($agency->id)
-            ->published()
-            ->with(['destination' => fn ($query) => $query
-                ->withoutGlobalScopes()
-                ->forAgency($agency->id)
-                ->published(), 'media']);
-
-        $query->when($filters['q'] ?? null, function ($query, string $search) {
-            $query->where(function ($query) use ($search) {
-                $query->where('title', 'like', "%{$search}%")
-                    ->orWhere('summary', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%")
-                    ->orWhere('practical_information', 'like', "%{$search}%");
-            });
-        });
-        $query->when($filters['destination'] ?? null, fn ($query, string $slug) => $query->whereHas(
-            'destination',
-            fn ($destination) => $destination->withoutGlobalScopes()
-                ->forAgency($agency->id)
-                ->published()
-                ->where('slug', $slug)
-        ));
-        $query->when($filters['min_price'] ?? null, fn ($query, $price) => $query->where('price', '>=', $price));
-        $query->when($filters['max_price'] ?? null, fn ($query, $price) => $query->where('price', '<=', $price));
-        $query->when($filters['duration'] ?? null, fn ($query, $days) => $query->where('duration_days', '<=', $days));
-        $query->when(
-            ($filters['continent'] ?? null) || ($filters['type'] ?? null) || ($filters['month'] ?? null),
-            fn ($query) => $query->whereHas('destination', fn ($destination) => $destination
-                ->withoutGlobalScopes()
-                ->forAgency($agency->id)
-                ->published()
-                ->inContinent($filters['continent'] ?? null)
-                ->ofTravelType($filters['type'] ?? null)
-                ->idealInMonth($filters['month'] ?? null))
-        );
-        $query->when($filters['special'] ?? null, fn ($query) => $query->special());
-
-        $offers = $query
-            ->orderByDesc('is_special')
-            ->latest()
-            ->paginate(12)
-            ->withQueryString();
-        $destinations = Destination::withoutGlobalScopes()
-            ->forAgency($agency->id)
-            ->published()
-            ->orderBy('name')
-            ->get(['id', 'name', 'slug']);
 
         return view('frontend.offers.index', [
-            'offers' => $offers,
-            'destinations' => $destinations,
-            'continents' => TravelCatalog::CONTINENTS,
-            'travelTypes' => TravelCatalog::TRAVEL_TYPES,
-            'months' => TravelCatalog::MONTHS,
-            'filters' => $filters,
+            'catalogProps' => $props,
             'siteAgency' => $agency,
             'menu' => $menuService->getMenu('main'),
             'metaTitle' => 'Offers',
             'metaDescription' => 'Discover our current travel offers.',
         ]);
+    }
+
+    private function catalogPage(Agency $agency, string $slug): ?Page
+    {
+        return Page::withoutGlobalScopes()
+            ->forAgency($agency->id)
+            ->published()
+            ->where('slug', $slug)
+            ->first();
+    }
+
+    private function renderCatalogPage(
+        Page $page,
+        Agency $agency,
+        PageRenderer $renderer,
+        PageService $pageService,
+        MenuService $menuService
+    ) {
+        AgencyContext::set($agency->id);
+        $page = $pageService->ensureCanonicalStructure($page);
+
+        return view('frontend.page', [
+            'page' => $page,
+            'html' => $renderer->render($page->structure ?? [], 'live'),
+            'menu' => $menuService->getMenu('main'),
+            'siteAgency' => $agency,
+            'metaTitle' => data_get($page->meta, 'title') ?: $page->title,
+            'metaDescription' => data_get($page->meta, 'description') ?: str($page->title)->append(' — ', $agency->name),
+        ]);
+    }
+
+    private function destinationCatalogDefaults(): array
+    {
+        return [
+            'catalogMode' => 'yes',
+            'eyebrow' => 'DESTINATION COLLECTION',
+            'title' => 'Choose your next chapter',
+            'intro' => 'Filter by place and travel style, then explore the destination in detail.',
+            'defaultView' => 'grid',
+            'defaultSort' => 'featured',
+            'itemsPerPage' => '9',
+            'columns' => 3,
+            'imageRatio' => '4/3',
+            'showViewAll' => 'no',
+        ];
+    }
+
+    private function offerCatalogDefaults(): array
+    {
+        return [
+            'catalogMode' => 'yes',
+            'eyebrow' => 'CURATED JOURNEYS',
+            'title' => 'Find your perfect journey',
+            'intro' => 'Compare complete itinerary ideas and refine the collection around your plans.',
+            'defaultView' => 'grid',
+            'defaultSort' => 'special',
+            'itemsPerPage' => '9',
+            'columns' => 3,
+            'imageRatio' => '4/3',
+            'showViewAll' => 'no',
+        ];
     }
 
     public function offer(

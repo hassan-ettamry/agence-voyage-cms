@@ -151,13 +151,17 @@ window.BuilderStorage = {
                     Accept: 'application/json'
                 }
             });
-            if (!response.ok) throw new Error('The page could not be published.');
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                const message = Object.values(data.errors || {}).flat().join(' ') || data.message;
+                throw new Error(message || 'The page could not be published.');
+            }
             this.setStatus('Published', 'success');
             window.location.reload();
             return true;
         } catch (error) {
             console.error(error);
-            this.setStatus('Publish failed', 'error');
+            this.setStatus(error.message || 'Publish failed', 'error');
             return false;
         }
     }

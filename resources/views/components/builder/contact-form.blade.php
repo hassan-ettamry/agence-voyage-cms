@@ -1,5 +1,6 @@
 @php
     $configuredAction = trim((string) ($props['actionUrl'] ?? ''));
+    $embedded = ($props['presentation'] ?? 'standalone') === 'embedded';
 @endphp
 
 <div
@@ -9,13 +10,13 @@
         draggable="true"
         data-drag-action="reorder"
     @endif
-    class="{{ $isEditor ? 'builder-node' : '' }} p-4 transition-all duration-150"
+    class="{{ $isEditor ? 'builder-node' : '' }} {{ $embedded ? 'h-full' : 'p-4' }} transition-all duration-150"
     style="color: {{ $props['textColor'] ?? 'var(--site-text, #111827)' }};"
 >
     <form
         action="#"
         method="post"
-        class="site-card mx-auto max-w-2xl p-6 sm:p-8"
+        class="site-card {{ $embedded ? 'h-full p-7 sm:p-9' : 'mx-auto max-w-2xl p-6 sm:p-8' }}"
         style="
             background-color: var(--site-surface, #ffffff);
             border-color: var(--site-border, #e2e8f0);

@@ -371,9 +371,12 @@ class SiteTemplateSeeder extends Seeder
                     'eyebrow' => 'DESTINATION COLLECTION',
                     'title' => 'Choose your next chapter',
                     'intro' => 'Filter by place and travel style, then open any destination for practical details and related journeys.',
-                    'source' => 'latest',
-                    'limit' => 9,
+                    'catalogMode' => 'yes',
+                    'defaultView' => 'grid',
+                    'defaultSort' => 'featured',
+                    'itemsPerPage' => '9',
                     'columns' => 3,
+                    'gap' => 24,
                     'imageRatio' => '4/3',
                     'showViewAll' => 'no',
                 ]),
@@ -391,9 +394,12 @@ class SiteTemplateSeeder extends Seeder
                     'eyebrow' => 'CURATED JOURNEYS',
                     'title' => 'Journeys worth taking',
                     'intro' => 'Explore complete itinerary ideas, indicative pricing and experiences designed to be personalised.',
-                    'source' => 'latest',
-                    'limit' => 9,
+                    'catalogMode' => 'yes',
+                    'defaultView' => 'grid',
+                    'defaultSort' => 'special',
+                    'itemsPerPage' => '9',
                     'columns' => 3,
+                    'gap' => 24,
                     'imageRatio' => '4/3',
                     'showViewAll' => 'no',
                 ]),
@@ -437,23 +443,16 @@ class SiteTemplateSeeder extends Seeder
             ]),
             $this->page('Contact', 'contact', 'Plan your next journey with us', [
                 $this->signatureHero('LET US BEGIN', 'Where would you like to go?', 'Share the first idea. Our local travel designers will help shape everything that follows.'),
-                $this->node('contact-info', [
-                    'title' => 'Talk to a travel designer',
-                    'text' => 'Use the agency contact details below to start planning.',
-                    'email' => '',
-                    'phone' => '',
-                    'address' => '',
+                $this->signatureContactSection(),
+                $this->node('map', [
+                    'presentation' => 'standalone',
+                    'markerLabel' => 'Visit our travel studio',
+                    'address' => 'Marrakech, Morocco',
+                    'height' => 360,
+                    'zoom' => 12,
+                    'borderRadius' => 8,
+                    'showDirections' => 'yes',
                 ]),
-                $this->node('contact-form', [
-                    'title' => 'Tell us about your dream journey',
-                    'subtitle' => 'Share your first ideas and our travel designers will help shape the next step.',
-                    'nameLabel' => 'Your name',
-                    'emailLabel' => 'Email address',
-                    'messageLabel' => 'Where do you want to go?',
-                    'buttonText' => 'Start planning',
-                    'actionUrl' => '',
-                ]),
-                $this->node('map', ['address' => 'Marrakech, Morocco', 'height' => 440, 'zoom' => 12, 'borderRadius' => 18]),
                 $this->node('newsletter', [
                     'title' => 'Stories worth travelling for',
                     'text' => 'Occasional destination ideas and journeys from our travel designers.',
@@ -496,6 +495,47 @@ class SiteTemplateSeeder extends Seeder
     private function signatureCta(string $title = 'Your next story starts here', string $text = 'Tell us what you are dreaming of and we will shape the journey with you.', string $button = 'Plan my journey'): array
     {
         return $this->node('cta-banner', ['eyebrow' => 'START PLANNING', 'title' => $title, 'text' => $text, 'buttonText' => $button, 'url' => '/contact']);
+    }
+
+    private function signatureContactSection(): array
+    {
+        return $this->node('section', [
+            'backgroundColor' => '#f7f2e9',
+            'paddingTop' => 72,
+            'paddingBottom' => 72,
+        ], [
+            $this->layout([
+                $this->container('grid', [
+                    'display' => 'grid',
+                    'gridColumns' => 12,
+                    'gap' => 28,
+                    'customClass' => 'site-contact-grid',
+                ], [
+                    $this->container('content', ['gridSpan' => 5], [
+                        $this->node('contact-info', [
+                            'presentation' => 'embedded',
+                            'title' => 'Talk to a travel designer',
+                            'text' => 'Share what inspires you. We will listen, advise and shape the next step together.',
+                            'email' => '',
+                            'phone' => '',
+                            'address' => '',
+                        ]),
+                    ]),
+                    $this->container('content', ['gridSpan' => 7], [
+                        $this->node('contact-form', [
+                            'presentation' => 'embedded',
+                            'title' => 'Tell us about your dream journey',
+                            'subtitle' => 'Share your first ideas and our travel designers will help shape the next step.',
+                            'nameLabel' => 'Your name',
+                            'emailLabel' => 'Email address',
+                            'messageLabel' => 'Where do you want to go?',
+                            'buttonText' => 'Start planning',
+                            'actionUrl' => '',
+                        ]),
+                    ]),
+                ]),
+            ]),
+        ]);
     }
 
     private function legalSection(string $html): array

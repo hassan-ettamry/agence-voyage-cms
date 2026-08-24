@@ -9,6 +9,7 @@
         return !in_array($props[$key], ['no', 'false', false, 0, '0'], true);
     };
 
+    $catalogMode = $show('catalogMode', false);
     $limit = max(1, min((int) ($props['limit'] ?? 6), 12));
     $columns = max(1, min((int) ($props['columns'] ?? 3), 4));
     $gap = max(8, min((int) ($props['gap'] ?? 24), 64));
@@ -20,39 +21,48 @@
     $idealMonth = (int) ($props['idealMonth'] ?? 0);
     $manualIds = collect($props['manual_ids'] ?? [])->filter(fn ($id) => is_string($id))->values()->all();
 
-    $query = \App\Models\Offer::published()->with(['agency', 'destination.media', 'media']);
+    $catalog = null;
 
-    if ($source === 'special') {
-        $query->special();
+    if ($catalogMode) {
+        $agencyId = request()->attributes->get('publicAgency')?->id ?: \App\Support\AgencyContext::get();
+        $catalog = request()->attributes->get('offerCatalog')
+            ?: app(\App\Services\PublicCatalogService::class)->offers(request(), (string) $agencyId, $props);
+        $offers = $catalog['items'];
+    } else {
+        $query = \App\Models\Offer::published()->with(['agency', 'destination.media', 'media']);
+
+        if ($source === 'special') {
+            $query->special();
+        }
+
+        if ($destinationId) {
+            $query->where('destination_id', $destinationId);
+        }
+
+        if ($source === 'manual') {
+            $query->whereIn('id', $manualIds ?: ['']);
+        }
+
+        if ($continent || $travelType || $idealMonth) {
+            $query->whereHas('destination', fn ($destination) => $destination
+                ->published()
+                ->inContinent($continent)
+                ->ofTravelType($travelType)
+                ->idealInMonth($idealMonth ?: null));
+        }
+
+        match ($sort) {
+            'oldest' => $query->oldest(),
+            'name' => $query->orderBy('title'),
+            'price_low' => $query->orderBy('price'),
+            'price_high' => $query->orderByDesc('price'),
+            default => $query->latest(),
+        };
+
+        $offers = $source === 'manual'
+            ? $query->get()->sortBy(fn ($offer) => array_search($offer->id, $manualIds, true))->take($limit)->values()
+            : $query->limit($limit)->get();
     }
-
-    if ($destinationId) {
-        $query->where('destination_id', $destinationId);
-    }
-
-    if ($source === 'manual') {
-        $query->whereIn('id', $manualIds ?: ['']);
-    }
-
-    if ($continent || $travelType || $idealMonth) {
-        $query->whereHas('destination', fn ($destination) => $destination
-            ->published()
-            ->inContinent($continent)
-            ->ofTravelType($travelType)
-            ->idealInMonth($idealMonth ?: null));
-    }
-
-    match ($sort) {
-        'oldest' => $query->oldest(),
-        'name' => $query->orderBy('title'),
-        'price_low' => $query->orderBy('price'),
-        'price_high' => $query->orderByDesc('price'),
-        default => $query->latest(),
-    };
-
-    $offers = $source === 'manual'
-        ? $query->get()->sortBy(fn ($offer) => array_search($offer->id, $manualIds, true))->take($limit)->values()
-        : $query->limit($limit)->get();
 
     $showImage = $show('showImage');
     $showTitle = $show('showTitle');
@@ -93,13 +103,17 @@
     <div class="site-container">
     @include('components.builder.partials.travel-section-heading', compact('props', 'type', 'isEditor'))
 
+    @if($catalogMode)
+        @include('components.builder.partials.catalog-toolbar', ['catalogType' => 'offers', 'catalog' => $catalog, 'props' => $props, 'isEditor' => $isEditor])
+    @endif
+
     @if($offers->isEmpty())
         <div class="site-empty-state text-sm" style="color: var(--site-muted);">
-            {{ $isEditor ? 'No published offers match this source.' : 'New travel offers are coming soon.' }}
+            {{ $isEditor ? 'No published offers match this source.' : 'No journeys match these filters. Try adjusting your search.' }}
         </div>
     @endif
 
-    <div class="site-card-grid grid" style="--site-card-columns: {{ $columns }}; gap: {{ $gap }}px;">
+    <div class="{{ $catalogMode && $catalog['view'] === 'list' ? 'site-catalog-list' : 'site-card-grid' }}" style="--site-card-columns: {{ $columns }}; gap: {{ $gap }}px;">
         @foreach($offers as $offer)
             @php
                 $cover = $offer->media ?: $offer->destination?->media?->first();
@@ -109,13 +123,13 @@
             <a
                 href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->offer($offer->agency, $offer) }}"
                 @if($isEditor) onclick="return false" @endif
-                class="site-card group overflow-hidden no-underline"
+                class="site-card site-catalog-card {{ $showImage ? '' : 'site-catalog-card--no-media' }} group h-full overflow-hidden no-underline"
                 style="background-color: var(--site-surface, #ffffff); border-color: {{ $cardVariant === 'deal' ? 'var(--site-accent, #e9bd62)' : 'var(--site-border, #f3f4f6)' }}; border-radius: var(--site-radius, 14px); box-shadow: {{ $cardVariant === 'deal' ? '0 16px 40px rgba(15, 23, 42, .12)' : 'var(--site-shadow, none)' }};"
             >
                 @if($showImage)
-                    <div class="{{ $imageRatio }}" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
+                    <div class="site-catalog-card__media {{ $imageRatio }} overflow-hidden" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
                         @if($coverUrl)
-                            <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $offer->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                            <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $offer->title }}" loading="{{ $loop->index < $columns ? 'eager' : 'lazy' }}" @if($loop->first) fetchpriority="high" @endif decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                         @elseif($isEditor)
                             <div class="flex h-full items-center justify-center text-sm" style="color: var(--site-muted, #94a3b8);">
                                 Offer image
@@ -124,7 +138,7 @@
                     </div>
                 @endif
 
-                <div class="{{ $cardPadding }}">
+                <div class="{{ $cardPadding }} flex h-full flex-col">
                     <div class="flex items-start justify-between gap-3">
                         @if($showTitle)
                             <h3 class="site-heading text-xl font-semibold" style="color: var(--site-text, #111827);">
@@ -167,7 +181,7 @@
                     @endif
 
                     @if($showCta)
-                        <span class="mt-5 inline-flex items-center gap-2 text-sm font-bold" style="color: var(--site-primary, #2563eb);">
+                        <span class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-bold" style="color: var(--site-primary, #2563eb);">
                             {{ $buttonText }} <span aria-hidden="true">&rarr;</span>
                         </span>
                     @endif
@@ -175,5 +189,8 @@
             </a>
         @endforeach
     </div>
+    @if($catalogMode && $offers->hasPages())
+        <div class="mt-10">{{ $offers->onEachSide(1)->links() }}</div>
+    @endif
     </div>
 </section>

@@ -404,8 +404,11 @@ class ComponentSeeder extends Seeder
                 'icon' => 'map',
                 'schema_json' => [
                     'props' => [
+                        'presentation' => ['type' => 'text'],
                         'address' => ['type' => 'text'],
                         'embedUrl' => ['type' => 'text'],
+                        'markerLabel' => ['type' => 'text'],
+                        'showDirections' => ['type' => 'text'],
                         'height' => ['type' => 'number'],
                         'zoom' => ['type' => 'number'],
                         'borderRadius' => ['type' => 'number'],
@@ -414,8 +417,11 @@ class ComponentSeeder extends Seeder
                         'content' => [
                             'title' => 'Content',
                             'fields' => [
+                                'presentation' => ['type' => 'select', 'label' => 'Presentation', 'default' => 'embedded', 'options' => ['embedded', 'standalone']],
                                 'address' => ['type' => 'text', 'label' => 'Address', 'default' => 'Marrakech, Morocco'],
                                 'embedUrl' => ['type' => 'text', 'label' => 'Custom Embed URL', 'default' => ''],
+                                'markerLabel' => ['type' => 'text', 'label' => 'Heading', 'default' => 'Find us'],
+                                'showDirections' => ['type' => 'toggle', 'label' => 'Show Open in Maps Link', 'default' => 'yes'],
                             ],
                         ],
                         'style' => [
@@ -436,6 +442,7 @@ class ComponentSeeder extends Seeder
                 'icon' => 'envelope',
                 'schema_json' => [
                     'props' => [
+                        'presentation' => ['type' => 'text'],
                         'title' => ['type' => 'text'],
                         'subtitle' => ['type' => 'text'],
                         'nameLabel' => ['type' => 'text'],
@@ -450,6 +457,7 @@ class ComponentSeeder extends Seeder
                         'content' => [
                             'title' => 'Content',
                             'fields' => [
+                                'presentation' => ['type' => 'select', 'label' => 'Presentation', 'default' => 'standalone', 'options' => ['standalone', 'embedded']],
                                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Contact us'],
                                 'subtitle' => ['type' => 'textarea', 'label' => 'Subtitle', 'default' => 'Send us a message and we will reply soon.'],
                                 'nameLabel' => ['type' => 'text', 'label' => 'Name Label', 'default' => 'Name'],
@@ -686,6 +694,7 @@ class ComponentSeeder extends Seeder
                 'items' => ['type' => 'textarea', 'label' => 'Tabs', 'default' => "Overview|A concise introduction to the experience.\nBest time to visit|Choose the season that matches your travel style.\nGood to know|Practical details prepared by our local team."],
             ]),
             $this->signatureComponent('contact-info', 'Contact Information', 'forms', 'phone', [
+                'presentation' => ['type' => 'select', 'label' => 'Presentation', 'default' => 'standalone', 'options' => ['standalone', 'embedded']],
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Talk to a travel designer'],
                 'text' => ['type' => 'textarea', 'label' => 'Text', 'default' => 'We would love to hear where you are dreaming of going.'],
                 'email' => ['type' => 'text', 'label' => 'Email Override', 'default' => ''],
@@ -795,19 +804,38 @@ class ComponentSeeder extends Seeder
         ];
 
         $destinationData = [
-            'source' => ['type' => 'select', 'label' => 'Source', 'default' => 'latest', 'options' => ['latest', 'featured', 'manual']],
-            'manual_ids' => ['type' => 'entity-multiselect', 'entity' => 'destinations', 'label' => 'Manual Selection', 'default' => [], 'when' => ['key' => 'source', 'is' => 'manual']],
-            'continent' => ['type' => 'select', 'label' => 'Continent', 'default' => '', 'options' => $continents],
-            'travelType' => ['type' => 'select', 'label' => 'Travel Type', 'default' => '', 'options' => $travelTypes],
-            'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month', 'min' => 1, 'max' => 12, 'default' => ''],
-            'limit' => ['type' => 'range', 'label' => 'Limit', 'min' => 1, 'max' => 12, 'default' => 6],
-            'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => $destinationSort],
+            'source' => ['type' => 'select', 'label' => 'Source', 'default' => 'latest', 'options' => ['latest', 'featured', 'manual'], 'when' => ['key' => 'catalogMode', 'isNot' => 'yes']],
+            'manual_ids' => ['type' => 'entity-multiselect', 'entity' => 'destinations', 'label' => 'Manual Selection', 'default' => [], 'when' => ['all' => [['key' => 'catalogMode', 'isNot' => 'yes'], ['key' => 'source', 'is' => 'manual']]]],
+            'continent' => ['type' => 'select', 'label' => 'Continent', 'default' => '', 'options' => $continents, 'when' => ['key' => 'catalogMode', 'isNot' => 'yes']],
+            'travelType' => ['type' => 'select', 'label' => 'Travel Type', 'default' => '', 'options' => $travelTypes, 'when' => ['key' => 'catalogMode', 'isNot' => 'yes']],
+            'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month', 'min' => 1, 'max' => 12, 'default' => '', 'when' => ['key' => 'catalogMode', 'isNot' => 'yes']],
+            'limit' => ['type' => 'range', 'label' => 'Limit', 'min' => 1, 'max' => 12, 'default' => 6, 'when' => ['key' => 'catalogMode', 'isNot' => 'yes']],
+            'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => $destinationSort, 'when' => ['key' => 'catalogMode', 'isNot' => 'yes']],
         ];
         $offerData = $destinationData;
         $offerData['source']['options'] = ['latest', 'special', 'manual'];
         $offerData['manual_ids']['entity'] = 'offers';
-        $offerData['destination_id'] = ['type' => 'entity-select', 'entity' => 'destinations', 'label' => 'Destination Filter', 'default' => ''];
+        $offerData['destination_id'] = ['type' => 'entity-select', 'entity' => 'destinations', 'label' => 'Destination Filter', 'default' => '', 'when' => ['key' => 'catalogMode', 'isNot' => 'yes']];
         $offerData['sort']['options'] = $offerSort;
+        $filter = static fn (string $label) => ['type' => 'toggle', 'label' => $label, 'default' => 'yes', 'when' => ['key' => 'catalogMode', 'is' => 'yes']];
+        $catalogMode = static fn (string $entity) => [
+            'catalogMode' => ['type' => 'toggle', 'label' => 'Catalog Page Mode', 'default' => 'no', 'help' => 'Adds visitor filters, sorting, Grid/List and pagination for a catalog page.'],
+            'defaultView' => ['type' => 'select', 'label' => 'Default View', 'default' => 'grid', 'options' => ['grid', 'list'], 'when' => ['key' => 'catalogMode', 'is' => 'yes']],
+            'defaultSort' => ['type' => 'select', 'label' => 'Default Sort', 'default' => $entity === 'destinations' ? 'featured' : 'special', 'options' => $entity === 'destinations' ? ['featured', 'latest', 'name_asc', 'name_desc'] : ['special', 'latest', 'price_asc', 'price_desc', 'duration_asc', 'duration_desc', 'name_asc'], 'when' => ['key' => 'catalogMode', 'is' => 'yes']],
+            'itemsPerPage' => ['type' => 'select', 'label' => 'Items Per Page', 'default' => '9', 'options' => ['6', '9', '12'], 'when' => ['key' => 'catalogMode', 'is' => 'yes']],
+            'showSearchFilter' => $filter('Search Filter'),
+            ...($entity === 'destinations' ? [
+                'showCountryFilter' => $filter('Country Filter'),
+            ] : [
+                'showDestinationFilter' => $filter('Destination Filter'),
+                'showPriceFilter' => $filter('Price Filter'),
+                'showDurationFilter' => $filter('Duration Filter'),
+            ]),
+            'showContinentFilter' => $filter('Continent Filter'),
+            'showTravelTypeFilter' => $filter('Travel Style Filter'),
+            'showMonthFilter' => $filter('Month Filter'),
+            ...($entity === 'destinations' ? ['showFeaturedFilter' => $filter('Featured Filter')] : ['showSpecialFilter' => $filter('Special Filter')]),
+        ];
         $fixedDestinationData = array_diff_key($destinationData, array_flip(['source', 'manual_ids']));
         $fixedOfferData = array_diff_key($offerData, array_flip(['source', 'manual_ids']));
         $sectionContent = static fn (string $eyebrow, string $title, string $intro, string $viewAllLabel) => [
@@ -847,7 +875,7 @@ class ComponentSeeder extends Seeder
                 'View all destinations'
             ) + [
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
-            ], $destinationData, $destinationCardFields + $sectionStyle + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'featured']]]),
+            ], $catalogMode('destinations') + $destinationData, $destinationCardFields + $sectionStyle + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'featured']]]),
             $make('featured-destinations', 'Featured Destinations', 'star', $sectionContent(
                 'FEATURED DESTINATIONS',
                 'Places that stay with you',
@@ -863,7 +891,7 @@ class ComponentSeeder extends Seeder
                 'View all journeys'
             ) + [
                 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
-            ], $offerData, $offerCardFields + $sectionStyle + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'deal']]]),
+            ], $catalogMode('offers') + $offerData, $offerCardFields + $sectionStyle + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'deal']]]),
             $make('special-offers', 'Special Offers', 'sparkles', $sectionContent(
                 'LIMITED-TIME INSPIRATION',
                 'Journeys worth taking now',

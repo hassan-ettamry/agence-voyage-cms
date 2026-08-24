@@ -52,11 +52,16 @@ class SignatureTravelTemplateTest extends TestCase
         $this->assertSame(['home', 'destinations', 'offers', 'about', 'contact', 'faq', 'privacy-policy', 'terms-and-conditions'], $pages->keys()->all());
         $this->assertSame('/destinations', $pages['destinations']['menu_url']);
         $this->assertSame('/offers', $pages['offers']['menu_url']);
-        $this->assertSame(['hero', 'contact-info', 'contact-form', 'map', 'newsletter'], collect($pages['contact']['structure'])->pluck('type')->all());
-        $this->assertSame(
-            'Share your first ideas and our travel designers will help shape the next step.',
-            $pages['contact']['structure'][2]['props']['subtitle'],
-        );
+        $this->assertSame(['hero', 'section', 'map', 'newsletter'], collect($pages['contact']['structure'])->pluck('type')->all());
+        $this->assertSame('standalone', $pages['contact']['structure'][2]['props']['presentation']);
+        $this->assertSame(360, $pages['contact']['structure'][2]['props']['height']);
+        $contactTypes = collect($this->flattenTypes($pages['contact']['structure']));
+        $this->assertTrue($contactTypes->contains('contact-info'));
+        $this->assertTrue($contactTypes->contains('contact-form'));
+        $this->assertSame('yes', $pages['destinations']['structure'][1]['props']['catalogMode']);
+        $this->assertSame('featured', $pages['destinations']['structure'][1]['props']['defaultSort']);
+        $this->assertSame('yes', $pages['offers']['structure'][1]['props']['catalogMode']);
+        $this->assertSame('special', $pages['offers']['structure'][1]['props']['defaultSort']);
         $this->assertSame(['hero', 'accordion', 'cta-banner'], collect($pages['faq']['structure'])->pluck('type')->all());
         $this->assertFalse($pages['privacy-policy']['include_in_menu']);
         $this->assertFalse($pages['terms-and-conditions']['include_in_menu']);
@@ -81,7 +86,19 @@ class SignatureTravelTemplateTest extends TestCase
         $this->assertDatabaseHas('menu_items', ['menu_id' => $menu->id, 'title' => 'Destinations', 'page_id' => null, 'url' => '/destinations']);
         $this->assertDatabaseHas('menu_items', ['menu_id' => $menu->id, 'title' => 'Offers', 'page_id' => null, 'url' => '/offers']);
         $this->assertSame(Page::STATUS_DRAFT, $pages['contact']->status);
-        $this->assertSame('contact-info', $pages['contact']->structure[1]['type']);
+        $this->assertSame('section', $pages['contact']->structure[1]['type']);
         $this->assertSame($template->theme_id, $agency->fresh()->theme_id);
+    }
+
+    private function flattenTypes(array $nodes): array
+    {
+        $types = [];
+
+        foreach ($nodes as $node) {
+            $types[] = $node['type'] ?? null;
+            $types = [...$types, ...$this->flattenTypes($node['children'] ?? [])];
+        }
+
+        return array_values(array_filter($types));
     }
 }
