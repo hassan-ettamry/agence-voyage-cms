@@ -5,11 +5,11 @@
  */
 
 .site-shell {
-    --site-content-width: 80rem;
-    --site-gutter: clamp(1.25rem, 4vw, 3rem);
-    --site-section-space: clamp(4rem, 8vw, 7.5rem);
+    --site-content-width: 82rem;
+    --site-gutter: clamp(1.25rem, 4vw, 3.5rem);
+    --site-section-space: clamp(4.75rem, 8vw, 7.5rem);
     --site-card-padding: clamp(1.25rem, 2.5vw, 2rem);
-    --site-heading-tight: 0.98;
+    --site-heading-tight: 0.96;
     --site-body-leading: 1.7;
     --site-transition: 180ms ease;
     min-height: 100vh;
@@ -40,6 +40,69 @@
     padding-block: var(--site-section-space);
 }
 
+.site-section--surface {
+    background: var(--site-surface, #ffffff);
+}
+
+.site-section--soft {
+    background: color-mix(in srgb, var(--site-primary, #c84c2f) 5%, var(--site-background, #f7f4ed));
+}
+
+.site-section--dark {
+    background: var(--site-secondary, #102a2f);
+    color: #ffffff;
+}
+
+.site-section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: clamp(2rem, 4vw, 3.25rem);
+}
+
+.site-section-heading__copy {
+    max-width: 50rem;
+}
+
+.site-section-heading__title {
+    margin-top: 0.75rem;
+    max-width: 18ch;
+    font-size: clamp(2.35rem, 5vw, 4.75rem);
+    font-weight: 700;
+}
+
+.site-section-heading__intro {
+    margin-top: 1rem;
+    max-width: 42rem;
+    color: var(--site-muted, #69736e);
+    font-size: clamp(1rem, 1.4vw, 1.15rem);
+    line-height: 1.75;
+}
+
+.site-section--dark .site-section-heading__intro {
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.site-section-link {
+    display: inline-flex;
+    flex: none;
+    align-items: center;
+    gap: 0.55rem;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.2rem;
+    color: var(--site-primary, #c84c2f);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    text-transform: uppercase;
+}
+
+.site-section--dark .site-section-link {
+    color: var(--site-accent, #d8ad54);
+}
+
 .site-eyebrow {
     color: var(--site-primary, #e65f3c);
     font-size: 0.75rem;
@@ -56,7 +119,7 @@
 }
 
 .site-heading {
-    letter-spacing: -0.025em;
+    letter-spacing: -0.035em;
     text-wrap: balance;
 }
 
@@ -146,15 +209,16 @@
 .site-card {
     overflow: hidden;
     border: 1px solid var(--site-border, #dfe5df);
-    border-radius: var(--site-radius, 10px);
+    border-radius: var(--site-radius, 6px);
     background: var(--site-surface, #ffffff);
-    box-shadow: var(--site-shadow, 0 16px 40px rgba(15, 23, 42, 0.14));
+    box-shadow: var(--site-shadow, 0 12px 34px rgba(16, 42, 47, 0.08));
     transition: transform var(--site-transition), box-shadow var(--site-transition), border-color var(--site-transition);
 }
 
 .site-card:hover {
     border-color: color-mix(in srgb, var(--site-primary, #e65f3c) 35%, var(--site-border, #dfe5df));
-    transform: translateY(-3px);
+    box-shadow: 0 18px 46px rgba(16, 42, 47, 0.13);
+    transform: translateY(-2px);
 }
 
 .site-button {
@@ -164,8 +228,8 @@
     justify-content: center;
     gap: 0.6rem;
     border: 1px solid transparent;
-    border-radius: var(--site-radius, 10px);
-    padding: 0.75rem 1.35rem;
+    border-radius: var(--site-radius, 6px);
+    padding: 0.8rem 1.4rem;
     background: var(--site-primary, #e65f3c);
     color: #ffffff;
     font-size: 0.875rem;
@@ -184,6 +248,46 @@
     border-color: var(--site-border, #dfe5df);
     background: var(--site-surface, #ffffff);
     color: var(--site-secondary, #12372f);
+}
+
+.site-wordmark {
+    color: var(--site-secondary, #102a2f);
+    font-family: var(--site-heading-font, Georgia, serif);
+    font-size: 1.15rem;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+}
+
+.site-wordmark small {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--site-muted, #69736e);
+    font-family: var(--site-body-font, ui-sans-serif, system-ui, sans-serif);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.site-empty-state {
+    border: 1px dashed color-mix(in srgb, var(--site-border, #d9ded8) 78%, var(--site-primary, #c84c2f));
+    border-radius: var(--site-radius, 6px);
+    padding: clamp(2rem, 5vw, 4rem);
+    background: color-mix(in srgb, var(--site-surface, #ffffff) 82%, transparent);
+    text-align: center;
+}
+
+@media (max-width: 767px) {
+    .site-section-heading {
+        align-items: start;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+
+    .site-section-heading__title {
+        font-size: clamp(2.15rem, 11vw, 3.25rem);
+    }
 }
 
 .site-shell :is(a, button, input, select, textarea):focus-visible {

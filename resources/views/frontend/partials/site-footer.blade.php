@@ -2,7 +2,7 @@
     $publicAgency = $siteAgency ?? (isset($page) ? $page->agency : null);
     $publicUrls = app(\App\Services\PublicSiteUrl::class);
     $agencySettings = is_array($publicAgency?->settings) ? $publicAgency->settings : [];
-    $tagline = data_get($agencySettings, 'public_site.tagline', 'Thoughtful journeys, designed around you.');
+    $tagline = data_get($agencySettings, 'public_site.tagline', 'Tailor-made journeys, thoughtfully designed.');
     $socialLinks = collect(data_get($agencySettings, 'social_links', []))
         ->filter(fn ($url) => is_string($url) && preg_match('/^https?:\/\//i', $url) === 1);
     $legalLinks = $publicAgency ? [
@@ -12,9 +12,9 @@
 @endphp
 
 <footer class="mt-auto border-t text-sm" style="border-color: var(--site-border); background: var(--site-secondary); color: color-mix(in srgb, white 76%, transparent);">
-    <div class="site-container grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-[1.2fr_.8fr_.8fr_1fr]">
+    <div class="site-container grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-[1.25fr_.75fr_.75fr_1fr]">
         <div class="max-w-sm">
-            <a href="{{ $publicAgency ? $publicUrls->home($publicAgency) : url('/') }}" class="text-xl font-bold text-white no-underline" style="font-family: var(--site-heading-font);">
+            <a href="{{ $publicAgency ? $publicUrls->home($publicAgency) : url('/') }}" class="text-2xl font-bold text-white no-underline" style="font-family: var(--site-heading-font); letter-spacing: -.025em;">
                 {{ $publicAgency?->name ?? 'Signature Travel' }}
             </a>
             <p class="mt-4 leading-7">{{ $tagline }}</p>

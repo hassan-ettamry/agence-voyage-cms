@@ -5,6 +5,7 @@
     $agencySettings = is_array($publicAgency?->settings) ? $publicAgency->settings : [];
     $ctaLabel = data_get($agencySettings, 'public_site.cta_label', 'Plan your journey');
     $ctaPath = data_get($agencySettings, 'public_site.cta_url', '/offers');
+    $tagline = data_get($agencySettings, 'public_site.tagline', 'Tailor-made journeys, thoughtfully designed.');
     $ctaUrl = $publicAgency ? $publicUrls->fromStoredUrl($publicAgency, $ctaPath) : '#';
     $logoPath = $publicAgency?->logo;
     $logoUrl = null;
@@ -16,27 +17,23 @@
     }
 @endphp
 
-<header class="sticky top-0 z-50 border-b backdrop-blur-xl" data-site-navigation style="border-color: color-mix(in srgb, var(--site-border) 78%, transparent); background: color-mix(in srgb, var(--site-surface) 94%, transparent);">
-    <div class="site-container flex min-h-[76px] items-center justify-between gap-6">
+<header class="sticky top-0 z-50 border-b backdrop-blur-xl" data-site-navigation style="border-color: color-mix(in srgb, var(--site-border) 78%, transparent); background: color-mix(in srgb, var(--site-surface) 96%, transparent);">
+    <div class="site-container flex min-h-[82px] items-center justify-between gap-6">
         <a href="{{ $homeUrl }}" class="group inline-flex min-w-0 items-center gap-3 no-underline" aria-label="{{ $publicAgency?->name ?? 'Travel agency' }} home">
             @if($logoUrl)
                 <img src="{{ $logoUrl }}" alt="{{ $publicAgency?->name }}" class="h-11 w-auto max-w-[180px] object-contain">
             @else
-                <span class="grid h-11 w-11 shrink-0 place-items-center rounded-full text-white" style="background: var(--site-secondary);" aria-hidden="true">
-                    <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <path d="M3 17.5 9.5 11l4 4L21 7.5"/>
-                        <path d="M14 7.5h7v7"/>
-                    </svg>
-                </span>
-                <span class="truncate text-lg font-bold tracking-tight" style="color: var(--site-secondary); font-family: var(--site-heading-font);">
+                <span class="site-wordmark truncate">
                     {{ $publicAgency?->name ?? 'Signature Travel' }}
+                    <small class="hidden sm:block">{{ $tagline }}</small>
                 </span>
             @endif
         </a>
 
         <nav class="hidden items-center gap-7 lg:flex" aria-label="Primary navigation">
             @foreach($menu ?? [] as $item)
-                <a href="{{ $item['url'] }}" class="text-sm font-bold no-underline transition hover:opacity-65" style="color: var(--site-text);">
+                @php($isCurrent = rtrim(request()->url(), '/') === rtrim($item['url'], '/'))
+                <a href="{{ $item['url'] }}" @if($isCurrent) aria-current="page" @endif class="border-b-2 py-2 text-sm font-bold no-underline transition hover:opacity-65" style="color: var(--site-text); border-color: {{ $isCurrent ? 'var(--site-primary)' : 'transparent' }};">
                     {{ $item['title'] }}
                 </a>
             @endforeach
