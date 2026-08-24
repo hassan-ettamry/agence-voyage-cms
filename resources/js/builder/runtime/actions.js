@@ -92,6 +92,18 @@ window.BuilderRuntimeActions = {
 
         },
 
+        'save-section-block'(target) {
+            BuilderSavedBlocks.saveSection(target.dataset.targetNodeId);
+        },
+
+        'rename-saved-block'(target) {
+            BuilderSavedBlocks.rename(target.dataset.savedBlockId);
+        },
+
+        'delete-saved-block'(target) {
+            BuilderSavedBlocks.remove(target.dataset.savedBlockId);
+        },
+
         'set-viewport'(target) {
 
             BuilderViewport.set(
@@ -158,6 +170,54 @@ window.BuilderRuntimeActions = {
 
         },
 
+        'open-builder-media'(target) {
+            BuilderMediaPicker.open(target.dataset.targetNodeId, target.dataset.settingField);
+        },
+
+        'open-repeater-media'(target) {
+            BuilderMediaPicker.open(target.dataset.targetNodeId, target.dataset.settingField, {
+                index: Number(target.dataset.repeaterIndex),
+                field: target.dataset.repeaterField
+            });
+        },
+
+        'clear-builder-media'(target) {
+            BuilderMediaPicker.clear(target.dataset.targetNodeId, target.dataset.settingField);
+        },
+
+        'clear-repeater-media'(target) {
+            BuilderMediaPicker.clearRepeater(
+                target.dataset.targetNodeId,
+                target.dataset.settingField,
+                Number(target.dataset.repeaterIndex),
+                target.dataset.repeaterField
+            );
+        },
+
+        'choose-builder-media'(target) {
+            BuilderMediaPicker.choose(target.dataset.mediaUrl);
+        },
+
+        'close-builder-media'() {
+            BuilderMediaPicker.close();
+        },
+
+        'repeater-add'(target) {
+            BuilderRepeater.add(target.dataset.targetNodeId, target.dataset.settingField);
+        },
+
+        'repeater-remove'(target) {
+            BuilderRepeater.remove(target.dataset.targetNodeId, target.dataset.settingField, Number(target.dataset.repeaterIndex));
+        },
+
+        'repeater-up'(target) {
+            BuilderRepeater.move(target.dataset.targetNodeId, target.dataset.settingField, Number(target.dataset.repeaterIndex), -1);
+        },
+
+        'repeater-down'(target) {
+            BuilderRepeater.move(target.dataset.targetNodeId, target.dataset.settingField, Number(target.dataset.repeaterIndex), 1);
+        },
+
         'toggle-left-sidebar'() {
 
             BuilderSidebar.toggle();
@@ -186,6 +246,14 @@ window.BuilderRuntimeActions = {
 
             BuilderStorage.save();
 
+        },
+
+        'preview-page'() {
+            BuilderStorage.preview();
+        },
+
+        'publish-page'() {
+            BuilderStorage.publish();
         },
 
         'overlay-move-up'(target) {
@@ -340,6 +408,25 @@ window.BuilderRuntimeActions = {
 
     handleInput(event) {
 
+        const pageField = event.target.closest('[data-page-field]');
+        if (pageField) {
+            BuilderStorage.pageChanged(pageField.dataset.pageField, pageField.value);
+            return;
+        }
+
+        const repeaterTarget = event.target.closest('[data-repeater-field]');
+        if (repeaterTarget) {
+            BuilderRepeater.update(
+                repeaterTarget.dataset.targetNodeId,
+                repeaterTarget.dataset.settingField,
+                Number(repeaterTarget.dataset.repeaterIndex),
+                repeaterTarget.dataset.repeaterField,
+                repeaterTarget.value,
+                true
+            );
+            return;
+        }
+
         const templateTarget =
             event.target.closest(
                 '[data-template-search]'
@@ -369,7 +456,8 @@ window.BuilderRuntimeActions = {
             target.dataset.settingField,
             target.dataset.richtextEditor === 'true'
                 ? target.innerHTML
-                : target.value
+                : target.value,
+            { deferHistory: true }
         );
 
     },
@@ -383,10 +471,14 @@ window.BuilderRuntimeActions = {
 
         if (settingTarget) {
 
+            const value = settingTarget.multiple
+                ? Array.from(settingTarget.selectedOptions).map(option => option.value)
+                : settingTarget.value;
+
             BuilderSettingsUpdater.updateField(
                 settingTarget.dataset.targetNodeId,
                 settingTarget.dataset.settingField,
-                settingTarget.value
+                value
             );
 
             return;

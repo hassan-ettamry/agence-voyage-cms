@@ -2,6 +2,8 @@
     $props = is_array($props ?? null) ? $props : [];
     $position = ($props['imagePosition'] ?? 'left') === 'right' ? 'right' : 'left';
     $image = trim((string) ($props['image'] ?? ''));
+    $ratio = ['square' => 'aspect-square', '16/9' => 'aspect-video'][$props['imageRatio'] ?? '4/3'] ?? 'aspect-[4/3]';
+    $objectFit = ($props['objectFit'] ?? 'cover') === 'contain' ? 'object-contain' : 'object-cover';
     $href = trim((string) ($props['url'] ?? '#')) ?: '#';
     if (!$isEditor && \App\Support\AgencyContext::has()) {
         $agency = \App\Models\Agency::query()->find(\App\Support\AgencyContext::get());
@@ -12,9 +14,9 @@
 <section @if($isEditor) data-type="image-text" data-node-id="{{ $nodeId }}" draggable="true" data-drag-action="reorder" @endif class="site-section {{ $isEditor ? 'builder-node' : '' }}" style="background: {{ $props['backgroundColor'] ?? 'transparent' }};">
     <div class="site-container grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
         <div class="{{ $position === 'right' ? 'lg:order-2' : '' }}">
-            <div class="site-card aspect-[4/3] bg-black/5">
+            <div class="site-card {{ $ratio }} bg-black/5">
                 @if($image !== '')
-                    <img src="{{ $image }}" alt="{{ $props['imageAlt'] ?? '' }}" loading="lazy" decoding="async" class="h-full w-full object-cover">
+                    <img src="{{ $image }}" alt="{{ $props['imageAlt'] ?? '' }}" loading="lazy" decoding="async" class="h-full w-full {{ $objectFit }}">
                 @elseif($isEditor)
                     <div class="grid h-full place-items-center text-sm" style="color: var(--site-muted);">Choose an image</div>
                 @endif

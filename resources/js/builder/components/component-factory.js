@@ -11,12 +11,18 @@ window.BuilderComponentFactory = {
         const factory =
             BuilderComponentRegistry[type];
 
-        if (!factory) {
-            return null;
-        }
+        const schema = BuilderSchema.get(type);
 
-        const component =
-            factory();
+        if (!factory && !schema) return null;
+
+        const component = factory
+            ? factory()
+            : {
+                type,
+                accepts: BuilderStructureRules.acceptsForType(type),
+                props: BuilderSchemaDefaults.fromSchema(schema),
+                children: []
+            };
 
         if (window.BuilderStructureRules) {
 

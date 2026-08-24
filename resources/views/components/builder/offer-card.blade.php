@@ -18,10 +18,12 @@
             ->first();
     }
 
-    $offer ??= \App\Models\Offer::published()
-        ->with(['agency', 'destination.media', 'media'])
-        ->latest()
-        ->first();
+    if (empty($props['offer_id'])) {
+        $offer = \App\Models\Offer::published()
+            ->with(['agency', 'destination.media', 'media'])
+            ->latest()
+            ->first();
+    }
 
     $showImage = $show('showImage');
     $showTitle = $show('showTitle');

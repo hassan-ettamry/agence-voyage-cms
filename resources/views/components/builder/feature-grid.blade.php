@@ -1,9 +1,16 @@
 @php
     $columns = max(1, min(4, (int) ($props['columns'] ?? 3)));
-    $items = collect(preg_split('/\r\n|\r|\n/', (string) ($props['items'] ?? '')))->map(function ($line) {
-        [$icon, $title, $text] = array_pad(array_map('trim', explode('|', $line, 3)), 3, '');
-        return $title === '' ? null : compact('icon', 'title', 'text');
-    })->filter();
+    $rawItems = $props['items'] ?? [];
+    $items = is_array($rawItems)
+        ? collect($rawItems)->map(fn ($item) => is_array($item) && trim((string) ($item['title'] ?? '')) !== '' ? [
+            'icon' => trim((string) ($item['icon'] ?? '')),
+            'title' => trim((string) $item['title']),
+            'text' => trim((string) ($item['text'] ?? '')),
+        ] : null)->filter()
+        : collect(preg_split('/\r\n|\r|\n/', (string) $rawItems))->map(function ($line) {
+            [$icon, $title, $text] = array_pad(array_map('trim', explode('|', $line, 3)), 3, '');
+            return $title === '' ? null : compact('icon', 'title', 'text');
+        })->filter();
 @endphp
 
 <section @if($isEditor) data-type="feature-grid" data-node-id="{{ $nodeId }}" draggable="true" data-drag-action="reorder" @endif class="site-section {{ $isEditor ? 'builder-node' : '' }}">

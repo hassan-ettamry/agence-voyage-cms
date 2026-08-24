@@ -213,7 +213,7 @@ function mediaFields(sourceKey = 'src') {
     };
 }
 
-function dataSourceFields(sourceDefault = 'latest') {
+function dataSourceFields(sourceDefault = 'latest', entity = 'offers') {
     return {
         source: {
             type: 'select',
@@ -222,11 +222,19 @@ function dataSourceFields(sourceDefault = 'latest') {
             options: BuilderControlOptions.source
         },
         destination_id: {
-            type: 'text',
-            label: 'Destination ID',
+            type: 'entity-select',
+            entity: 'destinations',
+            label: 'Destination',
             default: '',
-            help: 'Used only when source is By destination.',
             when: { key: 'source', is: 'by_destination' }
+        },
+        manual_ids: {
+            type: 'entity-multiselect',
+            entity,
+            label: 'Manual Selection',
+            default: [],
+            help: 'Choose published items from this agency.',
+            when: { key: 'source', is: 'manual' }
         },
         continent: {
             type: 'select',
@@ -304,11 +312,6 @@ function advancedFields() {
         anchorId: {
             type: 'text',
             label: 'Anchor ID',
-            default: ''
-        },
-        customClass: {
-            type: 'text',
-            label: 'Custom Class',
             default: ''
         },
         ariaLabel: {
@@ -619,10 +622,15 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 images: {
-                    type: 'textarea',
+                    type: 'repeater',
                     label: 'Images',
-                    default: '',
-                    help: 'One image per line: URL|Alt text.'
+                    default: [],
+                    maxItems: 24,
+                    itemFields: [
+                        { key: 'url', label: 'Image URL', type: 'text' },
+                        { key: 'alt', label: 'Alt Text', type: 'text' }
+                    ],
+                    help: 'Add a safe media URL and meaningful alternative text.'
                 },
                 lightbox: { type: 'toggle', label: 'Lightbox', default: 'yes' },
                 showCaptions: { type: 'toggle', label: 'Show Captions', default: 'no' }
@@ -790,10 +798,14 @@ const BuilderControlSchemaMap = {
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Frequently asked questions' },
                 items: {
-                    type: 'textarea',
+                    type: 'repeater',
                     label: 'Questions',
-                    default: 'What is included?|Flights, hotels, transfers, and guided activities can be included depending on the offer.',
-                    help: 'One FAQ per line: Question|Answer.'
+                    default: [{ question: 'What is included?', answer: 'Flights, hotels, transfers, and guided activities can be included depending on the offer.' }],
+                    maxItems: 24,
+                    itemFields: [
+                        { key: 'question', label: 'Question', type: 'text' },
+                        { key: 'answer', label: 'Answer', type: 'text' }
+                    ]
                 },
                 allowMultiple: { type: 'toggle', label: 'Allow Multiple Open', default: 'yes' },
                 schemaEnabled: { type: 'toggle', label: 'FAQ Schema', default: 'no' }
@@ -876,6 +888,8 @@ const BuilderControlSchemaMap = {
                 },
                 backgroundColor: { type: 'color', label: 'Background', default: '#111827' },
                 backgroundImage: { type: 'media', label: 'Background Image', default: '', when: { key: 'backgroundMode', is: 'image' } },
+                backgroundPosition: { type: 'select', label: 'Image Position', default: 'center', options: ['center', 'top', 'bottom', 'left', 'right'], when: { key: 'backgroundMode', is: 'image' } },
+                overlayOpacity: { type: 'range', label: 'Overlay', min: 0, max: 90, default: 55 },
                 textColor: { type: 'color', label: 'Text Color', default: '#ffffff' }
             }
         },
@@ -888,6 +902,7 @@ const BuilderControlSchemaMap = {
                     default: 'left',
                     options: ['left', 'center', 'split']
                 },
+                minHeight: { type: 'range', label: 'Minimum Height', min: 360, max: 900, default: 520 },
                 ...spacingFields(64)
             }
         },
@@ -903,7 +918,7 @@ const BuilderControlSchemaMap = {
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Destinations' },
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' },
-                ...dataSourceFields('latest')
+                ...dataSourceFields('latest', 'destinations')
             }
         },
         style: {
@@ -959,7 +974,7 @@ const BuilderControlSchemaMap = {
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Offers' },
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
-                ...dataSourceFields('latest')
+                ...dataSourceFields('latest', 'offers')
             }
         },
         style: {
@@ -1017,7 +1032,7 @@ const BuilderControlSchemaMap = {
         content: {
             title: 'Content',
             fields: {
-                offer_id: { type: 'text', label: 'Offer ID', default: '' },
+                offer_id: { type: 'entity-select', entity: 'offers', label: 'Offer', default: '' },
                 fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
                 title: { type: 'text', label: 'Fallback Title', default: 'Offer title' },
                 description: { type: 'textarea', label: 'Fallback Description', default: '' },

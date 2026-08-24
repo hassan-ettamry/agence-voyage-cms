@@ -186,6 +186,50 @@ class ComponentValidator
         }
 
         $this->validateKnownProps($props);
+        $this->validateDesign($props['design'] ?? null);
+    }
+
+    private function validateDesign(mixed $design): void
+    {
+        if ($design === null) {
+            return;
+        }
+
+        $this->assertValid(is_array($design) && ! array_is_list($design), 'design');
+        $allowedDevices = ['desktop', 'tablet', 'mobile'];
+        $lengths = ['marginTop', 'marginRight', 'marginBottom', 'marginLeft', 'paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft', 'width', 'maxWidth', 'minHeight', 'height', 'gap', 'fontSize', 'borderWidth', 'borderRadius'];
+        $colors = ['backgroundColor', 'textColor', 'borderColor'];
+        $allowedKeys = array_merge($lengths, $colors, ['backgroundImage', 'fontWeight', 'lineHeight', 'alignment', 'columns', 'shadow', 'visibility']);
+
+        foreach ($design as $device => $values) {
+            $this->assertValid(in_array($device, $allowedDevices, true), "design.{$device}");
+            $this->assertValid(is_array($values) && ! array_is_list($values), "design.{$device}");
+
+            foreach ($values as $key => $value) {
+                $path = "design.{$device}.{$key}";
+                $this->assertValid(in_array($key, $allowedKeys, true), $path);
+
+                if (in_array($key, $lengths, true)) {
+                    $this->assertValid($this->isSafeCssLength($value, $key), $path);
+                } elseif (in_array($key, $colors, true)) {
+                    $this->assertValid($this->isSafeColor($value), $path);
+                } elseif ($key === 'backgroundImage') {
+                    $this->assertValid($this->isSafeImageUrl($value), $path);
+                } elseif ($key === 'fontWeight') {
+                    $this->assertValid($this->isIntegerInRange($value, 100, 900), $path);
+                } elseif ($key === 'lineHeight') {
+                    $this->assertValid($this->isNumberInRange($value, .8, 3), $path);
+                } elseif ($key === 'columns') {
+                    $this->assertValid($this->isIntegerInRange($value, 1, 6), $path);
+                } elseif ($key === 'alignment') {
+                    $this->assertValid(is_string($value) && in_array($value, ['left', 'center', 'right', 'justify'], true), $path);
+                } elseif ($key === 'shadow') {
+                    $this->assertValid(is_string($value) && in_array($value, ['none', 'soft', 'medium', 'strong'], true), $path);
+                } elseif ($key === 'visibility') {
+                    $this->assertValid(is_string($value) && in_array($value, ['visible', 'hidden'], true), $path);
+                }
+            }
+        }
     }
 
     private function validateType($value, string $type, string $key): void
@@ -194,6 +238,9 @@ class ComponentValidator
             'text' => is_string($value),
             'number' => is_numeric($value),
             'boolean' => is_bool($value),
+            'array' => is_array($value) && array_is_list($value),
+            'object' => is_array($value) && ! array_is_list($value),
+            'text_or_array' => is_string($value) || (is_array($value) && array_is_list($value)),
             'image' => $this->isSafeImageUrl($value),
             'color' => $this->isSafeColor($value),
             default => true

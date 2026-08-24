@@ -1,0 +1,65 @@
+.builder-design {
+    background-image: var(--bd-desktop-background-image);
+}
+
+.builder-design-has-gap .site-card-grid {
+    gap: var(--bd-desktop-gap) !important;
+}
+
+.builder-design-has-columns .site-card-grid {
+    --site-card-columns: var(--bd-desktop-columns) !important;
+}
+
+@media (min-width: 1025px) {
+    .builder-design-hide-desktop { display: none !important; }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+    .builder-design {
+        margin-top: var(--bd-tablet-margin-top, var(--bd-desktop-margin-top)) !important;
+        margin-right: var(--bd-tablet-margin-right, var(--bd-desktop-margin-right)) !important;
+        margin-bottom: var(--bd-tablet-margin-bottom, var(--bd-desktop-margin-bottom)) !important;
+        margin-left: var(--bd-tablet-margin-left, var(--bd-desktop-margin-left)) !important;
+        padding-top: var(--bd-tablet-padding-top, var(--bd-desktop-padding-top)) !important;
+        padding-right: var(--bd-tablet-padding-right, var(--bd-desktop-padding-right)) !important;
+        padding-bottom: var(--bd-tablet-padding-bottom, var(--bd-desktop-padding-bottom)) !important;
+        padding-left: var(--bd-tablet-padding-left, var(--bd-desktop-padding-left)) !important;
+        width: var(--bd-tablet-width, var(--bd-desktop-width)) !important;
+        max-width: var(--bd-tablet-max-width, var(--bd-desktop-max-width)) !important;
+        min-height: var(--bd-tablet-min-height, var(--bd-desktop-min-height)) !important;
+        height: var(--bd-tablet-height, var(--bd-desktop-height)) !important;
+        text-align: var(--bd-tablet-alignment, var(--bd-desktop-alignment)) !important;
+        font-size: var(--bd-tablet-font-size, var(--bd-desktop-font-size)) !important;
+        line-height: var(--bd-tablet-line-height, var(--bd-desktop-line-height)) !important;
+        gap: var(--bd-tablet-gap, var(--bd-desktop-gap)) !important;
+        --site-card-columns: var(--bd-tablet-columns, var(--bd-desktop-columns));
+    }
+    .builder-design-has-gap .site-card-grid { gap: var(--bd-tablet-gap, var(--bd-desktop-gap)) !important; }
+    .builder-design-has-columns .site-card-grid { --site-card-columns: var(--bd-tablet-columns, var(--bd-desktop-columns)) !important; }
+    .builder-design-hide-tablet { display: none !important; }
+}
+
+@media (max-width: 640px) {
+    .builder-design {
+        margin-top: var(--bd-mobile-margin-top, var(--bd-tablet-margin-top, var(--bd-desktop-margin-top))) !important;
+        margin-right: var(--bd-mobile-margin-right, var(--bd-tablet-margin-right, var(--bd-desktop-margin-right))) !important;
+        margin-bottom: var(--bd-mobile-margin-bottom, var(--bd-tablet-margin-bottom, var(--bd-desktop-margin-bottom))) !important;
+        margin-left: var(--bd-mobile-margin-left, var(--bd-tablet-margin-left, var(--bd-desktop-margin-left))) !important;
+        padding-top: var(--bd-mobile-padding-top, var(--bd-tablet-padding-top, var(--bd-desktop-padding-top))) !important;
+        padding-right: var(--bd-mobile-padding-right, var(--bd-tablet-padding-right, var(--bd-desktop-padding-right))) !important;
+        padding-bottom: var(--bd-mobile-padding-bottom, var(--bd-tablet-padding-bottom, var(--bd-desktop-padding-bottom))) !important;
+        padding-left: var(--bd-mobile-padding-left, var(--bd-tablet-padding-left, var(--bd-desktop-padding-left))) !important;
+        width: var(--bd-mobile-width, var(--bd-tablet-width, var(--bd-desktop-width))) !important;
+        max-width: var(--bd-mobile-max-width, var(--bd-tablet-max-width, var(--bd-desktop-max-width))) !important;
+        min-height: var(--bd-mobile-min-height, var(--bd-tablet-min-height, var(--bd-desktop-min-height))) !important;
+        height: var(--bd-mobile-height, var(--bd-tablet-height, var(--bd-desktop-height))) !important;
+        text-align: var(--bd-mobile-alignment, var(--bd-tablet-alignment, var(--bd-desktop-alignment))) !important;
+        font-size: var(--bd-mobile-font-size, var(--bd-tablet-font-size, var(--bd-desktop-font-size))) !important;
+        line-height: var(--bd-mobile-line-height, var(--bd-tablet-line-height, var(--bd-desktop-line-height))) !important;
+        gap: var(--bd-mobile-gap, var(--bd-tablet-gap, var(--bd-desktop-gap))) !important;
+        --site-card-columns: var(--bd-mobile-columns, var(--bd-tablet-columns, var(--bd-desktop-columns)));
+    }
+    .builder-design-has-gap .site-card-grid { gap: var(--bd-mobile-gap, var(--bd-tablet-gap, var(--bd-desktop-gap))) !important; }
+    .builder-design-has-columns .site-card-grid { --site-card-columns: var(--bd-mobile-columns, var(--bd-tablet-columns, var(--bd-desktop-columns))) !important; }
+    .builder-design-hide-mobile { display: none !important; }
+}

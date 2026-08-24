@@ -850,6 +850,11 @@ window.BuilderTemplateLibrary = {
     },
 
     insert(id) {
+        if (String(id).startsWith('saved:')) {
+            BuilderSavedBlocks.insert(String(id).slice(6));
+            return;
+        }
+
         const template = this.templates.find(item => item.id === id);
 
         if (!template) {
@@ -1079,7 +1084,7 @@ window.BuilderTemplateLibrary = {
 
     filteredTemplates() {
         if (this.activeTab === 'my-templates') {
-            return [];
+            return BuilderSavedBlocks.templates(this.search, this.activeCategory);
         }
 
         return this.templates.filter(item => {
@@ -1144,6 +1149,10 @@ window.BuilderTemplateLibrary = {
     },
 
     cardHtml(item) {
+        if (item.savedBlock) {
+            return this.savedBlockCardHtml(item);
+        }
+
         return `
             <article
                 data-action="insert-builder-template"
@@ -1209,26 +1218,39 @@ window.BuilderTemplateLibrary = {
         `;
     },
 
+    savedBlockCardHtml(item) {
+        const id = BuilderHtmlEscape.attribute(item.savedBlock.id);
+        return `
+            <article class="overflow-hidden border border-slate-200 bg-white shadow-sm">
+                <button type="button" data-action="insert-builder-template" data-template-id="${BuilderHtmlEscape.attribute(item.id)}" class="flex h-28 w-full items-center justify-center bg-gradient-to-br from-indigo-50 to-slate-100 text-center hover:from-indigo-100">
+                    <span class="px-4 text-sm font-semibold text-slate-700">Insert ${BuilderHtmlEscape.html(item.title)}</span>
+                </button>
+                <div class="border-t border-slate-100 px-3 py-2">
+                    <h3 class="truncate text-sm font-semibold text-slate-800">${BuilderHtmlEscape.html(item.title)}</h3>
+                    <p class="mt-0.5 truncate text-[11px] text-slate-400">${BuilderHtmlEscape.html(item.category)}</p>
+                    <div class="mt-2 flex gap-2">
+                        <button type="button" data-action="rename-saved-block" data-saved-block-id="${id}" class="text-xs font-medium text-blue-600 hover:text-blue-700">Rename</button>
+                        <button type="button" data-action="delete-saved-block" data-saved-block-id="${id}" class="text-xs font-medium text-red-600 hover:text-red-700">Delete</button>
+                    </div>
+                </div>
+            </article>
+        `;
+    },
+
     cloneNodes(nodes) {
-        return Array.isArray(nodes)
-            ? nodes
-                .map(node => this.cloneNode(node))
-                .filter(Boolean)
-            : [];
+        return BuilderNodeClone.cloneNodes(
+            nodes,
+            () => BuilderComponentUtils.generateId(),
+            (props, type) => themeReadyTemplateProps(type, this.cloneProps(props))
+        );
     },
 
     cloneNode(node) {
-        if (!node || typeof node !== 'object' || Array.isArray(node)) {
-            return null;
-        }
-
-        return {
-            id: BuilderComponentUtils.generateId(),
-            type: node.type,
-            accepts: BuilderStructureRules.acceptsForType(node.type),
-            props: themeReadyTemplateProps(node.type, this.cloneProps(node.props)),
-            children: this.cloneNodes(node.children || [])
-        };
+        return BuilderNodeClone.cloneNodes(
+            [node],
+            () => BuilderComponentUtils.generateId(),
+            (props, type) => themeReadyTemplateProps(type, this.cloneProps(props))
+        )[0] || null;
     },
 
     cloneProps(props) {

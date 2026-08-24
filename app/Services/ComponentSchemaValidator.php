@@ -32,7 +32,7 @@ class ComponentSchemaValidator
                 ]);
             }
 
-            if (!in_array($prop['type'], ['text', 'image', 'color', 'number', 'boolean'])) {
+            if (!in_array($prop['type'], ['text', 'image', 'color', 'number', 'boolean', 'array', 'object', 'text_or_array'])) {
                 throw ValidationException::withMessages([
                     'schema_json' => "Type invalide pour {$key}."
                 ]);

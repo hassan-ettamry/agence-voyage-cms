@@ -28,6 +28,12 @@
 
     $hasButton = trim((string) ($props['buttonText'] ?? '')) !== '' && $href !== '#';
     $alignment = $variant === 'center' ? 'items-center text-center' : 'items-start text-left';
+    $overlayOpacity = max(0, min(90, (int) ($props['overlayOpacity'] ?? 55))) / 100;
+    $minHeight = max(360, min(900, (int) ($props['minHeight'] ?? 520)));
+    $requestedBackgroundPosition = $props['backgroundPosition'] ?? 'center';
+    $backgroundPosition = in_array($requestedBackgroundPosition, ['center', 'top', 'bottom', 'left', 'right'], true)
+        ? $requestedBackgroundPosition
+        : 'center';
 @endphp
 
 <section
@@ -38,12 +44,12 @@
         data-drag-action="reorder"
     @endif
     class="relative isolate flex min-h-[520px] overflow-hidden {{ $isEditor ? 'builder-node' : '' }}"
-    style="background-color: {{ $props['backgroundColor'] ?? 'var(--site-secondary, #12372f)' }}; color: {{ $props['textColor'] ?? '#ffffff' }};"
+    style="min-height: {{ $minHeight }}px; background-color: {{ $props['backgroundColor'] ?? 'var(--site-secondary, #12372f)' }}; color: {{ $props['textColor'] ?? '#ffffff' }};"
 >
     @if($backgroundMode === 'image' && $backgroundImage !== '')
-        <img src="{{ $backgroundImage }}" alt="" class="absolute inset-0 -z-20 h-full w-full object-cover" @if(!$isEditor) loading="eager" fetchpriority="high" @endif>
+        <img src="{{ $backgroundImage }}" alt="" class="absolute inset-0 -z-20 h-full w-full object-cover" style="object-position: {{ $backgroundPosition }};" @if(!$isEditor) loading="eager" fetchpriority="high" @endif>
     @endif
-    <div class="absolute inset-0 -z-10 bg-gradient-to-r from-black/75 via-black/50 to-black/15" aria-hidden="true"></div>
+    <div class="absolute inset-0 -z-10 bg-black" style="opacity: {{ $overlayOpacity }};" aria-hidden="true"></div>
 
     <div class="site-container flex w-full {{ $alignment }} justify-center" style="padding-top: {{ $padding }}px; padding-bottom: {{ $padding }}px;">
         <div class="flex max-w-3xl flex-col {{ $alignment }} {{ $variant === 'split' ? 'lg:max-w-[52%]' : '' }}">

@@ -7,12 +7,11 @@ window.BuilderComponentUtils = {
     */
 
     generateId() {
+        if (globalThis.crypto?.randomUUID) {
+            return `node_${globalThis.crypto.randomUUID()}`;
+        }
 
-        return 'node_' +
-
-            Math.random()
-                .toString(36)
-                .substring(2, 9);
+        return `node_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
 
     },
 

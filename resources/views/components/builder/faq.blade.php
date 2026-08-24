@@ -1,19 +1,14 @@
 @php
-    $items = collect(preg_split('/\r\n|\r|\n/', (string) ($props['items'] ?? '')))
-        ->map(function ($line) {
+    $rawItems = $props['items'] ?? [];
+    $items = (is_array($rawItems)
+        ? collect($rawItems)->map(fn ($item) => is_array($item) && trim((string) ($item['question'] ?? '')) !== '' ? [
+            'question' => trim((string) $item['question']),
+            'answer' => trim((string) ($item['answer'] ?? '')),
+        ] : null)
+        : collect(preg_split('/\r\n|\r|\n/', (string) $rawItems))->map(function ($line) {
             $parts = array_map('trim', explode('|', $line, 2));
-
-            if (($parts[0] ?? '') === '') {
-                return null;
-            }
-
-            return [
-                'question' => $parts[0],
-                'answer' => $parts[1] ?? '',
-            ];
-        })
-        ->filter()
-        ->values();
+            return ($parts[0] ?? '') === '' ? null : ['question' => $parts[0], 'answer' => $parts[1] ?? ''];
+        }))->filter()->values();
 
     if ($items->isEmpty()) {
         $items = collect([

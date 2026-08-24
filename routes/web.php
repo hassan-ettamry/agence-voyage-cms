@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\AccountController;
 use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\BuilderSavedBlockController;
 use App\Http\Controllers\Web\ComponentController;
 use App\Http\Controllers\Web\DashboardController;
 use App\Http\Controllers\Web\DemoContentController;
@@ -276,6 +277,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             Route::get('/grouped', [ComponentController::class, 'grouped'])
                 ->name('grouped');
+        });
+
+    Route::prefix('builder/saved-blocks')
+        ->name('builder-saved-blocks.')
+        ->group(function () {
+            Route::get('/', [BuilderSavedBlockController::class, 'index'])->name('index');
+            Route::post('/', [BuilderSavedBlockController::class, 'store'])->name('store');
+            Route::patch('/{savedBlock}', [BuilderSavedBlockController::class, 'update'])->name('update');
+            Route::delete('/{savedBlock}', [BuilderSavedBlockController::class, 'destroy'])->name('destroy');
         });
 
     /*

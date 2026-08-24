@@ -18,6 +18,7 @@
     $continent = trim((string) ($props['continent'] ?? ''));
     $travelType = trim((string) ($props['travelType'] ?? ''));
     $idealMonth = (int) ($props['idealMonth'] ?? 0);
+    $manualIds = collect($props['manual_ids'] ?? [])->filter(fn ($id) => is_string($id))->values()->all();
 
     $query = \App\Models\Offer::published()->with(['agency', 'destination.media', 'media']);
 
@@ -27,6 +28,10 @@
 
     if ($source === 'by_destination' && $destinationId) {
         $query->where('destination_id', $destinationId);
+    }
+
+    if ($source === 'manual') {
+        $query->whereIn('id', $manualIds ?: ['']);
     }
 
     if ($continent || $travelType || $idealMonth) {
@@ -51,6 +56,8 @@
     $showTitle = $show('showTitle');
     $showDescription = $show('showDescription');
     $showMeta = $show('showMeta');
+    $showPrice = $show('showPrice');
+    $showDuration = $show('showDuration');
     $showCta = $show('showCta');
     $buttonText = $props['buttonText'] ?? 'View offer';
     $fallbackImage = trim((string) ($props['fallbackImage'] ?? '/images/site-templates/sunset-luxe.png'));
@@ -122,14 +129,18 @@
                         </p>
                     @endif
 
-                    @if($showMeta)
+                    @if($showMeta && ($showPrice || $showDuration))
                         <div class="mt-4 flex items-center justify-between text-sm">
-                            <span class="font-semibold" style="color: var(--site-primary, #059669);">
-                                {{ number_format((float) $offer->price, 2) }} {{ $offer->agency->catalogCurrency() }}
-                            </span>
-                            <span style="color: var(--site-muted, #9ca3af);">
-                                {{ $offer->duration_days }} days
-                            </span>
+                            @if($showPrice)
+                                <span class="font-semibold" style="color: var(--site-primary, #059669);">
+                                    {{ number_format((float) $offer->price, 2) }} {{ $offer->agency->catalogCurrency() }}
+                                </span>
+                            @endif
+                            @if($showDuration)
+                                <span style="color: var(--site-muted, #9ca3af);">
+                                    {{ $offer->duration_days }} days
+                                </span>
+                            @endif
                         </div>
                     @endif
 

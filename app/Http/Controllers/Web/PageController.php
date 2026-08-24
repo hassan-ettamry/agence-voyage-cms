@@ -7,6 +7,8 @@ use App\Http\Requests\Page\StorePageRequest;
 use App\Http\Requests\Page\UpdatePageRequest;
 use App\Models\Agency;
 use App\Models\Component;
+use App\Models\Destination;
+use App\Models\Offer;
 use App\Models\Page;
 use App\Models\PageVersion;
 use App\Services\AgencyThemeService;
@@ -201,11 +203,6 @@ class PageController extends Controller
             'section',
             'row',
             'column',
-            'destination-grid',
-            'featured-destinations',
-            'offer-grid',
-            'special-offers',
-            'offer-card',
         ];
 
         $widgets = Component::where('is_active', true)
@@ -213,13 +210,27 @@ class PageController extends Controller
             ->orderBy('category')
             ->get();
 
+        $builderDataOptions = [
+            'destinations' => Destination::published()
+                ->orderBy('name')
+                ->get(['id', 'name'])
+                ->map(fn (Destination $destination) => ['id' => $destination->id, 'label' => $destination->name])
+                ->values(),
+            'offers' => Offer::published()
+                ->orderBy('title')
+                ->get(['id', 'title'])
+                ->map(fn (Offer $offer) => ['id' => $offer->id, 'label' => $offer->title])
+                ->values(),
+        ];
+
         return view('pages.builder', compact(
             'page',
             'builderStructure',
             'widgets',
             'menuItems',
             'builderPages',
-            'builderThemeCss'
+            'builderThemeCss',
+            'builderDataOptions'
         ));
     }
 
@@ -246,17 +257,20 @@ class PageController extends Controller
         $this->authorize('update', $page);
 
         if ($request->expectsJson()) {
-            $this->pageService->updateStructure(
+            $validated = $request->validated();
+            $oldSlug = $page->slug;
+            $page = $this->pageService->update(
                 $page,
-                $request->validated()['structure'] ?? [],
+                array_intersect_key($validated, array_flip(['title', 'slug', 'structure'])),
                 $request->user()
             );
 
-            PublicContentCache::forgetPage($page->agency_id, $page->slug);
+            PublicContentCache::forgetPage($page->agency_id, $oldSlug, $page->slug);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Page saved successfully',
+                'page' => ['title' => $page->title, 'slug' => $page->slug],
             ]);
         }
 
@@ -285,6 +299,10 @@ class PageController extends Controller
 
         PublicContentCache::forgetPage($page->agency_id, $page->slug);
         DashboardStatsService::forgetFor(auth()->user());
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Page published successfully']);
+        }
 
         return back()->with('success', 'Page publiée.');
     }

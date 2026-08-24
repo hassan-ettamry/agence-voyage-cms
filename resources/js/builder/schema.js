@@ -13,11 +13,14 @@ window.BuilderSchema = {
         if (!component)
             return null;
 
-        const schema =
-            component.schema_json || null;
+        const databaseSchema = component.schema_json || null;
+        const legacySchema = window.BuilderControlSchemas
+            ? BuilderControlSchemas.get(type, databaseSchema)
+            : databaseSchema;
+        const schema = databaseSchema?.tabs ? databaseSchema : legacySchema;
 
-        return window.BuilderControlSchemas
-            ? BuilderControlSchemas.get(type, schema)
+        return window.BuilderSharedControls
+            ? BuilderSharedControls.merge(type, schema || {}, BuilderStore?.viewport || 'desktop')
             : schema;
     }
 

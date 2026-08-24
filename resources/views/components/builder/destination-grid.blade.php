@@ -17,6 +17,7 @@
     $continent = trim((string) ($props['continent'] ?? ''));
     $travelType = trim((string) ($props['travelType'] ?? ''));
     $idealMonth = (int) ($props['idealMonth'] ?? 0);
+    $manualIds = collect($props['manual_ids'] ?? [])->filter(fn ($id) => is_string($id))->values()->all();
 
     $query = \App\Models\Destination::published()
         ->with(['agency', 'media'])
@@ -26,6 +27,10 @@
 
     if ($source === 'featured') {
         $query->featured();
+    }
+
+    if ($source === 'manual') {
+        $query->whereIn('id', $manualIds ?: ['']);
     }
 
     match ($sort) {
@@ -42,6 +47,11 @@
     $showMeta = $show('showMeta');
     $showCta = $show('showCta');
     $buttonText = $props['buttonText'] ?? 'View destination';
+    $cardVariant = in_array(($props['cardVariant'] ?? 'standard'), ['standard', 'compact', 'featured'], true)
+        ? ($props['cardVariant'] ?? 'standard')
+        : 'standard';
+    $cardPadding = $cardVariant === 'compact' ? 'p-4' : 'p-5';
+    $imageRatio = $cardVariant === 'featured' ? 'aspect-[4/3]' : 'aspect-video';
     $fallbackImage = trim((string) ($props['fallbackImage'] ?? '/images/site-templates/culture-journey.png'));
     $sectionPadding = max(0, min((int) ($props['padding'] ?? 40), 120));
     $marginTop = is_numeric($props['marginTop'] ?? null) ? (int) $props['marginTop'] : 0;
@@ -78,7 +88,7 @@
                 style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"
             >
                 @if($showImage)
-                    <div class="aspect-video" style="background-color: color-mix(in srgb, var(--site-primary, #2563eb) 12%, white);">
+                    <div class="{{ $imageRatio }}" style="background-color: color-mix(in srgb, var(--site-primary, #2563eb) 12%, white);">
                         @if($coverUrl)
                             <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $destination->name }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                         @elseif($isEditor)
@@ -89,7 +99,7 @@
                     </div>
                 @endif
 
-                <div class="p-5">
+                <div class="{{ $cardPadding }}">
                     @if($showMeta && $destination->country)
                         <div class="text-xs font-semibold uppercase" style="color: var(--site-primary, #6366f1);">
                             {{ collect([$destination->region, $destination->country])->filter()->join(', ') }}

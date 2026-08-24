@@ -33,6 +33,7 @@ class UpdatePageRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:255',
+                'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/',
                 Rule::unique('pages', 'slug')
                     ->where('agency_id', auth()->user()->agency_id)
                     ->ignore($page->id),

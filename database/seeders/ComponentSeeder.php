@@ -12,6 +12,7 @@ class ComponentSeeder extends Seeder
     {
         $components = [
             ...$this->signatureComponents(),
+            ...$this->catalogComponents(),
             [
                 'type' => 'hero',
                 'name' => 'Hero',
@@ -368,7 +369,7 @@ class ComponentSeeder extends Seeder
                 'icon' => 'photo',
                 'schema_json' => [
                     'props' => [
-                        'images' => ['type' => 'text'],
+                        'images' => ['type' => 'text_or_array'],
                         'columns' => ['type' => 'number'],
                         'gap' => ['type' => 'number'],
                         'height' => ['type' => 'number'],
@@ -378,7 +379,10 @@ class ComponentSeeder extends Seeder
                         'content' => [
                             'title' => 'Content',
                             'fields' => [
-                                'images' => ['type' => 'textarea', 'label' => 'Images', 'default' => '', 'help' => 'One image per line. Use URL or URL|Alt text.'],
+                                'images' => ['type' => 'repeater', 'label' => 'Images', 'default' => [], 'maxItems' => 24, 'itemFields' => [
+                                    ['key' => 'url', 'label' => 'Image', 'type' => 'media'],
+                                    ['key' => 'alt', 'label' => 'Alt Text', 'type' => 'text'],
+                                ]],
                             ],
                         ],
                         'style' => [
@@ -473,7 +477,7 @@ class ComponentSeeder extends Seeder
                 'schema_json' => [
                     'props' => [
                         'title' => ['type' => 'text'],
-                        'items' => ['type' => 'text'],
+                        'items' => ['type' => 'text_or_array'],
                         'allowMultiple' => ['type' => 'text'],
                     ],
                     'tabs' => [
@@ -481,7 +485,13 @@ class ComponentSeeder extends Seeder
                             'title' => 'Content',
                             'fields' => [
                                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Frequently asked questions'],
-                                'items' => ['type' => 'textarea', 'label' => 'Items', 'default' => "What is included?|Flights, hotels, transfers, and guided activities can be included depending on the offer.\nCan I customize the trip?|Yes. Contact the agency to adapt dates, hotels, and activities."],
+                                'items' => ['type' => 'repeater', 'label' => 'Items', 'default' => [
+                                    ['question' => 'What is included?', 'answer' => 'Flights, hotels, transfers, and guided activities can be included depending on the offer.'],
+                                    ['question' => 'Can I customize the trip?', 'answer' => 'Yes. Contact the agency to adapt dates, hotels, and activities.'],
+                                ], 'maxItems' => 24, 'itemFields' => [
+                                    ['key' => 'question', 'label' => 'Question', 'type' => 'text'],
+                                    ['key' => 'answer', 'label' => 'Answer', 'type' => 'text'],
+                                ]],
                                 'allowMultiple' => ['type' => 'select', 'label' => 'Allow Multiple Open', 'default' => 'yes', 'options' => ['yes', 'no']],
                             ],
                         ],
@@ -522,14 +532,10 @@ class ComponentSeeder extends Seeder
                     ],
                 ],
             ],
-            ['type' => 'destination-grid', 'name' => 'Destination Grid', 'category' => 'Travel', 'icon' => 'map', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'], 'source' => ['type' => 'text', 'label' => 'Source'], 'continent' => ['type' => 'text', 'label' => 'Continent'], 'travelType' => ['type' => 'text', 'label' => 'Travel Type'], 'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
-            ['type' => 'featured-destinations', 'name' => 'Featured Destinations', 'category' => 'Travel', 'icon' => 'star', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
-            ['type' => 'offer-grid', 'name' => 'Offer Grid', 'category' => 'Travel', 'icon' => 'tag', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'], 'source' => ['type' => 'text', 'label' => 'Source'], 'destination_id' => ['type' => 'text', 'label' => 'Destination ID'], 'continent' => ['type' => 'text', 'label' => 'Continent'], 'travelType' => ['type' => 'text', 'label' => 'Travel Type'], 'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
-            ['type' => 'special-offers', 'name' => 'Special Offers', 'category' => 'Travel', 'icon' => 'sparkles', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
-            ['type' => 'offer-card', 'name' => 'Offer Card', 'category' => 'Travel', 'icon' => 'ticket', 'schema_json' => ['offer_id' => ['type' => 'text', 'label' => 'Offer ID'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png']]],
         ];
 
         foreach ($components as $component) {
+            $component['schema_json'] = ['schema_version' => 2] + ($component['schema_json'] ?? []);
             Component::updateOrCreate(
                 ['type' => $component['type']],
                 $component + ['is_active' => true]
@@ -551,6 +557,11 @@ class ComponentSeeder extends Seeder
                 'placeholder' => ['type' => 'text', 'label' => 'Placeholder', 'default' => 'Search destinations'],
                 'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'Explore'],
                 'backgroundImage' => ['type' => 'media', 'label' => 'Background Image', 'default' => ''],
+                'backgroundColor' => ['type' => 'color', 'label' => 'Background Color', 'default' => '#12372f'],
+                'backgroundPosition' => ['type' => 'select', 'label' => 'Image Position', 'default' => 'center', 'options' => ['center', 'top', 'bottom', 'left', 'right']],
+                'overlayOpacity' => ['type' => 'range', 'label' => 'Overlay', 'min' => 0, 'max' => 90, 'default' => 55],
+                'minHeight' => ['type' => 'range', 'label' => 'Minimum Height', 'min' => 360, 'max' => 900, 'default' => 620],
+                'contentAlign' => ['type' => 'select', 'label' => 'Content Alignment', 'default' => 'left', 'options' => ['left', 'center']],
             ]),
             $this->signatureComponent('image-text', 'Image & Text', 'content', 'photo', [
                 'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'OUR APPROACH'],
@@ -559,13 +570,24 @@ class ComponentSeeder extends Seeder
                 'image' => ['type' => 'media', 'label' => 'Image', 'default' => ''],
                 'imageAlt' => ['type' => 'text', 'label' => 'Image Alt', 'default' => ''],
                 'imagePosition' => ['type' => 'select', 'label' => 'Image Position', 'default' => 'left', 'options' => ['left', 'right']],
+                'imageRatio' => ['type' => 'select', 'label' => 'Image Ratio', 'default' => '4/3', 'options' => ['square', '4/3', '16/9']],
+                'objectFit' => ['type' => 'select', 'label' => 'Object Fit', 'default' => 'cover', 'options' => ['cover', 'contain']],
+                'backgroundColor' => ['type' => 'color', 'label' => 'Background Color', 'default' => 'transparent'],
                 'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'Discover our story'],
                 'url' => ['type' => 'text', 'label' => 'URL', 'default' => '/about'],
             ]),
             $this->signatureComponent('feature-grid', 'Feature Grid', 'content', 'squares-2x2', [
                 'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'WHY TRAVEL WITH US'],
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Every detail, thoughtfully handled'],
-                'items' => ['type' => 'textarea', 'label' => 'Features', 'default' => "compass|Local expertise|Travel with people who know each place deeply.\nheart|Personal service|Every journey is shaped around your interests.\ncheck-circle|Trusted support|We are with you before, during and after your trip."],
+                'items' => ['type' => 'repeater', 'label' => 'Features', 'default' => [
+                    ['icon' => 'compass', 'title' => 'Local expertise', 'text' => 'Travel with people who know each place deeply.'],
+                    ['icon' => 'heart', 'title' => 'Personal service', 'text' => 'Every journey is shaped around your interests.'],
+                    ['icon' => 'check-circle', 'title' => 'Trusted support', 'text' => 'We are with you before, during and after your trip.'],
+                ], 'maxItems' => 12, 'itemFields' => [
+                    ['key' => 'icon', 'label' => 'Icon', 'type' => 'text'],
+                    ['key' => 'title', 'label' => 'Title', 'type' => 'text'],
+                    ['key' => 'text', 'label' => 'Text', 'type' => 'text'],
+                ]],
                 'columns' => ['type' => 'range', 'label' => 'Columns', 'min' => 1, 'max' => 4, 'default' => 3],
             ]),
             $this->signatureComponent('destination-carousel', 'Destination Carousel', 'travel', 'map', [
@@ -589,7 +611,16 @@ class ComponentSeeder extends Seeder
             $this->signatureComponent('testimonials', 'Testimonials', 'marketing', 'chat-bubble-left-right', [
                 'eyebrow' => ['type' => 'text', 'label' => 'Eyebrow', 'default' => 'TRAVELLER STORIES'],
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'What our travellers say'],
-                'items' => ['type' => 'textarea', 'label' => 'Testimonials', 'default' => "An unforgettable journey from beginning to end.|Amelia R.|London|5\nEvery detail felt personal and effortless.|Daniel M.|Toronto|5\nWe discovered places we would never have found alone.|Sofia K.|Madrid|5"],
+                'items' => ['type' => 'repeater', 'label' => 'Testimonials', 'default' => [
+                    ['quote' => 'An unforgettable journey from beginning to end.', 'name' => 'Amelia R.', 'role' => 'London', 'rating' => 5],
+                    ['quote' => 'Every detail felt personal and effortless.', 'name' => 'Daniel M.', 'role' => 'Toronto', 'rating' => 5],
+                    ['quote' => 'We discovered places we would never have found alone.', 'name' => 'Sofia K.', 'role' => 'Madrid', 'rating' => 5],
+                ], 'maxItems' => 12, 'itemFields' => [
+                    ['key' => 'quote', 'label' => 'Quote', 'type' => 'text'],
+                    ['key' => 'name', 'label' => 'Name', 'type' => 'text'],
+                    ['key' => 'role', 'label' => 'Location / Role', 'type' => 'text'],
+                    ['key' => 'rating', 'label' => 'Rating', 'type' => 'number', 'default' => 5],
+                ]],
             ]),
             $this->signatureComponent('trust-logos', 'Trust Logos', 'marketing', 'shield-check', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Trusted by travellers and partners'],
@@ -604,6 +635,8 @@ class ComponentSeeder extends Seeder
                 'text' => ['type' => 'textarea', 'label' => 'Text', 'default' => 'Tell us where you want to go and we will shape the journey with you.'],
                 'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'Plan my journey'],
                 'url' => ['type' => 'text', 'label' => 'URL', 'default' => '/contact'],
+                'backgroundColor' => ['type' => 'color', 'label' => 'Background Color', 'default' => '#059669'],
+                'contentAlign' => ['type' => 'select', 'label' => 'Content Alignment', 'default' => 'left', 'options' => ['left', 'center']],
             ]),
             $this->signatureComponent('newsletter', 'Newsletter', 'forms', 'envelope', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Ideas for your next journey'],
@@ -638,8 +671,8 @@ class ComponentSeeder extends Seeder
     private function signatureComponent(string $type, string $name, string $category, string $icon, array $fields): array
     {
         $dataKeys = ['searchType', 'source', 'limit'];
-        $layoutKeys = ['columns', 'imagePosition', 'align'];
-        $styleKeys = ['backgroundImage', 'variant'];
+        $layoutKeys = ['columns', 'imagePosition', 'imageRatio', 'contentAlign', 'minHeight', 'align'];
+        $styleKeys = ['backgroundImage', 'backgroundColor', 'backgroundPosition', 'overlayOpacity', 'objectFit', 'variant'];
         $tabs = [
             'content' => ['title' => 'Content', 'fields' => []],
             'data' => ['title' => 'Data', 'fields' => []],
@@ -669,8 +702,112 @@ class ComponentSeeder extends Seeder
             'category' => $category,
             'icon' => $icon,
             'schema_json' => [
+                'props' => $this->propsFromFields($fields),
                 'tabs' => $tabs,
             ],
+        ];
+    }
+
+    private function propsFromFields(array $fields): array
+    {
+        return collect($fields)->map(function (array $field) {
+            $type = match ($field['type'] ?? 'text') {
+                'number', 'range' => 'number',
+                'color' => 'color',
+                'media' => 'image',
+                'entity-multiselect' => 'array',
+                'repeater' => 'text_or_array',
+                default => 'text',
+            };
+
+            $default = $field['default'] ?? null;
+            if ($type === 'number' && $default === '') {
+                $default = null;
+            }
+
+            return array_filter([
+                'type' => $type,
+                'default' => $default,
+            ], fn ($value) => $value !== null);
+        })->all();
+    }
+
+    private function catalogComponents(): array
+    {
+        $continents = ['', 'africa', 'asia', 'europe', 'north-america', 'south-america', 'oceania', 'antarctica'];
+        $travelTypes = ['', 'beach', 'mountain', 'cultural', 'adventure', 'city', 'desert', 'nature', 'wellness', 'family'];
+        $sort = ['latest', 'oldest', 'name', 'price_low', 'price_high'];
+        $cardFields = [
+            'columns' => ['type' => 'range', 'label' => 'Columns', 'min' => 1, 'max' => 4, 'default' => 3],
+            'gap' => ['type' => 'range', 'label' => 'Gap', 'min' => 8, 'max' => 64, 'default' => 24],
+            'showImage' => ['type' => 'toggle', 'label' => 'Show Image', 'default' => 'yes'],
+            'showTitle' => ['type' => 'toggle', 'label' => 'Show Title', 'default' => 'yes'],
+            'showDescription' => ['type' => 'toggle', 'label' => 'Show Description', 'default' => 'yes'],
+            'showMeta' => ['type' => 'toggle', 'label' => 'Show Meta', 'default' => 'yes'],
+            'showCta' => ['type' => 'toggle', 'label' => 'Show CTA', 'default' => 'yes'],
+            'buttonText' => ['type' => 'text', 'label' => 'CTA Text', 'default' => 'View details'],
+        ];
+
+        $destinationData = [
+            'source' => ['type' => 'select', 'label' => 'Source', 'default' => 'latest', 'options' => ['latest', 'featured', 'manual']],
+            'manual_ids' => ['type' => 'entity-multiselect', 'entity' => 'destinations', 'label' => 'Manual Selection', 'default' => [], 'when' => ['key' => 'source', 'is' => 'manual']],
+            'continent' => ['type' => 'select', 'label' => 'Continent', 'default' => '', 'options' => $continents],
+            'travelType' => ['type' => 'select', 'label' => 'Travel Type', 'default' => '', 'options' => $travelTypes],
+            'idealMonth' => ['type' => 'number', 'label' => 'Ideal Month', 'min' => 1, 'max' => 12, 'default' => ''],
+            'limit' => ['type' => 'range', 'label' => 'Limit', 'min' => 1, 'max' => 12, 'default' => 6],
+            'sort' => ['type' => 'select', 'label' => 'Sort', 'default' => 'latest', 'options' => $sort],
+        ];
+        $offerData = $destinationData;
+        $offerData['source']['options'] = ['latest', 'special', 'by_destination', 'manual'];
+        $offerData['manual_ids']['entity'] = 'offers';
+        $offerData['destination_id'] = ['type' => 'entity-select', 'entity' => 'destinations', 'label' => 'Destination', 'default' => '', 'when' => ['key' => 'source', 'is' => 'by_destination']];
+
+        $make = function (string $type, string $name, string $icon, array $content, array $data = [], array $style = []) {
+            $fields = $content + $data + $style;
+            return [
+                'type' => $type,
+                'name' => $name,
+                'category' => 'Travel',
+                'icon' => $icon,
+                'schema_json' => [
+                    'props' => $this->propsFromFields($fields),
+                    'tabs' => array_filter([
+                        'content' => ['title' => 'Content', 'fields' => $content],
+                        'data' => ['title' => 'Data', 'fields' => $data],
+                        'style' => ['title' => 'Style', 'fields' => $style],
+                    ], fn ($tab) => $tab['fields'] !== []),
+                ],
+            ];
+        };
+
+        return [
+            $make('destination-grid', 'Destination Grid', 'map', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Destinations'],
+                'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
+            ], $destinationData, $cardFields + ['cardVariant' => ['type' => 'select', 'label' => 'Card Variant', 'default' => 'standard', 'options' => ['standard', 'compact', 'featured']]]),
+            $make('featured-destinations', 'Featured Destinations', 'star', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Featured Destinations'],
+                'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
+            ], ['limit' => $destinationData['limit'], 'sort' => $destinationData['sort']], $cardFields),
+            $make('offer-grid', 'Offer Grid', 'tag', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Offers'],
+                'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
+            ], $offerData, $cardFields + [
+                'showPrice' => ['type' => 'toggle', 'label' => 'Show Price', 'default' => 'yes'],
+                'showDuration' => ['type' => 'toggle', 'label' => 'Show Duration', 'default' => 'yes'],
+            ]),
+            $make('special-offers', 'Special Offers', 'sparkles', [
+                'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Special Offers'],
+                'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
+            ], ['limit' => $offerData['limit'], 'sort' => $offerData['sort']], $cardFields),
+            $make('offer-card', 'Offer Card', 'ticket', [
+                'offer_id' => ['type' => 'entity-select', 'entity' => 'offers', 'label' => 'Offer', 'default' => ''],
+                'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
+                'title' => ['type' => 'text', 'label' => 'Fallback Title', 'default' => 'Offer title'],
+                'description' => ['type' => 'textarea', 'label' => 'Fallback Description', 'default' => ''],
+                'price' => ['type' => 'number', 'label' => 'Fallback Price', 'default' => ''],
+                'buttonText' => ['type' => 'text', 'label' => 'CTA Text', 'default' => 'View offer'],
+            ], [], $cardFields),
         ];
     }
 }

@@ -2,6 +2,8 @@ window.BuilderSettingsPanel = {
 
     openSettingTabs: {},
 
+    openSectionTabs: {},
+
     /*
     |--------------------------------------------------------------------------
     | Render Panel
@@ -150,17 +152,11 @@ window.BuilderSettingsPanel = {
 
                         }
 
-                        const value =
-
-                            node.props?.[fieldKey]
-
-                            ??
-
-                            field.default
-
-                            ??
-
-                            '';
+                        const value = BuilderObjectPath.get(
+                            node.props,
+                            fieldKey,
+                            field.default ?? ''
+                        );
 
                         html +=
                             BuilderSettingsFields.render(
@@ -275,8 +271,7 @@ window.BuilderSettingsPanel = {
                 node?.props
             );
 
-        const actual =
-            props[condition.key];
+        const actual = BuilderObjectPath.get(props, condition.key);
 
         if (
             Object.prototype.hasOwnProperty.call(
@@ -378,10 +373,9 @@ window.BuilderSettingsPanel = {
                 node.props
             );
 
-        const activeTab =
-            this.normalizeSectionControlTab(
-                props.sectionControlTab || 'style'
-            );
+        const activeTab = this.normalizeSectionControlTab(
+            this.openSectionTabs[nodeId] || props.sectionControlTab || 'style'
+        );
 
         return `
 
@@ -402,6 +396,11 @@ window.BuilderSettingsPanel = {
                                 : 'Section content is managed through its child containers and widgets.'}
                         </div>
                         ${type === 'container' ? this.containerRoleControl(nodeId, props) : ''}
+                        ${type === 'section' ? `
+                            <button type="button" data-action="save-section-block" data-target-node-id="${BuilderHtmlEscape.attribute(nodeId)}" class="mt-3 w-full rounded bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700">
+                                Save section to My Blocks
+                            </button>
+                        ` : ''}
                     `
                 })}
             </div>
@@ -423,16 +422,14 @@ window.BuilderSettingsPanel = {
                     open: false,
                     body: this.sectionLayoutAccordions(nodeId, props, type)
                 })}
-                ${this.sectionAccordion({
-                    id: 'custom-style',
-                    title: 'Custom Style',
-                    open: false,
-                    body: `
-                        ${this.sectionTextInput(nodeId, 'customClass', 'Custom Class', props.customClass || '')}
-                        ${this.sectionTextarea(nodeId, 'customCss', 'Custom CSS', props.customCss || '')}
-                    `
-                })}
                 ${this.sectionAdvancedAccordions(nodeId, props)}
+            </div>
+
+            <div
+                data-section-panel="responsive"
+                class="${activeTab === 'responsive' ? '' : 'hidden'} bg-gray-50 p-2"
+            >
+                ${this.sectionResponsiveControls(nodeId, props, type)}
             </div>
 
         `;
@@ -447,7 +444,8 @@ window.BuilderSettingsPanel = {
             style: 'style',
             layout: 'advanced',
             advance: 'advanced',
-            advanced: 'advanced'
+            advanced: 'advanced',
+            responsive: 'responsive'
         }[tab];
 
         return normalized || 'style';
@@ -474,12 +472,17 @@ window.BuilderSettingsPanel = {
                 'advanced',
                 'Advanced',
                 '<rect x="4" y="5" width="16" height="11" rx="1.5"></rect><path stroke-linecap="round" d="M9 20h6M12 16v4"></path>'
+            ],
+            [
+                'responsive',
+                'Responsive',
+                '<rect x="7" y="3" width="10" height="18" rx="2"></rect><path stroke-linecap="round" d="M10 17h4"></path>'
             ]
         ];
 
         return `
 
-            <div class="grid h-[39px] grid-cols-3 border-b border-gray-200 bg-white text-[13px]">
+            <div class="grid h-[39px] grid-cols-4 border-b border-gray-200 bg-white text-[12px]">
                 ${tabs.map(([id, label, icon]) => `
                     <button
                         type="button"
@@ -655,13 +658,12 @@ window.BuilderSettingsPanel = {
                 id: 'box-shadow',
                 title: 'Box Shadow',
                 open: false,
-                body: `${this.sectionTextInput(nodeId, 'boxShadow', 'Box Shadow', props.boxShadow || '')}`
-            })}
-            ${this.sectionAccordion({
-                id: 'transform',
-                title: 'Transform',
-                open: false,
-                body: `${this.sectionTextInput(nodeId, 'transform', 'Transform', props.transform || '')}`
+                body: `${this.sectionSelect(nodeId, 'boxShadow', 'Shadow', props.boxShadow || '', [
+                    ['', 'Theme default'],
+                    ['none', 'None'],
+                    ['0 10px 30px rgba(15,23,42,.08)', 'Soft'],
+                    ['0 16px 45px rgba(15,23,42,.16)', 'Medium']
+                ])}`
             })}
             ${this.sectionBackgroundAccordion(nodeId, props)}
             ${this.sectionAccordion({
@@ -740,6 +742,44 @@ window.BuilderSettingsPanel = {
                     ${this.sectionTextarea(nodeId, 'afterContent', 'After Content', props.afterContent || '')}
                 `
             })}
+        `;
+
+    },
+
+    sectionResponsiveControls(nodeId, props, type = 'section') {
+
+        const viewport = BuilderStore.viewport === 'tab' ? 'tablet' : (BuilderStore.viewport || 'desktop');
+
+        if (viewport === 'desktop') {
+            return `
+                <div class="mb-3 rounded border border-blue-100 bg-blue-50 p-3 text-xs leading-5 text-blue-800">
+                    Desktop is the base. Select Tablet or Mobile in the top bar to edit its overrides.
+                </div>
+                ${this.sectionSelect(nodeId, 'design.tablet.visibility', 'Tablet', BuilderObjectPath.get(props, 'design.tablet.visibility', ''), [['', 'Inherit'], ['visible', 'Visible'], ['hidden', 'Hidden']])}
+                ${this.sectionSelect(nodeId, 'design.mobile.visibility', 'Mobile', BuilderObjectPath.get(props, 'design.mobile.visibility', ''), [['', 'Inherit'], ['visible', 'Visible'], ['hidden', 'Hidden']])}
+            `;
+        }
+
+        const prefix = `design.${viewport}`;
+        const value = (key) => BuilderObjectPath.get(props, `${prefix}.${key}`, '');
+
+        return `
+            <div class="mb-3 rounded border border-blue-100 bg-blue-50 p-3 text-xs leading-5 text-blue-800">
+                ${viewport === 'tablet' ? 'Tablet' : 'Mobile'} inherits larger-device values when a field is empty.
+            </div>
+            ${this.sectionSelect(nodeId, `${prefix}.visibility`, 'Visibility', value('visibility'), [['', 'Inherit'], ['visible', 'Visible'], ['hidden', 'Hidden']])}
+            ${this.sectionNumber(nodeId, `${prefix}.width`, 'Width', value('width'))}
+            ${this.sectionTextInput(nodeId, `${prefix}.maxWidth`, 'Max Width', value('maxWidth'))}
+            ${this.sectionNumber(nodeId, `${prefix}.marginTop`, 'Margin Top', value('marginTop'))}
+            ${this.sectionNumber(nodeId, `${prefix}.marginBottom`, 'Margin Bottom', value('marginBottom'))}
+            ${this.sectionNumber(nodeId, `${prefix}.paddingTop`, 'Padding Top', value('paddingTop'))}
+            ${this.sectionNumber(nodeId, `${prefix}.paddingRight`, 'Padding Right', value('paddingRight'))}
+            ${this.sectionNumber(nodeId, `${prefix}.paddingBottom`, 'Padding Bottom', value('paddingBottom'))}
+            ${this.sectionNumber(nodeId, `${prefix}.paddingLeft`, 'Padding Left', value('paddingLeft'))}
+            ${type === 'container' ? this.sectionNumber(nodeId, `${prefix}.gap`, 'Gap', value('gap')) : ''}
+            ${this.sectionSelect(nodeId, `${prefix}.alignment`, 'Alignment', value('alignment'), [['', 'Inherit'], ['left', 'Left'], ['center', 'Center'], ['right', 'Right'], ['justify', 'Justify']])}
+            ${this.sectionNumber(nodeId, `${prefix}.fontSize`, 'Font Size', value('fontSize'))}
+            ${this.sectionNumber(nodeId, `${prefix}.lineHeight`, 'Line Height', value('lineHeight'))}
         `;
 
     },
@@ -1018,15 +1058,7 @@ window.BuilderSettingsPanel = {
         const selectedNodeId =
             BuilderStore.selectedNodeId;
 
-        if (selectedNodeId) {
-
-            BuilderNodes.updateProps(
-                selectedNodeId,
-                'sectionControlTab',
-                normalizedTab
-            );
-
-        }
+        if (selectedNodeId) this.openSectionTabs[selectedNodeId] = normalizedTab;
 
         document
             .querySelectorAll('[data-section-panel]')
@@ -1117,7 +1149,7 @@ window.BuilderSettingsPanel = {
                     node.props
                 );
 
-            node.props.sectionControlTab = 'style';
+            this.openSectionTabs[nodeId] = 'style';
 
             const schema =
                 BuilderSchema.get(node.type) || {};

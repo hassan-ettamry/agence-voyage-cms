@@ -45,6 +45,10 @@ window.BuilderViewport = {
 
         }
 
+        if (BuilderStore.selectedNodeId && window.BuilderSettingsUpdater) {
+            BuilderSettingsUpdater.refreshSettingsPanel(BuilderStore.selectedNodeId);
+        }
+
     }
 
 };

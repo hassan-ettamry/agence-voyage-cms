@@ -16,6 +16,8 @@ window.BuilderStore = {
 
     dropPosition: null,
 
+    viewport: 'desktop',
+
     /*
     |--------------------------------------------------------------------------
     | Init

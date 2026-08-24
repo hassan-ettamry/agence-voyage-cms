@@ -12,16 +12,24 @@ import './state/builder-state';
 
 import './utils/html-escape';
 import './utils/interaction-boundaries';
+import './utils/object-path';
+import './utils/node-clone';
 import './components/container-roles';
 import './viewport';
+import './dirty-state';
 import './storage';
 import './sidebar';
 import './component-library';
 import './right-sidebar';
 import './settings/control-schemas';
+import './settings/shared-controls';
+import './settings/media-picker';
+import './settings/repeater';
+import './schema-defaults';
 import './schema';
 import './inline-editing';
 import './runtime/actions';
+import './saved-blocks';
 import './template-library';
 import { initCountdownWidgets } from '../modules/countdown';
 
@@ -289,6 +297,12 @@ document.addEventListener(
 
         }
 
+        if (window.BuilderSavedBlocks) {
+
+            BuilderSavedBlocks.init();
+
+        }
+
         /*
         |--------------------------------------------------------------------------
         | Overlay
@@ -311,6 +325,10 @@ document.addEventListener(
 
             BuilderHistory.init();
 
+        }
+
+        if (window.BuilderStorage) {
+            BuilderStorage.init();
         }
 
         if (window.BuilderHistoryKeyboard) {

@@ -20,22 +20,19 @@
             || str_starts_with(strtolower($value), 'storage/');
     };
 
-    $images = collect(preg_split('/\r\n|\r|\n/', (string) ($props['images'] ?? '')))
-        ->map(function ($line) use ($safeImage) {
-            $parts = array_map('trim', explode('|', $line, 2));
-            $url = $parts[0] ?? '';
-
-            if (! $safeImage($url)) {
+    $rawImages = $props['images'] ?? [];
+    $images = (is_array($rawImages)
+        ? collect($rawImages)->map(function ($image) use ($safeImage) {
+            if (! is_array($image)) {
                 return null;
             }
-
-            return [
-                'url' => $url,
-                'alt' => $parts[1] ?? 'Gallery image',
-            ];
+            $url = trim((string) ($image['url'] ?? ''));
+            return $safeImage($url) ? ['url' => $url, 'alt' => trim((string) ($image['alt'] ?? 'Gallery image'))] : null;
         })
-        ->filter()
-        ->values();
+        : collect(preg_split('/\r\n|\r|\n/', (string) $rawImages))->map(function ($line) use ($safeImage) {
+            $parts = array_map('trim', explode('|', $line, 2));
+            return $safeImage($parts[0] ?? '') ? ['url' => $parts[0], 'alt' => $parts[1] ?? 'Gallery image'] : null;
+        }))->filter()->values();
 @endphp
 
 <div

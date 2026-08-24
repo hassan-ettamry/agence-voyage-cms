@@ -27,7 +27,17 @@ window.BuilderNodes = {
                 node.props
             );
 
-        node.props[key] = value;
+        if (key.includes('.')) {
+            if (value === '' || value === null || value === undefined) {
+                BuilderObjectPath.delete(node.props, key);
+            } else {
+                BuilderObjectPath.set(node.props, key, value);
+            }
+        } else if (value === undefined) {
+            delete node.props[key];
+        } else {
+            node.props[key] = value;
+        }
 
         BuilderEventBus.emit(
 

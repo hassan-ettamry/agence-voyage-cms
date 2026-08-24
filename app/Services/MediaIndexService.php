@@ -75,9 +75,12 @@ class MediaIndexService
         $search = $this->stringFilter($filters, 'search');
 
         return MediaAsset::query()
+            ->where('mime_type', 'like', 'image/%')
             ->when($search !== '', function ($query) use ($search) {
-                $query->where('title', 'like', "%{$search}%")
-                    ->orWhere('original_name', 'like', "%{$search}%");
+                $query->where(function ($searchQuery) use ($search) {
+                    $searchQuery->where('title', 'like', "%{$search}%")
+                        ->orWhere('original_name', 'like', "%{$search}%");
+                });
             })
             ->latest()
             ->limit(50)
@@ -85,6 +88,7 @@ class MediaIndexService
             ->map(fn (MediaAsset $media) => [
                 'id' => $media->id,
                 'title' => $media->title,
+                'original_name' => $media->original_name,
                 'alt_text' => $media->alt_text,
                 'url' => $media->url,
                 'path' => $media->path,

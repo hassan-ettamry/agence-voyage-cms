@@ -14,6 +14,10 @@ window.BuilderHistory = {
 
     isRestoring: false,
 
+    pendingTimer: null,
+
+    pendingKey: null,
+
     /*
     |--------------------------------------------------------------------------
     | Init
@@ -109,6 +113,29 @@ window.BuilderHistory = {
 
     },
 
+    schedulePush(key = 'update') {
+
+        if (this.pendingTimer && this.pendingKey !== key) {
+            this.flushPending();
+        }
+
+        this.pendingKey = key;
+        clearTimeout(this.pendingTimer);
+        this.pendingTimer = setTimeout(() => this.flushPending(), 450);
+
+    },
+
+    flushPending() {
+
+        if (!this.pendingTimer) return;
+
+        clearTimeout(this.pendingTimer);
+        this.pendingTimer = null;
+        this.pendingKey = null;
+        this.push();
+
+    },
+
     /*
     |--------------------------------------------------------------------------
     | Undo
@@ -116,6 +143,8 @@ window.BuilderHistory = {
     */
 
     async undo() {
+
+        this.flushPending();
 
         BuilderLogger.warn(
             'UNDO'
@@ -218,6 +247,8 @@ window.BuilderHistory = {
     */
 
     async redo() {
+
+        this.flushPending();
 
         BuilderLogger.warn(
             'REDO'

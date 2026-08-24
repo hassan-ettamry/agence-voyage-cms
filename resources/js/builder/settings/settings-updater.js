@@ -9,7 +9,8 @@ window.BuilderSettingsUpdater = {
     updateField(
         nodeId,
         key,
-        value
+        value,
+        options = {}
     ) {
 
         /*
@@ -60,7 +61,12 @@ window.BuilderSettingsUpdater = {
         |--------------------------------------------------------------------------
         */
 
-        BuilderHistory.push();
+        if (options.deferHistory) {
+            BuilderHistory.schedulePush(`${nodeId}:${key}`);
+        } else {
+            BuilderHistory.flushPending();
+            BuilderHistory.push();
+        }
 
         if ([
             'containerRole',
@@ -150,16 +156,11 @@ window.BuilderSettingsUpdater = {
                 node.props
             );
 
-        if (
-            !Object.prototype.hasOwnProperty.call(
-                node.props,
-                key
-            )
-        ) {
+        if (!BuilderObjectPath.has(node.props, key)) {
             return;
         }
 
-        delete node.props[key];
+        BuilderObjectPath.delete(node.props, key);
 
         BuilderEventBus.emit(
             BuilderEvents.NODE_UPDATED,

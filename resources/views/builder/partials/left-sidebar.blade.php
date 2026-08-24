@@ -102,11 +102,13 @@
     <div id="tab-page" class="left-tab-content hidden flex-1 overflow-y-auto p-4 space-y-3">
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Page Title</label>
-            <input type="text" value="{{ $page->title ?? 'My test page' }}" class="w-full border border-gray-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-blue-400"/>
+            <input id="builder-page-title" data-page-field="title" type="text" value="{{ $page->title ?? 'My test page' }}" class="w-full border border-gray-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-blue-400"/>
+            <p data-page-error="title" class="mt-1 hidden text-[11px] text-red-600"></p>
         </div>
         <div>
             <label class="block text-xs font-medium text-gray-600 mb-1">Slug</label>
-            <input type="text" value="{{ $page->slug ?? 'my-test-page' }}" class="w-full border border-gray-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-blue-400"/>
+            <input id="builder-page-slug" data-page-field="slug" type="text" value="{{ $page->slug ?? 'my-test-page' }}" class="w-full border border-gray-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-blue-400"/>
+            <p data-page-error="slug" class="mt-1 hidden text-[11px] text-red-600"></p>
         </div>
     </div>
 

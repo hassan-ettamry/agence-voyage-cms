@@ -31,6 +31,11 @@ window.BuilderDragValidate = {
 
             );
 
+            if (window.BuilderStorage) {
+                BuilderStorage.setStatus(`${type} cannot be placed inside ${parent.type}.`, 'error');
+                window.setTimeout(() => BuilderStorage.refreshDirtyState(), 2200);
+            }
+
             return false;
 
         }

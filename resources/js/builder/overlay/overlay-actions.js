@@ -100,6 +100,8 @@ window.BuilderOverlayActions = {
 
         BuilderStructureRules.normalizeStore();
 
+        BuilderStore.setSelection(cloned.id, null);
+
         BuilderEventBus.emit(
             BuilderEvents.STRUCTURE_UPDATED
         );
@@ -186,9 +188,14 @@ window.BuilderOverlayActions = {
             return;
         }
 
-        BuilderNodes.remove(
-            nodeId
-        );
+        const node = Builder.findNodeById(nodeId);
+        if (!node) return;
+
+        if (node.children?.length && !window.confirm(`Delete this ${node.type} and its ${node.children.length} child element(s)?`)) {
+            return;
+        }
+
+        if (!BuilderNodes.remove(nodeId)) return;
 
         if (BuilderStore.selectedNodeId === nodeId) {
             BuilderSelectionManager.clear({

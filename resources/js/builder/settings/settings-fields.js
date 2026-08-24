@@ -96,6 +96,18 @@ window.BuilderSettingsFields = {
                     nodeId
                 );
 
+            case 'entity-select':
+
+                return this.entitySelect(key, field, value, nodeId, false);
+
+            case 'entity-multiselect':
+
+                return this.entitySelect(key, field, value, nodeId, true);
+
+            case 'repeater':
+
+                return this.repeater(key, field, value, nodeId);
+
             case 'notice':
 
                 return this.notice(
@@ -208,6 +220,8 @@ window.BuilderSettingsFields = {
                     ${label}
                 </label>
 
+                ${value ? `<img src="${fieldValue}" alt="" class="mb-2 aspect-video w-full rounded border border-slate-200 bg-slate-100 object-cover">` : ''}
+
                 <div class="flex gap-2">
                     <input
                         type="text"
@@ -226,12 +240,93 @@ window.BuilderSettingsFields = {
                             focus:border-blue-400
                         "
                     />
+                    <button type="button" data-action="open-builder-media" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" class="shrink-0 rounded bg-slate-900 px-3 text-xs font-semibold text-white hover:bg-slate-700">Choose</button>
                 </div>
+
+                ${value ? `<button type="button" data-action="clear-builder-media" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" class="mt-2 text-xs font-medium text-red-600 hover:text-red-700">Remove image</button>` : ''}
 
                 ${this.help(field)}
 
             </div>
 
+        `;
+
+    },
+
+    entitySelect(key, field, value, nodeId, multiple = false) {
+
+        const items = window.builderDataOptions?.[field.entity] || [];
+        const selected = new Set(Array.isArray(value) ? value.map(String) : [String(value || '')]);
+        const options = items.map(item => `
+            <option value="${BuilderHtmlEscape.attribute(item.id)}" ${selected.has(String(item.id)) ? 'selected' : ''}>
+                ${BuilderHtmlEscape.html(item.label)}
+            </option>
+        `).join('');
+
+        return `
+            <div>
+                <label class="mb-1 block text-xs font-medium text-gray-600">${BuilderHtmlEscape.html(field.label)}</label>
+                <select ${multiple ? 'multiple size="6"' : ''} data-target-node-id="${BuilderHtmlEscape.attribute(nodeId)}" data-setting-field="${BuilderHtmlEscape.attribute(key)}" class="w-full rounded border border-gray-200 bg-white px-3 py-2 text-sm">
+                    ${multiple ? '' : '<option value="">None</option>'}
+                    ${options}
+                </select>
+                ${this.help(field)}
+            </div>
+        `;
+
+    },
+
+    repeater(key, field, value, nodeId) {
+
+        const items = BuilderRepeater.items(value, field);
+        const safeNodeId = BuilderHtmlEscape.attribute(nodeId);
+        const safeKey = BuilderHtmlEscape.attribute(key);
+        const cards = items.map((item, index) => `
+            <div class="rounded-lg border border-slate-200 bg-white p-3">
+                <div class="mb-3 flex items-center justify-between">
+                    <span class="text-xs font-semibold text-slate-700">Item ${index + 1}</span>
+                    <div class="flex gap-1">
+                        <button type="button" data-action="repeater-up" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" data-repeater-index="${index}" class="rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100" ${index === 0 ? 'disabled' : ''}>↑</button>
+                        <button type="button" data-action="repeater-down" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" data-repeater-index="${index}" class="rounded px-2 py-1 text-xs text-slate-500 hover:bg-slate-100" ${index === items.length - 1 ? 'disabled' : ''}>↓</button>
+                        <button type="button" data-action="repeater-remove" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" data-repeater-index="${index}" class="rounded px-2 py-1 text-xs text-red-600 hover:bg-red-50">Remove</button>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    ${(field.itemFields || []).map(itemField => {
+                        const itemKey = BuilderHtmlEscape.attribute(itemField.key);
+                        const itemValue = BuilderHtmlEscape.attribute(item[itemField.key] ?? '');
+                        if (itemField.type === 'media') {
+                            return `
+                                <div class="text-[11px] font-medium text-slate-600">
+                                    ${BuilderHtmlEscape.html(itemField.label)}
+                                    ${itemValue ? `<img src="${itemValue}" alt="" class="mt-1 aspect-video w-full rounded border border-slate-200 object-cover">` : ''}
+                                    <div class="mt-1 flex gap-2">
+                                        <button type="button" data-action="open-repeater-media" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" data-repeater-index="${index}" data-repeater-field="${itemKey}" class="rounded border border-slate-200 px-2 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-50">${itemValue ? 'Replace' : 'Choose image'}</button>
+                                        ${itemValue ? `<button type="button" data-action="clear-repeater-media" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" data-repeater-index="${index}" data-repeater-field="${itemKey}" class="px-2 py-1 text-xs text-red-600">Remove</button>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        return `
+                            <label class="block text-[11px] font-medium text-slate-600">
+                                ${BuilderHtmlEscape.html(itemField.label)}
+                                <input type="${itemField.type === 'number' ? 'number' : 'text'}" value="${itemValue}" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" data-repeater-index="${index}" data-repeater-field="${itemKey}" class="mt-1 w-full rounded border border-slate-200 px-2.5 py-2 text-xs outline-none focus:border-blue-400">
+                            </label>
+                        `;
+                    }).join('')}
+                </div>
+            </div>
+        `).join('');
+
+        return `
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-medium text-gray-600">${BuilderHtmlEscape.html(field.label)}</span>
+                    <button type="button" data-action="repeater-add" data-target-node-id="${safeNodeId}" data-setting-field="${safeKey}" class="rounded bg-blue-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-blue-700">Add item</button>
+                </div>
+                ${cards || '<div class="rounded border border-dashed border-slate-300 p-4 text-center text-xs text-slate-400">No items yet.</div>'}
+                ${this.help(field)}
+            </div>
         `;
 
     },
@@ -810,13 +905,10 @@ window.BuilderSettingsFields = {
                 nodeId
             );
 
-        const hasLocalValue =
-            Object.prototype.hasOwnProperty.call(
-                BuilderStructureRules.ensurePlainProps(
-                    node?.props
-                ),
-                key
-            );
+        const hasLocalValue = BuilderObjectPath.has(
+            BuilderStructureRules.ensurePlainProps(node?.props),
+            key
+        );
 
         return `
 
