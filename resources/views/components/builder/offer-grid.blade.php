@@ -15,8 +15,11 @@
     $source = $props['source'] ?? 'latest';
     $sort = $props['sort'] ?? 'latest';
     $destinationId = $props['destination_id'] ?? null;
+    $continent = trim((string) ($props['continent'] ?? ''));
+    $travelType = trim((string) ($props['travelType'] ?? ''));
+    $idealMonth = (int) ($props['idealMonth'] ?? 0);
 
-    $query = \App\Models\Offer::published()->with(['destination.media', 'media']);
+    $query = \App\Models\Offer::published()->with(['agency', 'destination.media', 'media']);
 
     if ($source === 'special') {
         $query->special();
@@ -24,6 +27,14 @@
 
     if ($source === 'by_destination' && $destinationId) {
         $query->where('destination_id', $destinationId);
+    }
+
+    if ($continent || $travelType || $idealMonth) {
+        $query->whereHas('destination', fn ($destination) => $destination
+            ->published()
+            ->inContinent($continent)
+            ->ofTravelType($travelType)
+            ->idealInMonth($idealMonth ?: null));
     }
 
     match ($sort) {
@@ -107,14 +118,14 @@
 
                     @if($showDescription)
                         <p class="mt-2 line-clamp-2 text-sm" style="color: var(--site-muted, #6b7280);">
-                            {{ $offer->description }}
+                            {{ $offer->summary ?: $offer->description }}
                         </p>
                     @endif
 
                     @if($showMeta)
                         <div class="mt-4 flex items-center justify-between text-sm">
                             <span class="font-semibold" style="color: var(--site-primary, #059669);">
-                                {{ number_format((float) $offer->price, 2) }}
+                                {{ number_format((float) $offer->price, 2) }} {{ $offer->agency->catalogCurrency() }}
                             </span>
                             <span style="color: var(--site-muted, #9ca3af);">
                                 {{ $offer->duration_days }} days

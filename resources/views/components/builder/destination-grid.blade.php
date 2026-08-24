@@ -14,8 +14,15 @@
     $gap = max(8, min((int) ($props['gap'] ?? 24), 64));
     $source = $props['source'] ?? 'latest';
     $sort = $props['sort'] ?? 'latest';
+    $continent = trim((string) ($props['continent'] ?? ''));
+    $travelType = trim((string) ($props['travelType'] ?? ''));
+    $idealMonth = (int) ($props['idealMonth'] ?? 0);
 
-    $query = \App\Models\Destination::published()->with('media');
+    $query = \App\Models\Destination::published()
+        ->with(['agency', 'media'])
+        ->inContinent($continent)
+        ->ofTravelType($travelType)
+        ->idealInMonth($idealMonth ?: null);
 
     if ($source === 'featured') {
         $query->featured();
@@ -85,7 +92,7 @@
                 <div class="p-5">
                     @if($showMeta && $destination->country)
                         <div class="text-xs font-semibold uppercase" style="color: var(--site-primary, #6366f1);">
-                            {{ $destination->country }}
+                            {{ collect([$destination->region, $destination->country])->filter()->join(', ') }}
                         </div>
                     @endif
 
@@ -99,6 +106,14 @@
                         <p class="mt-2 line-clamp-2 text-sm" style="color: var(--site-muted, #6b7280);">
                             {{ $destination->description }}
                         </p>
+                    @endif
+
+                    @if($showMeta && $destination->travel_types)
+                        <div class="mt-3 flex flex-wrap gap-1.5">
+                            @foreach(array_slice($destination->travel_types, 0, 2) as $catalogType)
+                                <span class="rounded-full px-2 py-1 text-[11px] font-bold" style="background: color-mix(in srgb, var(--site-primary) 10%, white); color: var(--site-primary);">{{ \App\Support\TravelCatalog::travelTypeLabel($catalogType) }}</span>
+                            @endforeach
+                        </div>
                     @endif
 
                     @if($showCta)

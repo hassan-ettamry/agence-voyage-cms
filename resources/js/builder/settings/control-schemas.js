@@ -228,6 +228,25 @@ function dataSourceFields(sourceDefault = 'latest') {
             help: 'Used only when source is By destination.',
             when: { key: 'source', is: 'by_destination' }
         },
+        continent: {
+            type: 'select',
+            label: 'Continent',
+            default: '',
+            options: ['', 'africa', 'asia', 'europe', 'north-america', 'south-america', 'oceania', 'antarctica']
+        },
+        travelType: {
+            type: 'select',
+            label: 'Travel Type',
+            default: '',
+            options: ['', 'beach', 'mountain', 'cultural', 'adventure', 'city', 'desert', 'nature', 'wellness', 'family']
+        },
+        idealMonth: {
+            type: 'number',
+            label: 'Ideal Month (1-12)',
+            default: '',
+            min: 1,
+            max: 12
+        },
         limit: {
             type: 'range',
             label: 'Limit',
