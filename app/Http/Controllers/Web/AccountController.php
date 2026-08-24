@@ -9,6 +9,7 @@ use App\Http\Requests\Account\UpdateProfileRequest;
 use App\Http\Requests\Account\UpdateSettingsRequest;
 use App\Services\AccountSessionService;
 use App\Services\SecureImageUploadService;
+use App\Services\SecurityEventLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Throwable;
@@ -17,7 +18,8 @@ class AccountController extends Controller
 {
     public function __construct(
         private AccountSessionService $sessionService,
-        private SecureImageUploadService $imageUpload
+        private SecureImageUploadService $imageUpload,
+        private SecurityEventLogger $securityLogger
     ) {}
 
     public function editProfile()
@@ -112,6 +114,7 @@ class AccountController extends Controller
         ])->save();
 
         $this->sessionService->revokeOthers($request->user(), $request->session()->getId());
+        $this->securityLogger->record('account.password_changed', $request->user(), $request);
 
         return redirect()
             ->route('account.settings.edit')
@@ -136,6 +139,9 @@ class AccountController extends Controller
             'email_verified_at' => null,
         ])->save();
         $request->user()->sendEmailVerificationNotification();
+        $this->securityLogger->record('account.email_changed', $request->user(), $request, [
+            'email_hash' => $this->securityLogger->emailFingerprint($email),
+        ]);
 
         return redirect()
             ->route('verification.notice')
@@ -160,6 +166,7 @@ class AccountController extends Controller
             ),
             404
         );
+        $this->securityLogger->record('account.session_revoked', $request->user(), $request);
 
         return back()->with('success', 'Session signed out.');
     }
@@ -170,6 +177,9 @@ class AccountController extends Controller
             $request->user(),
             $request->session()->getId()
         );
+        $this->securityLogger->record('account.other_sessions_revoked', $request->user(), $request, [
+            'revoked_count' => $count,
+        ]);
 
         return back()->with('success', "{$count} other session(s) signed out.");
     }

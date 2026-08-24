@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Services\AuthService;
+use App\Services\SecurityEventLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,8 +14,10 @@ class AuthController extends Controller
 {
     private AuthService $authService;
 
-    public function __construct(AuthService $authService)
-    {
+    public function __construct(
+        AuthService $authService,
+        private SecurityEventLogger $securityLogger
+    ) {
         $this->authService = $authService;
     }
 
@@ -42,6 +45,7 @@ class AuthController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
         $request->user()->forceFill(['last_login_at' => now()])->save();
+        $this->securityLogger->record('auth.login_succeeded', $request->user(), $request);
 
         if (! $request->user()->hasVerifiedEmail()) {
             return redirect()->route('verification.notice');
@@ -63,6 +67,7 @@ class AuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
         $user->sendEmailVerificationNotification();
+        $this->securityLogger->record('auth.agency_registered', $user, $request);
 
         return redirect()
             ->route('verification.notice')
@@ -74,6 +79,7 @@ class AuthController extends Controller
      */
     public function logout(Request $request)
     {
+        $this->securityLogger->record('auth.logout', $request->user(), $request);
         Auth::logout();
 
         $request->session()->invalidate();

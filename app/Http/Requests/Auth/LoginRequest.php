@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Services\SecurityEventLogger;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\ValidationException;
 
@@ -44,7 +45,12 @@ class LoginRequest extends FormRequest
      */
     public function authenticate(): void
     {
-        if (!auth()->attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        if (! auth()->attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+            $logger = app(SecurityEventLogger::class);
+            $logger->record('auth.login_failed', null, $this, [
+                'email_hash' => $logger->emailFingerprint($this->input('email')),
+            ]);
+
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
