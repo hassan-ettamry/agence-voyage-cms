@@ -1,13 +1,15 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr" class="h-full">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
     <title>@yield('title')</title>
-    @vite(['resources/css/app.css','resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="bg-gray-50">
-<div class="min-h-screen flex items-center justify-center">
-    @yield('content')
-</div>
+<body class="min-h-full bg-slate-100 font-sans text-slate-900 antialiased">
+    <main class="flex min-h-screen items-center justify-center px-4 py-10 sm:px-6">
+        @yield('content')
+    </main>
 </body>
 </html>
