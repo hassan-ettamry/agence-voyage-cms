@@ -25,13 +25,36 @@
         </select>
     </div>
     <div>
-        <label class="mb-1 block text-xs font-semibold uppercase text-gray-500">Image</label>
+        <div class="mb-1 flex items-center justify-between gap-3">
+            <label class="block text-xs font-semibold uppercase text-gray-500">Image</label>
+            <a href="{{ route('media.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Manage media</a>
+        </div>
         <select name="media_asset_id" class="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
-            <option value="">No image</option>
+            <option value="">Use destination image / Builder fallback</option>
             @foreach($mediaAssets as $media)
                 <option value="{{ $media->id }}" @selected(old('media_asset_id', $offer->media_asset_id ?? '') === $media->id)>{{ $media->title ?: $media->original_name }}</option>
             @endforeach
         </select>
+        @if($mediaAssets->isNotEmpty())
+            <div class="mt-3 grid max-h-44 grid-cols-3 gap-2 overflow-y-auto">
+                @foreach($mediaAssets as $media)
+                    <button type="button" data-offer-media-id="{{ $media->id }}" class="overflow-hidden rounded-lg border border-gray-200 bg-white text-left hover:border-indigo-400" title="Use {{ $media->title ?: $media->original_name }}">
+                        <img src="{{ $media->url }}" alt="" class="aspect-video w-full bg-gray-100 object-cover">
+                    </button>
+                @endforeach
+            </div>
+            <script>
+                document.querySelectorAll('[data-offer-media-id]').forEach((button) => {
+                    button.addEventListener('click', () => {
+                        const select = button.closest('div').parentElement.querySelector('select[name="media_asset_id"]');
+                        select.value = button.dataset.offerMediaId;
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                        button.closest('div').querySelectorAll('button').forEach((item) => item.classList.remove('border-indigo-500', 'ring-2', 'ring-indigo-200'));
+                        button.classList.add('border-indigo-500', 'ring-2', 'ring-indigo-200');
+                    });
+                });
+            </script>
+        @endif
     </div>
 </div>
 

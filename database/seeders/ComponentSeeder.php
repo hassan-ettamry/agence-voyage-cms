@@ -522,11 +522,11 @@ class ComponentSeeder extends Seeder
                     ],
                 ],
             ],
-            ['type' => 'destination-grid', 'name' => 'Destination Grid', 'category' => 'Travel', 'icon' => 'map', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'source' => ['type' => 'text', 'label' => 'Source'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
-            ['type' => 'featured-destinations', 'name' => 'Featured Destinations', 'category' => 'Travel', 'icon' => 'star', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
-            ['type' => 'offer-grid', 'name' => 'Offer Grid', 'category' => 'Travel', 'icon' => 'tag', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'source' => ['type' => 'text', 'label' => 'Source'], 'destination_id' => ['type' => 'text', 'label' => 'Destination ID'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
-            ['type' => 'special-offers', 'name' => 'Special Offers', 'category' => 'Travel', 'icon' => 'sparkles', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
-            ['type' => 'offer-card', 'name' => 'Offer Card', 'category' => 'Travel', 'icon' => 'ticket', 'schema_json' => ['offer_id' => ['type' => 'text', 'label' => 'Offer ID']]],
+            ['type' => 'destination-grid', 'name' => 'Destination Grid', 'category' => 'Travel', 'icon' => 'map', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'], 'source' => ['type' => 'text', 'label' => 'Source'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
+            ['type' => 'featured-destinations', 'name' => 'Featured Destinations', 'category' => 'Travel', 'icon' => 'star', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
+            ['type' => 'offer-grid', 'name' => 'Offer Grid', 'category' => 'Travel', 'icon' => 'tag', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'], 'source' => ['type' => 'text', 'label' => 'Source'], 'destination_id' => ['type' => 'text', 'label' => 'Destination ID'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
+            ['type' => 'special-offers', 'name' => 'Special Offers', 'category' => 'Travel', 'icon' => 'sparkles', 'schema_json' => ['title' => ['type' => 'text', 'label' => 'Title'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'], 'limit' => ['type' => 'number', 'label' => 'Limit']]],
+            ['type' => 'offer-card', 'name' => 'Offer Card', 'category' => 'Travel', 'icon' => 'ticket', 'schema_json' => ['offer_id' => ['type' => 'text', 'label' => 'Offer ID'], 'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png']]],
         ];
 
         foreach ($components as $component) {
@@ -570,11 +570,13 @@ class ComponentSeeder extends Seeder
             ]),
             $this->signatureComponent('destination-carousel', 'Destination Carousel', 'travel', 'map', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Explore remarkable places'],
+                'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/culture-journey.png'],
                 'limit' => ['type' => 'range', 'label' => 'Limit', 'min' => 1, 'max' => 12, 'default' => 6],
                 'source' => ['type' => 'select', 'label' => 'Source', 'default' => 'featured', 'options' => ['featured', 'latest']],
             ]),
             $this->signatureComponent('offer-comparison', 'Offer Comparison', 'travel', 'table-cells', [
                 'title' => ['type' => 'text', 'label' => 'Title', 'default' => 'Compare our journeys'],
+                'fallbackImage' => ['type' => 'media', 'label' => 'Fallback Image', 'default' => '/images/site-templates/sunset-luxe.png'],
                 'limit' => ['type' => 'range', 'label' => 'Offers', 'min' => 2, 'max' => 4, 'default' => 3],
                 'buttonText' => ['type' => 'text', 'label' => 'Button', 'default' => 'View journey'],
             ]),

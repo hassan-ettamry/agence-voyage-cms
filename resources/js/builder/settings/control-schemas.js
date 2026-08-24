@@ -883,6 +883,7 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Destinations' },
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' },
                 ...dataSourceFields('latest')
             }
         },
@@ -910,6 +911,7 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Featured Destinations' },
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/culture-journey.png' },
                 limit: { type: 'range', label: 'Limit', min: 1, max: 12, default: 6 },
                 sort: { type: 'select', label: 'Sort', default: 'latest', options: BuilderControlOptions.sort }
             }
@@ -937,6 +939,7 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Offers' },
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
                 ...dataSourceFields('latest')
             }
         },
@@ -966,6 +969,7 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 title: { type: 'text', label: 'Title', default: 'Special Offers' },
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
                 limit: { type: 'range', label: 'Limit', min: 1, max: 12, default: 6 },
                 sort: { type: 'select', label: 'Sort', default: 'latest', options: BuilderControlOptions.sort }
             }
@@ -995,6 +999,7 @@ const BuilderControlSchemaMap = {
             title: 'Content',
             fields: {
                 offer_id: { type: 'text', label: 'Offer ID', default: '' },
+                fallbackImage: { type: 'media', label: 'Fallback Image', default: '/images/site-templates/sunset-luxe.png' },
                 title: { type: 'text', label: 'Fallback Title', default: 'Offer title' },
                 description: { type: 'textarea', label: 'Fallback Description', default: '' },
                 price: { type: 'number', label: 'Fallback Price', default: '' },

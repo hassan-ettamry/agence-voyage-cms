@@ -42,6 +42,7 @@
     $showMeta = $show('showMeta');
     $showCta = $show('showCta');
     $buttonText = $props['buttonText'] ?? 'View offer';
+    $fallbackImage = trim((string) ($props['fallbackImage'] ?? '/images/site-templates/sunset-luxe.png'));
     $sectionPadding = max(0, min((int) ($props['padding'] ?? 40), 120));
     $marginTop = is_numeric($props['marginTop'] ?? null) ? (int) $props['marginTop'] : 0;
     $marginBottom = is_numeric($props['marginBottom'] ?? null) ? (int) $props['marginBottom'] : 0;
@@ -66,7 +67,11 @@
 
     <div class="site-card-grid grid" style="--site-card-columns: {{ $columns }}; gap: {{ $gap }}px;">
         @foreach($offers as $offer)
-            @php($cover = $offer->media ?: $offer->destination?->media?->first())
+            @php
+                $cover = $offer->media ?: $offer->destination?->media?->first();
+                $coverUrl = $cover?->url
+                    ?: (collect($offer->destination?->images)->filter()->first() ?: $fallbackImage);
+            @endphp
             <a
                 href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->offer($offer->agency, $offer) }}"
                 @if($isEditor) onclick="return false" @endif
@@ -75,8 +80,8 @@
             >
                 @if($showImage)
                     <div class="aspect-video" style="background-color: color-mix(in srgb, var(--site-accent, #38bdf8) 14%, white);">
-                        @if($cover)
-                            <img src="{{ $cover->url }}" alt="{{ $cover->alt_text ?? $offer->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                        @if($coverUrl)
+                            <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $offer->title }}" loading="lazy" decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
                         @elseif($isEditor)
                             <div class="flex h-full items-center justify-center text-sm" style="color: var(--site-muted, #94a3b8);">
                                 Offer image

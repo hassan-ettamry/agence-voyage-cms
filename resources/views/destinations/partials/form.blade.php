@@ -38,10 +38,26 @@
 </div>
 
 <div>
-    <label class="mb-1 block text-xs font-semibold uppercase text-gray-500">Images</label>
-    <select name="media_ids[]" multiple class="min-h-32 w-full rounded-lg border border-gray-200 px-3 py-2 text-sm">
-        @foreach($mediaAssets as $media)
-            <option value="{{ $media->id }}" @selected(in_array($media->id, $selectedMedia, true))>{{ $media->title ?: $media->original_name }}</option>
-        @endforeach
-    </select>
+    <div class="mb-3 flex items-center justify-between gap-3">
+        <div>
+            <label class="block text-xs font-semibold uppercase text-gray-500">Images</label>
+            <p class="mt-1 text-xs text-gray-500">Select one or more images. The first selected image is used as the card cover.</p>
+        </div>
+        <a href="{{ route('media.index') }}" class="shrink-0 text-sm font-semibold text-indigo-600 hover:text-indigo-800">Manage media</a>
+    </div>
+    @if($mediaAssets->isEmpty())
+        <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-5 text-center text-sm text-gray-600">
+            Upload an image in the Media Library first, then return here to select it.
+        </div>
+    @else
+        <div class="grid max-h-80 grid-cols-2 gap-3 overflow-y-auto rounded-xl border border-gray-200 p-3 sm:grid-cols-3 lg:grid-cols-4">
+            @foreach($mediaAssets as $media)
+                <label class="group relative cursor-pointer overflow-hidden rounded-lg border bg-white has-[:checked]:border-indigo-500 has-[:checked]:ring-2 has-[:checked]:ring-indigo-200">
+                    <input type="checkbox" name="media_ids[]" value="{{ $media->id }}" @checked(in_array($media->id, $selectedMedia, true)) class="absolute left-2 top-2 z-10 h-4 w-4 rounded border-white text-indigo-600 shadow">
+                    <img src="{{ $media->url }}" alt="{{ $media->alt_text ?: ($media->title ?: $media->original_name) }}" class="aspect-video w-full bg-gray-100 object-cover">
+                    <span class="block truncate px-2 py-2 text-xs font-medium text-gray-700">{{ $media->title ?: $media->original_name }}</span>
+                </label>
+            @endforeach
+        </div>
+    @endif
 </div>

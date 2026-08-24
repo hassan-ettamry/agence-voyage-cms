@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Agency;
 use App\Models\Component;
+use App\Models\Destination;
+use App\Models\Offer;
 use App\Models\Page;
 use Database\Seeders\ComponentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -94,5 +96,54 @@ class SignatureComponentCatalogTest extends TestCase
         $this->assertStringContainsString('site-hide-mobile', $html);
         $this->assertStringContainsString('site-hide-tablet', $html);
         $this->assertStringContainsString('Responsive CTA', $html);
+    }
+
+    public function test_travel_components_render_builder_fallback_images_when_content_has_no_media(): void
+    {
+        $this->seed(ComponentSeeder::class);
+        $agency = Agency::create([
+            'name' => 'Image Fallback Travel',
+            'slug' => 'image-fallback-travel',
+            'email' => 'images@example.test',
+            'status' => 'active',
+        ]);
+
+        $destination = Destination::withoutGlobalScopes()->create([
+            'agency_id' => $agency->id,
+            'name' => 'Marrakech',
+            'slug' => 'marrakech',
+            'country' => 'Morocco',
+            'description' => 'A destination without attached media.',
+            'is_featured' => true,
+            'status' => Destination::STATUS_PUBLISHED,
+        ]);
+
+        Offer::withoutGlobalScopes()->create([
+            'agency_id' => $agency->id,
+            'destination_id' => $destination->id,
+            'title' => 'Atlas Journey',
+            'slug' => 'atlas-journey',
+            'description' => 'An offer without attached media.',
+            'price' => 990,
+            'duration_days' => 5,
+            'is_special' => true,
+            'status' => Offer::STATUS_PUBLISHED,
+        ]);
+
+        Page::withoutGlobalScopes()->create([
+            'agency_id' => $agency->id,
+            'title' => 'Home',
+            'slug' => 'home',
+            'status' => Page::STATUS_PUBLISHED,
+            'structure' => [
+                ['id' => 'destinations', 'type' => 'destination-carousel', 'props' => ['fallbackImage' => '/images/destination-fallback.jpg'], 'children' => []],
+                ['id' => 'offers', 'type' => 'special-offers', 'props' => ['fallbackImage' => '/images/offer-fallback.jpg'], 'children' => []],
+            ],
+        ]);
+
+        $this->get(route('public.site.home', $agency->slug))
+            ->assertOk()
+            ->assertSee('/images/destination-fallback.jpg', false)
+            ->assertSee('/images/offer-fallback.jpg', false);
     }
 }
