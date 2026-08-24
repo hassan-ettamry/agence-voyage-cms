@@ -137,6 +137,7 @@ window.BuilderOverlayUI = {
                 ${this.button(this.icons.down, 'overlay-move-down', nodeId)}
                 ${this.button(this.icons.edit, 'overlay-edit', nodeId)}
                 ${this.button(this.icons.delete, 'overlay-delete', nodeId)}
+                ${this.button(this.icons.duplicate, 'overlay-duplicate', nodeId)}
 
             </div>
 
@@ -222,6 +223,16 @@ window.BuilderOverlayUI = {
 
     button(icon, action, nodeId) {
 
+        const labels = {
+            'overlay-edit': 'Edit component',
+            'overlay-delete': 'Delete component',
+            'overlay-move-up': 'Move component up',
+            'overlay-move-down': 'Move component down',
+            'overlay-duplicate': 'Duplicate component'
+        };
+
+        const label = labels[action] || 'Move component';
+
         const safeAction =
             BuilderHtmlEscape.attribute(action);
 
@@ -235,6 +246,9 @@ window.BuilderOverlayUI = {
                 ${action ? `data-action="${safeAction}"` : ''}
 
                 data-target-node-id="${safeNodeId}"
+
+                title="${BuilderHtmlEscape.attribute(label)}"
+                aria-label="${BuilderHtmlEscape.attribute(label)}"
 
                 class="
                     w-6
