@@ -7,6 +7,7 @@ use App\Models\Agency;
 use App\Models\SiteTemplate;
 use App\Models\Theme;
 use App\Services\OnboardingService;
+use App\Support\SecureImageRules;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -47,7 +48,7 @@ class OnboardingController extends Controller
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['nullable', 'string', 'max:50'],
             'address' => ['nullable', 'string', 'max:500'],
-            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'logo' => SecureImageRules::rules(),
         ]);
 
         unset($validated['logo']);

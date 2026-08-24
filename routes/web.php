@@ -19,8 +19,8 @@ use App\Http\Controllers\Web\SiteTemplateController;
 use App\Http\Controllers\Web\ThemeController;
 use App\Http\Controllers\Web\UserController;
 use App\Http\Middleware\ResolvePublicAgency;
+use App\Http\Requests\Builder\RenderBuilderRequest;
 use App\Services\Renderer\PageRenderer;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -313,32 +313,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::post('/builder/render', function (
-        Request $request,
-        PageRenderer $renderer
-    ) {
-
-        $structure = $request->input('structure', []);
-
-        $mode = $request->input(
-            'mode',
-            'editor'
-        );
-
-        if (! is_string($mode)) {
-            $mode = 'editor';
-        }
-
-        if (! is_array($structure) || ! array_is_list($structure)) {
-            abort(422, 'Invalid builder structure root.');
-        }
-
+    Route::post('/builder/render', function (RenderBuilderRequest $request, PageRenderer $renderer) {
         return $renderer->render(
-            $structure,
-            $mode
+            $request->validated('structure'),
+            $request->validated('mode', 'editor')
         );
-
-    });
+    })->middleware('throttle:builder-render');
 });
 
 /*

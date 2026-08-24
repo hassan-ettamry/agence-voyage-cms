@@ -69,4 +69,47 @@ class PageStructureValidatorTest extends TestCase
             ],
         ]);
     }
+
+    public function test_it_rejects_more_than_the_component_limit(): void
+    {
+        $structure = array_fill(0, PageStructureValidator::MAX_NODES + 1, [
+            'type' => 'text',
+            'props' => [],
+        ]);
+
+        $this->expectException(ValidationException::class);
+
+        app(PageStructureValidator::class)->validate($structure);
+    }
+
+    public function test_it_rejects_structures_nested_too_deeply(): void
+    {
+        $node = ['type' => 'text', 'props' => []];
+
+        for ($depth = 0; $depth < PageStructureValidator::MAX_DEPTH; $depth++) {
+            $node = [
+                'type' => 'container',
+                'props' => [],
+                'children' => [$node],
+            ];
+        }
+
+        $this->expectException(ValidationException::class);
+
+        app(PageStructureValidator::class)->validate([$node]);
+    }
+
+    public function test_it_rejects_structures_larger_than_one_megabyte(): void
+    {
+        $structure = [[
+            'type' => 'text',
+            'props' => [
+                'text' => str_repeat('x', PageStructureValidator::MAX_BYTES),
+            ],
+        ]];
+
+        $this->expectException(ValidationException::class);
+
+        app(PageStructureValidator::class)->validate($structure);
+    }
 }

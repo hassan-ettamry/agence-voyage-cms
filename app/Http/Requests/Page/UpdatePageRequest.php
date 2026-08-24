@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Page;
 
 use App\Models\Menu;
+use App\Rules\ValidPageStructure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class UpdatePageRequest extends FormRequest
@@ -14,6 +16,7 @@ class UpdatePageRequest extends FormRequest
     public function authorize(): bool
     {
         $page = $this->route('page');
+
         return auth()->check() && auth()->user()->agency_id === $page->agency_id;
     }
 
@@ -23,7 +26,7 @@ class UpdatePageRequest extends FormRequest
     public function rules(): array
     {
         $page = $this->route('page');
-        
+
         return [
             'title' => ['sometimes', 'string', 'max:255'],
             'slug' => [
@@ -32,10 +35,10 @@ class UpdatePageRequest extends FormRequest
                 'max:255',
                 Rule::unique('pages', 'slug')
                     ->where('agency_id', auth()->user()->agency_id)
-                    ->ignore($page->id)
+                    ->ignore($page->id),
             ],
             'content' => ['nullable', 'string'],
-            'structure' => ['nullable', 'array'],
+            'structure' => ['nullable', 'array', new ValidPageStructure],
             'status' => ['nullable', 'in:draft,published'],
             'meta_title' => ['nullable', 'string', 'max:60'],
             'meta_description' => ['nullable', 'string', 'max:160'],
@@ -73,20 +76,20 @@ class UpdatePageRequest extends FormRequest
     protected function prepareForValidation(): void
     {
 
-        if ($this->filled('title') && !$this->filled('slug')) {
-    
+        if ($this->filled('title') && ! $this->filled('slug')) {
+
             $this->merge([
-                'slug' => \Illuminate\Support\Str::slug($this->title)
+                'slug' => Str::slug($this->title),
             ]);
-    
+
         }
-    
+
         if ($this->filled('structure') && is_string($this->structure)) {
-    
+
             $this->merge([
-                'structure' => json_decode($this->structure, true)
+                'structure' => json_decode($this->structure, true),
             ]);
-    
+
         }
     }
 }

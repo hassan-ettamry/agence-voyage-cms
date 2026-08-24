@@ -3,7 +3,9 @@
 namespace App\Http\Requests\Page;
 
 use App\Models\Menu;
+use App\Rules\ValidPageStructure;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class StorePageRequest extends FormRequest
@@ -29,10 +31,10 @@ class StorePageRequest extends FormRequest
                 'max:255',
                 Rule::unique('pages', 'slug')->where(function ($query) {
                     return $query->where('agency_id', auth()->user()->agency_id);
-                })
+                }),
             ],
             'content' => ['nullable', 'string'],
-            'structure' => ['nullable', 'array'],
+            'structure' => ['nullable', 'array', new ValidPageStructure],
             'status' => ['nullable', 'in:draft,published'],
             'meta_title' => ['nullable', 'string', 'max:60'],
             'meta_description' => ['nullable', 'string', 'max:160'],
@@ -78,9 +80,9 @@ class StorePageRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        if (!$this->filled('slug') && $this->filled('title')) {
+        if (! $this->filled('slug') && $this->filled('title')) {
             $this->merge([
-                'slug' => \Illuminate\Support\Str::slug($this->title)
+                'slug' => Str::slug($this->title),
             ]);
         }
 

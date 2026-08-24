@@ -8,15 +8,17 @@ use App\Http\Requests\Account\UpdatePasswordRequest;
 use App\Http\Requests\Account\UpdateProfileRequest;
 use App\Http\Requests\Account\UpdateSettingsRequest;
 use App\Services\AccountSessionService;
+use App\Services\SecureImageUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class AccountController extends Controller
 {
-    public function __construct(private AccountSessionService $sessionService)
-    {
-    }
+    public function __construct(
+        private AccountSessionService $sessionService,
+        private SecureImageUploadService $imageUpload
+    ) {}
 
     public function editProfile()
     {
@@ -32,23 +34,33 @@ class AccountController extends Controller
     {
         $user = $request->user();
         $data = $request->validated();
-
-        if ($request->boolean('remove_avatar') && $user->avatar_path) {
-            Storage::disk('public')->delete($user->avatar_path);
-            $data['avatar_path'] = null;
-        }
+        $oldAvatar = $user->avatar_path;
+        $storedAvatar = null;
 
         if ($request->hasFile('avatar')) {
-            if ($user->avatar_path) {
-                Storage::disk('public')->delete($user->avatar_path);
-            }
-
-            $data['avatar_path'] = $request->file('avatar')->store("agencies/{$user->agency_id}/avatars", 'public');
+            $storedAvatar = $this->imageUpload->store(
+                $request->file('avatar'),
+                "agencies/{$user->agency_id}/avatars",
+                'avatar'
+            );
+            $data['avatar_path'] = $storedAvatar['path'];
+        } elseif ($request->boolean('remove_avatar')) {
+            $data['avatar_path'] = null;
         }
 
         unset($data['avatar'], $data['remove_avatar']);
 
-        $user->update($data);
+        try {
+            $user->update($data);
+        } catch (Throwable $exception) {
+            $this->imageUpload->delete($storedAvatar['path'] ?? null);
+
+            throw $exception;
+        }
+
+        if ($oldAvatar !== $user->avatar_path) {
+            $this->imageUpload->delete($oldAvatar);
+        }
 
         return back()->with('success', 'Profile updated');
     }

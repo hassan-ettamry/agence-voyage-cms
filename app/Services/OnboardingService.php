@@ -9,31 +9,41 @@ use App\Models\Theme;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 
 class OnboardingService
 {
     public function __construct(
         private SiteTemplateApplicationService $templateApplicationService,
-        private AgencyThemeService $themeService
-    )
-    {
-    }
+        private AgencyThemeService $themeService,
+        private SecureImageUploadService $imageUpload
+    ) {}
 
     public function saveProfile(User $user, array $data, ?UploadedFile $logo = null): Agency
     {
         $agency = $this->agencyFor($user);
         $oldLogo = $agency->logo;
+        $storedLogo = null;
 
         if ($logo !== null) {
-            $data['logo'] = $logo->store("agency-branding/{$agency->id}", 'public');
+            $storedLogo = $this->imageUpload->store(
+                $logo,
+                "agency-branding/{$agency->id}",
+                'logo'
+            );
+            $data['logo'] = $storedLogo['path'];
         }
 
-        $agency->forceFill($data + [
-            'onboarding_status' => Agency::ONBOARDING_IN_PROGRESS,
-            'onboarding_step' => Agency::ONBOARDING_STEP_TEMPLATE,
-        ])->save();
+        try {
+            $agency->forceFill($data + [
+                'onboarding_status' => Agency::ONBOARDING_IN_PROGRESS,
+                'onboarding_step' => Agency::ONBOARDING_STEP_TEMPLATE,
+            ])->save();
+        } catch (\Throwable $exception) {
+            $this->imageUpload->delete($storedLogo['path'] ?? null);
+
+            throw $exception;
+        }
 
         if (
             $logo !== null
@@ -41,7 +51,7 @@ class OnboardingService
             && str_starts_with($oldLogo, "agency-branding/{$agency->id}/")
             && $oldLogo !== $agency->logo
         ) {
-            Storage::disk('public')->delete($oldLogo);
+            $this->imageUpload->delete($oldLogo);
         }
 
         DashboardStatsService::forgetFor($user);
