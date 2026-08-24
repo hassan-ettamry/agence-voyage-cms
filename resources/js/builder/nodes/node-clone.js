@@ -1,5 +1,7 @@
 window.BuilderNodeClone = {
 
+    ...(window.BuilderNodeClone || {}),
+
     /*
     |--------------------------------------------------------------------------
     | Clone Node
