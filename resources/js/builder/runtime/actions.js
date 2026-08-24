@@ -96,6 +96,14 @@ window.BuilderRuntimeActions = {
             BuilderSavedBlocks.saveSection(target.dataset.targetNodeId);
         },
 
+        'submit-saved-block-form'() {
+            BuilderSavedBlocks.submitForm();
+        },
+
+        'close-saved-block-form'() {
+            BuilderSavedBlocks.closeForm();
+        },
+
         'rename-saved-block'(target) {
             BuilderSavedBlocks.rename(target.dataset.savedBlockId);
         },
