@@ -97,6 +97,13 @@ class AccountController extends Controller
             'profile_preferences' => $preferences,
         ]);
 
+        if ($user->isAdmin() && isset($validated['agency_currency'])) {
+            $agency = $user->agency;
+            $settings = $agency->settings ?? [];
+            data_set($settings, 'catalog.currency', $validated['agency_currency']);
+            $agency->update(['settings' => $settings]);
+        }
+
         return back()->with('success', 'Account settings updated');
     }
 

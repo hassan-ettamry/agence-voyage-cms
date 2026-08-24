@@ -112,4 +112,11 @@ class Agency extends Model
     {
         return $this->onboarding_auto_start && ! $this->onboardingIsComplete();
     }
+
+    public function catalogCurrency(): string
+    {
+        $currency = strtoupper((string) data_get($this->settings, 'catalog.currency', 'MAD'));
+
+        return preg_match('/^[A-Z]{3}$/', $currency) === 1 ? $currency : 'MAD';
+    }
 }

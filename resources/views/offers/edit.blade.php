@@ -9,7 +9,7 @@
 @endsection
 
 @section('content')
-<div class="mx-auto max-w-3xl rounded-xl bg-white p-6 shadow-sm">
+<div class="mx-auto max-w-5xl rounded-xl bg-white p-6 shadow-sm">
     <h1 class="mb-5 text-lg font-semibold text-gray-800">Edit Offer</h1>
     <form method="POST" action="{{ route('offers.update', $offer) }}" class="space-y-4">
         @csrf

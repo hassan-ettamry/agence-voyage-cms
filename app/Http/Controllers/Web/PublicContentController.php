@@ -9,6 +9,7 @@ use App\Models\Offer;
 use App\Services\MenuService;
 use App\Services\PublicContentCache;
 use App\Services\PublicSiteUrl;
+use App\Support\TravelCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 
@@ -20,6 +21,9 @@ class PublicContentController extends Controller
         $filters = $request->validate([
             'q' => ['nullable', 'string', 'max:100'],
             'country' => ['nullable', 'string', 'max:100'],
+            'continent' => ['nullable', 'in:'.implode(',', array_keys(TravelCatalog::CONTINENTS))],
+            'type' => ['nullable', 'in:'.implode(',', array_keys(TravelCatalog::TRAVEL_TYPES))],
+            'month' => ['nullable', 'integer', 'between:1,12'],
             'featured' => ['nullable', 'in:1'],
         ]);
         $query = Destination::withoutGlobalScopes()
@@ -31,10 +35,15 @@ class PublicContentController extends Controller
             $query->where(function ($query) use ($search) {
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('country', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('region', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('practical_information', 'like', "%{$search}%");
             });
         });
         $query->when($filters['country'] ?? null, fn ($query, string $country) => $query->where('country', $country));
+        $query->inContinent($filters['continent'] ?? null)
+            ->ofTravelType($filters['type'] ?? null)
+            ->idealInMonth($filters['month'] ?? null);
         $query->when($filters['featured'] ?? null, fn ($query) => $query->featured());
 
         $destinations = $query
@@ -54,6 +63,9 @@ class PublicContentController extends Controller
         return view('frontend.destinations.index', [
             'destinations' => $destinations,
             'countries' => $countries,
+            'continents' => TravelCatalog::CONTINENTS,
+            'travelTypes' => TravelCatalog::TRAVEL_TYPES,
+            'months' => TravelCatalog::MONTHS,
             'filters' => $filters,
             'siteAgency' => $agency,
             'menu' => $menuService->getMenu('main'),
@@ -103,17 +115,25 @@ class PublicContentController extends Controller
             'min_price' => ['nullable', 'numeric', 'min:0'],
             'max_price' => $maxPriceRules,
             'duration' => ['nullable', 'integer', 'min:1', 'max:365'],
+            'continent' => ['nullable', 'in:'.implode(',', array_keys(TravelCatalog::CONTINENTS))],
+            'type' => ['nullable', 'in:'.implode(',', array_keys(TravelCatalog::TRAVEL_TYPES))],
+            'month' => ['nullable', 'integer', 'between:1,12'],
             'special' => ['nullable', 'in:1'],
         ]);
         $query = Offer::withoutGlobalScopes()
             ->forAgency($agency->id)
             ->published()
-            ->with(['destination' => fn ($query) => $query->published(), 'media']);
+            ->with(['destination' => fn ($query) => $query
+                ->withoutGlobalScopes()
+                ->forAgency($agency->id)
+                ->published(), 'media']);
 
         $query->when($filters['q'] ?? null, function ($query, string $search) {
             $query->where(function ($query) use ($search) {
                 $query->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('summary', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('practical_information', 'like', "%{$search}%");
             });
         });
         $query->when($filters['destination'] ?? null, fn ($query, string $slug) => $query->whereHas(
@@ -126,6 +146,16 @@ class PublicContentController extends Controller
         $query->when($filters['min_price'] ?? null, fn ($query, $price) => $query->where('price', '>=', $price));
         $query->when($filters['max_price'] ?? null, fn ($query, $price) => $query->where('price', '<=', $price));
         $query->when($filters['duration'] ?? null, fn ($query, $days) => $query->where('duration_days', '<=', $days));
+        $query->when(
+            ($filters['continent'] ?? null) || ($filters['type'] ?? null) || ($filters['month'] ?? null),
+            fn ($query) => $query->whereHas('destination', fn ($destination) => $destination
+                ->withoutGlobalScopes()
+                ->forAgency($agency->id)
+                ->published()
+                ->inContinent($filters['continent'] ?? null)
+                ->ofTravelType($filters['type'] ?? null)
+                ->idealInMonth($filters['month'] ?? null))
+        );
         $query->when($filters['special'] ?? null, fn ($query) => $query->special());
 
         $offers = $query
@@ -142,6 +172,9 @@ class PublicContentController extends Controller
         return view('frontend.offers.index', [
             'offers' => $offers,
             'destinations' => $destinations,
+            'continents' => TravelCatalog::CONTINENTS,
+            'travelTypes' => TravelCatalog::TRAVEL_TYPES,
+            'months' => TravelCatalog::MONTHS,
             'filters' => $filters,
             'siteAgency' => $agency,
             'menu' => $menuService->getMenu('main'),
@@ -174,7 +207,10 @@ class PublicContentController extends Controller
         $relatedOffers = Offer::withoutGlobalScopes()
             ->forAgency($agency->id)
             ->published()
-            ->with(['destination', 'media'])
+            ->with(['destination' => fn ($query) => $query
+                ->withoutGlobalScopes()
+                ->forAgency($agency->id)
+                ->published(), 'media'])
             ->whereKeyNot($offer->id)
             ->when($offer->destination_id, fn ($query) => $query->where('destination_id', $offer->destination_id))
             ->limit(3)

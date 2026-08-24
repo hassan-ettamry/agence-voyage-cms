@@ -1,4 +1,4 @@
-<x-ui.modal id="createDestinationModal" title="New Destination" width="680px">
+<x-ui.modal id="createDestinationModal" title="New Destination" width="980px">
     <form method="POST" action="{{ route('destinations.store') }}" class="space-y-4">
         @csrf
         @include('destinations.partials.form', ['destination' => null, 'mediaAssets' => $mediaAssets])

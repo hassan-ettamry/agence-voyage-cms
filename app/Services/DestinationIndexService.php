@@ -26,6 +26,8 @@ class DestinationIndexService
                 $query->where(function ($subQuery) use ($search) {
                     $subQuery->where('name', 'like', "%{$search}%")
                         ->orWhere('country', 'like', "%{$search}%")
+                        ->orWhere('continent', 'like', "%{$search}%")
+                        ->orWhere('region', 'like', "%{$search}%")
                         ->orWhere('slug', 'like', "%{$search}%");
                 });
             })

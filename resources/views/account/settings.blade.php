@@ -576,6 +576,21 @@
                             </select>
                         </label>
 
+                        @if($user->isAdmin())
+                            <label class="block">
+                                <span class="account-settings-field-label block text-[11px] font-bold text-[#52627a]">Agency catalog currency</span>
+                                <input name="agency_currency"
+                                       value="{{ old('agency_currency', $user->agency?->catalogCurrency() ?? 'MAD') }}"
+                                       maxlength="3"
+                                       pattern="[A-Za-z]{3}"
+                                       class="account-field account-settings-field uppercase"
+                                       aria-describedby="agency-currency-help">
+                                <span id="agency-currency-help" class="mt-1.5 block text-[11px] font-medium leading-5 text-amber-700">
+                                    ISO code such as MAD, EUR or USD. Changing it changes the displayed label; prices are not converted.
+                                </span>
+                            </label>
+                        @endif
+
                         <label class="block">
                             <span class="account-settings-field-label block text-[11px] font-bold text-[#52627a]">Time zone</span>
                             <select name="timezone" class="account-field account-settings-field">

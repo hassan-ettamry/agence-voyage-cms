@@ -22,14 +22,25 @@ class Destination extends Model
         'name',
         'slug',
         'country',
+        'continent',
+        'region',
         'description',
         'images',
+        'travel_types',
+        'ideal_months',
+        'practical_information',
+        'latitude',
+        'longitude',
         'is_featured',
         'status',
     ];
 
     protected $casts = [
         'images' => 'array',
+        'travel_types' => 'array',
+        'ideal_months' => 'array',
+        'latitude' => 'decimal:7',
+        'longitude' => 'decimal:7',
         'is_featured' => 'boolean',
     ];
 
@@ -109,6 +120,21 @@ class Destination extends Model
     public function scopeForAgency($query, $agencyId)
     {
         return $query->where('agency_id', $agencyId);
+    }
+
+    public function scopeInContinent($query, ?string $continent)
+    {
+        return $query->when($continent, fn ($query) => $query->where('continent', $continent));
+    }
+
+    public function scopeOfTravelType($query, ?string $type)
+    {
+        return $query->when($type, fn ($query) => $query->whereJsonContains('travel_types', $type));
+    }
+
+    public function scopeIdealInMonth($query, int|string|null $month)
+    {
+        return $query->when($month, fn ($query) => $query->whereJsonContains('ideal_months', (int) $month));
     }
 
     public function isPublished(): bool

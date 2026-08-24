@@ -22,6 +22,22 @@ class UpdateSettingsRequest extends FormRequest
             'email_notifications' => ['nullable', 'boolean'],
             'product_updates' => ['nullable', 'boolean'],
             'security_alerts' => ['nullable', 'boolean'],
+            'agency_currency' => [
+                'nullable',
+                Rule::prohibitedIf(! $this->user()?->isAdmin()),
+                'string',
+                'size:3',
+                'regex:/^[A-Z]{3}$/',
+            ],
         ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->filled('agency_currency')) {
+            $this->merge([
+                'agency_currency' => strtoupper((string) $this->input('agency_currency')),
+            ]);
+        }
     }
 }

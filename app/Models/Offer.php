@@ -24,14 +24,22 @@ class Offer extends Model
         'title',
         'slug',
         'description',
+        'summary',
         'price',
         'duration_days',
+        'itinerary',
+        'inclusions',
+        'exclusions',
+        'practical_information',
         'is_special',
         'status',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'itinerary' => 'array',
+        'inclusions' => 'array',
+        'exclusions' => 'array',
         'is_special' => 'boolean',
     ];
 
