@@ -9,18 +9,37 @@ use Illuminate\Database\Seeder;
 
 class SiteTemplateSeeder extends Seeder
 {
+    private const RETIRED_DEMO_SLUGS = [
+        'premium-escapes',
+        'travel-agency-starter',
+        'mountain-adventure',
+        'city-escape',
+        'beach-paradise',
+        'culture-journey',
+        'desert-retreat',
+        'nordic-lights',
+        'safari-trails',
+        'wellness-retreat',
+        'island-hopping',
+        'luxury-packages',
+        'family-holidays',
+        'food-tours',
+        'road-trip-planner',
+        'cruise-explorer',
+        'honeymoon-escape',
+        'weekend-breaks',
+        'eco-lodges',
+        'pilgrimage-routes',
+        'student-trips',
+        'business-travel',
+        'ski-holidays',
+        'local-experiences',
+    ];
+
     public function run(): void
     {
         $themes = Theme::query()
-            ->whereIn('slug', [
-                'ocean-blue',
-                'sunset-luxe',
-                'wild-nature',
-                'urban-blue',
-                'coastal-glow',
-                'heritage-rose',
-                'signature-travel',
-            ])
+            ->where('slug', 'signature-travel')
             ->get()
             ->keyBy('slug');
 
@@ -252,12 +271,17 @@ class SiteTemplateSeeder extends Seeder
             ],
         ];
 
-        foreach ($templates as $template) {
+        foreach (array_filter(
+            $templates,
+            fn (array $template): bool => $template['slug'] === 'signature-travel'
+        ) as $template) {
             SiteTemplate::updateOrCreate(
                 ['slug' => $template['slug']],
                 $template
             );
         }
+
+        SiteTemplate::query()->whereIn('slug', self::RETIRED_DEMO_SLUGS)->delete();
     }
 
     private function travelStarterPages(string $primary, string $dark): array

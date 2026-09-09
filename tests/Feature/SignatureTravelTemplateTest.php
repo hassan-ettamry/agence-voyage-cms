@@ -66,6 +66,8 @@ class SignatureTravelTemplateTest extends TestCase
         $this->assertFalse($pages['privacy-policy']['include_in_menu']);
         $this->assertFalse($pages['terms-and-conditions']['include_in_menu']);
         $this->assertSame(1, SiteTemplate::query()->where('slug', 'signature-travel')->count());
+        $this->assertSame(1, SiteTemplate::query()->count());
+        $this->assertSame(1, Theme::query()->count());
     }
 
     public function test_signature_static_pages_can_be_applied_without_losing_the_menu_rules(): void

@@ -81,6 +81,7 @@ class ThemeCustomizationTest extends TestCase
         $this->assertSame('soft', $theme->variables['shadow']);
         $this->assertSame('Georgia, "Times New Roman", serif', $theme->variables['headingFont']);
         $this->assertSame(1, Theme::query()->where('slug', 'signature-travel')->count());
+        $this->assertSame(1, Theme::query()->count());
     }
 
     public function test_theme_overrides_are_isolated_between_agencies(): void
