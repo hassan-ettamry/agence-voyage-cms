@@ -1,0 +1,15 @@
+@php
+    $rawItems = $props['items'] ?? [];
+    $items = is_array($rawItems)
+        ? collect($rawItems)->map(fn ($item) => is_array($item) && trim((string) ($item['quote'] ?? '')) !== '' ? [
+            'quote' => trim((string) $item['quote']),
+            'name' => trim((string) ($item['name'] ?? '')),
+            'role' => trim((string) ($item['role'] ?? '')),
+            'rating' => max(1, min(5, (int) ($item['rating'] ?? 5))),
+        ] : null)->filter()
+        : collect(preg_split('/\r\n|\r|\n/', (string) $rawItems))->map(function ($line) {
+            [$quote, $name, $role, $rating] = array_pad(array_map('trim', explode('|', $line, 4)), 4, '');
+            return $quote === '' ? null : ['quote' => $quote, 'name' => $name, 'role' => $role, 'rating' => max(1, min(5, (int) ($rating ?: 5)))];
+        })->filter();
+@endphp
+<section @if($isEditor) data-type="testimonials" data-node-id="{{ $nodeId }}" draggable="true" data-drag-action="reorder" @endif class="site-section {{ $isEditor ? 'builder-node' : '' }}" style="background: color-mix(in srgb, var(--site-secondary) 5%, var(--site-background));"><div class="site-container"><div class="site-eyebrow">{{ $props['eyebrow'] ?? 'TRAVELLER STORIES' }}</div><h2 class="site-heading mt-4 text-[clamp(2.25rem,5vw,4rem)] font-bold">{{ $props['title'] ?? 'What our travellers say' }}</h2><div class="site-card-grid mt-10 grid gap-5" style="--site-card-columns: 3;">@foreach($items as $item)<figure class="site-card p-6 sm:p-8"><div class="text-lg tracking-widest" style="color: var(--site-accent);" aria-label="{{ $item['rating'] }} out of 5 stars">{!! str_repeat('&#9733;', $item['rating']) !!}</div><blockquote class="site-heading mt-5 text-xl leading-8">&ldquo;{{ $item['quote'] }}&rdquo;</blockquote><figcaption class="mt-6 text-sm"><strong>{{ $item['name'] }}</strong>@if($item['role'])<span style="color: var(--site-muted);"> &middot; {{ $item['role'] }}</span>@endif</figcaption></figure>@endforeach</div></div></section>

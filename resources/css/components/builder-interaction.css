@@ -1,0 +1,67 @@
+/* Transient editor indications. They never change the page's layout or styles. */
+#canvas :where([data-node-id][data-builder-outline]) {
+    outline: 2px dashed var(--builder-overlay-active, #e92f93) !important;
+    outline-offset: -2px !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline="active"]) {
+    outline-style: solid !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline="parent"]) {
+    outline-color: var(--builder-overlay-parent, #111827) !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline="ancestor"]) {
+    outline-color: var(--builder-overlay-ancestor, #64748b) !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline="child"]) {
+    outline-color: var(--builder-overlay-child, #22c55e) !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline][data-builder-outline-width="1"]) {
+    outline-width: 1px !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline][data-builder-outline-offset="0"]) {
+    outline-offset: 0 !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline][data-builder-outline-offset="2"]) {
+    outline-offset: 2px !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline][data-builder-outline-offset="4"]) {
+    outline-offset: 4px !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline][data-builder-outline-offset="6"]) {
+    outline-offset: 6px !important;
+}
+
+#canvas :where([data-node-id][data-builder-outline][data-builder-outline-offset="8"]) {
+    outline-offset: 8px !important;
+}
+
+#canvas :where([data-node-id][data-builder-hover-state="hover"]:not([data-builder-outline="active"])) {
+    outline: 1px dashed var(--builder-overlay-active, #e92f93) !important;
+    outline-offset: -2px !important;
+}
+
+/* Inset shadows mark insertion without changing borders or element geometry. */
+#canvas[data-builder-drag-preview="before"],
+#canvas [data-builder-drag-preview="before"] {
+    box-shadow: inset 0 4px 0 var(--builder-overlay-drag, #2563eb) !important;
+}
+
+#canvas[data-builder-drag-preview="after"],
+#canvas [data-builder-drag-preview="after"] {
+    box-shadow: inset 0 -4px 0 var(--builder-overlay-drag, #2563eb) !important;
+}
+
+#canvas[data-builder-drag-preview="inside"],
+#canvas [data-builder-drag-preview="inside"] {
+    outline: 2px solid var(--builder-overlay-drag, #2563eb) !important;
+    outline-offset: -2px !important;
+}

@@ -1,0 +1,147 @@
+<div id="builder-topbar" class="h-14 bg-white border-b border-gray-200 text-gray-800 flex items-center px-4 gap-4 z-50 shadow-sm" style="min-width:0;">
+
+    {{-- Logo / Brand --}}
+    <div class="flex items-center gap-2 w-56 shrink-0">
+        <a
+            href="{{ route('dashboard') }}"
+            title="Close builder"
+            aria-label="Close builder"
+            class="text-gray-400 hover:text-gray-600 transition-colors mr-1"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </a>
+        <div>
+            <div class="font-bold text-sm leading-tight text-gray-900">Site Builder</div>
+            <div class="text-[10px] text-gray-400 leading-tight">Vision</div>
+        </div>
+    </div>
+
+    {{-- Page Selector --}}
+    <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-500 whitespace-nowrap">Page Selected:</span>
+        <select
+            id="builder-page-select"
+            aria-label="Page selected"
+            class="
+                min-w-[136px]
+                border
+                border-gray-200
+                rounded
+                bg-white
+                px-3
+                py-1.5
+                pr-8
+                text-xs
+                font-medium
+                text-gray-700
+                shadow-sm
+                transition-colors
+                hover:border-gray-300
+                focus:border-blue-400
+                focus:outline-none
+                focus:ring-2
+                focus:ring-blue-100
+            "
+            onchange="if (this.value) window.location.href = this.value"
+        >
+            @foreach(($builderPages ?? collect([$page])) as $builderPage)
+                <option
+                    value="{{ route('pages.builder', $builderPage) }}"
+                    @selected($builderPage->id === $page->id)
+                >
+                    {{ $builderPage->title }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
+    {{-- Viewport Switcher --}}
+    @php
+    $viewports = [
+        [
+            'id' => 'viewport-desktop',
+            'viewport' => 'desktop',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>',
+            'label' => 'Desktop',
+            'title' => 'Desktop',
+            'active' => true,
+        ],
+        [
+            'id' => 'viewport-tab',
+            'viewport' => 'tab',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" stroke-width="1.5" stroke="currentColor" fill="none"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2" stroke-linecap="round"/></svg>',
+            'label' => 'Tablet',
+            'title' => 'Tablet preview (768px)',
+            'active' => false,
+        ],
+        [
+            'id' => 'viewport-mobile',
+            'viewport' => 'mobile',
+            'icon' => '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2" ry="2" stroke-width="1.5" stroke="currentColor" fill="none"/><line x1="12" y1="18" x2="12.01" y2="18" stroke-width="2" stroke-linecap="round"/></svg>',
+            'label' => 'Mobile',
+            'title' => 'Mobile',
+            'active' => false,
+        ],
+    ];
+    @endphp
+
+    <div class="flex items-center border border-gray-200 rounded overflow-hidden ml-auto shadow-sm">
+        @foreach($viewports as $vp)
+            @include('builder.components.viewport-button', array_merge($vp, ['borderRight' => true]))
+        @endforeach
+
+        {{-- Divider --}}
+        <div class="w-px h-5 bg-gray-200 mx-0"></div>
+
+        {{-- Undo --}}
+        <button
+            data-action="history-undo"
+            title="Undo (Ctrl+Z)"
+            class="flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-50 transition-colors border-r border-gray-200 h-full"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h10a5 5 0 015 5v1M3 10l4-4M3 10l4 4"/>
+            </svg>
+            <span class="text-[10px] leading-tight">Undo</span>
+        </button>
+
+        {{-- Redo --}}
+        <button
+            data-action="history-redo"
+            title="Redo (Ctrl+Shift+Z)"
+            class="flex flex-col items-center justify-center gap-0.5 px-3 py-1.5 text-gray-500 hover:text-gray-800 hover:bg-gray-50 transition-colors h-full"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 10H11a5 5 0 00-5 5v1M21 10l-4-4M21 10l-4 4"/>
+            </svg>
+            <span class="text-[10px] leading-tight">Redo</span>
+        </button>
+    </div>
+
+    {{-- Right Actions --}}
+    <div class="flex items-center gap-2 ml-4 shrink-0">
+        <span id="builder-save-status" class="max-w-40 truncate text-[11px] text-slate-500" role="status" aria-live="polite">All changes ready</span>
+        <button
+            data-action="save-page"
+            class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded px-4 py-1.5 text-xs font-semibold shadow-sm transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+            </svg>
+            Save
+        </button>
+        <button type="button" data-action="preview-page" data-preview-url="{{ route('pages.preview', $page) }}" class="flex items-center gap-1.5 border border-blue-600 text-blue-600 hover:bg-blue-50 rounded px-4 py-1.5 text-xs font-semibold transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+            Preview
+        </button>
+        @if($page->status !== \App\Models\Page::STATUS_PUBLISHED)
+            <button type="button" data-action="publish-page" data-publish-url="{{ route('pages.publish', $page) }}" class="rounded bg-slate-900 px-4 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-700">Publish</button>
+        @else
+            <span class="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700">Published</span>
+        @endif
+    </div>
+</div>

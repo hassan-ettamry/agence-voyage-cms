@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-label="Bali retreat">
+  <defs>
+    <linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#16a34a"/>
+      <stop offset="1" stop-color="#064e3b"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="760" fill="url(#sky)"/>
+  <circle cx="900" cy="190" r="125" fill="#bef264" opacity=".5"/>
+  <path d="M0 500c180-72 330-80 450-25s230 54 330 5 245-65 420 28v252H0z" fill="#dcfce7" opacity=".28"/>
+  <path d="M170 580h260l-130-210zm340 0h230L625 420zm305 0h250L940 345z" fill="#052e16" opacity=".75"/>
+  <text x="84" y="380" fill="#ffffff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="700">Bali Retreat</text>
+</svg>

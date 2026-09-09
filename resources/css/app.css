@@ -1,0 +1,45 @@
+
+/* imports */
+@import './components/button.css';
+@import './components/card.css';
+@import './components/form1.css';
+@import './components/account.css';
+@import './components/site-design-system.css';
+@import './components/builder-design.css';
+@import './components/builder-interaction.css';
+@import './components/builder-toolbar.css';
+@import './utilities/scrollbar.css';
+
+
+
+@import './base/reset.css';
+
+
+/* TAILWIND */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --builder-overlay-active: #e92f93;
+    --builder-overlay-parent: #111827;
+    --builder-overlay-ancestor: #64748b;
+    --builder-overlay-child: #22c55e;
+    --builder-overlay-drag: #2563eb;
+    --builder-overlay-drag-surface: #eff6ff;
+}
+
+.viewport-btn.active {
+    background: #eff6ff;
+    border-color: #2563eb;
+    color: #2563eb;
+}
+
+.builder-left-scroll {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.builder-left-scroll::-webkit-scrollbar {
+    display: none;
+}

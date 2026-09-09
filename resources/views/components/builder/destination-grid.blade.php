@@ -1,0 +1,168 @@
+@php
+    $props = is_array($props ?? null) ? $props : [];
+
+    $show = static function (string $key, bool $default = true) use ($props): bool {
+        if (!array_key_exists($key, $props)) {
+            return $default;
+        }
+
+        return !in_array($props[$key], ['no', 'false', false, 0, '0'], true);
+    };
+
+    $catalogMode = $show('catalogMode', false);
+    $limit = max(1, min((int) ($props['limit'] ?? 6), 12));
+    $columns = max(1, min((int) ($props['columns'] ?? 3), 4));
+    $gap = max(8, min((int) ($props['gap'] ?? 24), 64));
+    $source = $props['source'] ?? 'latest';
+    $sort = $props['sort'] ?? 'latest';
+    $continent = trim((string) ($props['continent'] ?? ''));
+    $travelType = trim((string) ($props['travelType'] ?? ''));
+    $idealMonth = (int) ($props['idealMonth'] ?? 0);
+    $manualIds = collect($props['manual_ids'] ?? [])->filter(fn ($id) => is_string($id))->values()->all();
+
+    $catalog = null;
+
+    if ($catalogMode) {
+        $agencyId = request()->attributes->get('publicAgency')?->id ?: \App\Support\AgencyContext::get();
+        $catalog = request()->attributes->get('destinationCatalog')
+            ?: app(\App\Services\PublicCatalogService::class)->destinations(request(), (string) $agencyId, $props);
+        $destinations = $catalog['items'];
+    } else {
+        $query = \App\Models\Destination::published()
+            ->with(['agency', 'media'])
+            ->inContinent($continent)
+            ->ofTravelType($travelType)
+            ->idealInMonth($idealMonth ?: null);
+
+        if ($source === 'featured') {
+            $query->featured();
+        }
+
+        if ($source === 'manual') {
+            $query->whereIn('id', $manualIds ?: ['']);
+        }
+
+        match ($sort) {
+            'oldest' => $query->oldest(),
+            'name' => $query->orderBy('name'),
+            default => $query->latest(),
+        };
+
+        $destinations = $source === 'manual'
+            ? $query->get()->sortBy(fn ($destination) => array_search($destination->id, $manualIds, true))->take($limit)->values()
+            : $query->limit($limit)->get();
+    }
+
+    $showImage = $show('showImage');
+    $showTitle = $show('showTitle');
+    $showDescription = $show('showDescription');
+    $showMeta = $show('showMeta');
+    $showLocation = array_key_exists('showLocation', $props) ? $show('showLocation') : $showMeta;
+    $showTravelTypes = array_key_exists('showTravelTypes', $props) ? $show('showTravelTypes') : $showMeta;
+    $showCta = $show('showCta');
+    $buttonText = $props['buttonText'] ?? 'View destination';
+    $cardVariant = in_array(($props['cardVariant'] ?? 'standard'), ['standard', 'compact', 'featured'], true)
+        ? ($props['cardVariant'] ?? 'standard')
+        : 'standard';
+    $cardPadding = $cardVariant === 'compact' ? 'p-4' : 'p-5';
+    $imageRatio = match ($props['imageRatio'] ?? ($cardVariant === 'featured' ? '4/3' : '16/9')) {
+        'square' => 'aspect-square',
+        '4/3' => 'aspect-[4/3]',
+        default => 'aspect-video',
+    };
+    $fallbackImage = trim((string) ($props['fallbackImage'] ?? '/images/site-templates/culture-journey.png'));
+    $sectionPadding = is_numeric($props['padding'] ?? null)
+        ? max(0, min((int) $props['padding'], 120))
+        : null;
+    $marginTop = is_numeric($props['marginTop'] ?? null) ? (int) $props['marginTop'] : 0;
+    $marginBottom = is_numeric($props['marginBottom'] ?? null) ? (int) $props['marginBottom'] : 0;
+    $sectionTone = in_array(($props['sectionTone'] ?? 'default'), ['default', 'surface', 'soft', 'dark'], true)
+        ? ($props['sectionTone'] ?? 'default')
+        : 'default';
+    $toneClass = $sectionTone === 'default' ? '' : 'site-section--'.$sectionTone;
+@endphp
+
+<section
+    data-node-id="{{ $nodeId }}"
+    data-type="{{ $type }}"
+    class="site-section {{ $toneClass }} {{ $isEditor ? 'builder-node' : '' }}"
+    style="@if($sectionPadding !== null) padding-top: {{ $sectionPadding }}px; padding-bottom: {{ $sectionPadding }}px; @endif margin-top: {{ $marginTop }}px; margin-bottom: {{ $marginBottom }}px;"
+>
+    <div class="site-container">
+    @include('components.builder.partials.travel-section-heading', compact('props', 'type', 'isEditor'))
+
+    @if($catalogMode)
+        @include('components.builder.partials.catalog-toolbar', ['catalogType' => 'destinations', 'catalog' => $catalog, 'props' => $props, 'isEditor' => $isEditor])
+    @endif
+
+    @if($destinations->isEmpty())
+        <div class="site-empty-state text-sm" style="color: var(--site-muted);">
+            {{ $isEditor ? 'No published destinations match this source.' : 'No destinations found. Try adjusting your filters.' }}
+        </div>
+    @endif
+
+    <div class="{{ $catalogMode && $catalog['view'] === 'list' ? 'site-catalog-list' : 'site-card-grid' }}" style="--site-card-columns: {{ $columns }}; gap: {{ $gap }}px;">
+        @foreach($destinations as $destination)
+            @php
+                $cover = $destination->media->first();
+                $coverUrl = $cover?->url ?: (collect($destination->images)->filter()->first() ?: $fallbackImage);
+            @endphp
+            <a
+                href="{{ $isEditor ? '#' : app(\App\Services\PublicSiteUrl::class)->destination($destination->agency, $destination) }}"
+                @if($isEditor) onclick="return false" @endif
+                class="site-card site-catalog-card {{ $showImage ? '' : 'site-catalog-card--no-media' }} group h-full overflow-hidden no-underline"
+                style="background-color: var(--site-surface, #ffffff); border-color: var(--site-border, #f3f4f6); border-radius: var(--site-radius, 14px); box-shadow: var(--site-shadow, none);"
+            >
+                @if($showImage)
+                    <div class="site-catalog-card__media {{ $imageRatio }} overflow-hidden" style="background-color: color-mix(in srgb, var(--site-primary, #2563eb) 12%, white);">
+                        @if($coverUrl)
+                            <img src="{{ $coverUrl }}" alt="{{ $cover?->alt_text ?? $destination->name }}" loading="{{ $loop->index < $columns ? 'eager' : 'lazy' }}" @if($loop->first) fetchpriority="high" @endif decoding="async" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+                        @elseif($isEditor)
+                            <div class="flex h-full items-center justify-center text-sm" style="color: var(--site-muted, #94a3b8);">
+                                Destination image
+                            </div>
+                        @endif
+                    </div>
+                @endif
+
+                <div class="{{ $cardPadding }} flex h-full flex-col">
+                    @if($showLocation && $destination->country)
+                        <div class="text-xs font-semibold uppercase" style="color: var(--site-primary, #6366f1);">
+                            {{ collect([$destination->region, $destination->country])->filter()->join(', ') }}
+                        </div>
+                    @endif
+
+                    @if($showTitle)
+                        <h3 class="site-heading mt-2 text-xl font-semibold" style="color: var(--site-text, #111827);">
+                            {{ $destination->name }}
+                        </h3>
+                    @endif
+
+                    @if($showDescription)
+                        <p class="mt-2 line-clamp-2 text-sm" style="color: var(--site-muted, #6b7280);">
+                            {{ $destination->description }}
+                        </p>
+                    @endif
+
+                    @if($showTravelTypes && $destination->travel_types)
+                        <div class="mt-3 flex flex-wrap gap-1.5">
+                            @foreach(array_slice($destination->travel_types, 0, 2) as $catalogType)
+                                <span class="rounded-full px-2 py-1 text-[11px] font-bold" style="background: color-mix(in srgb, var(--site-primary) 10%, white); color: var(--site-primary);">{{ \App\Support\TravelCatalog::travelTypeLabel($catalogType) }}</span>
+                            @endforeach
+                        </div>
+                    @endif
+
+                    @if($showCta)
+                        <span class="mt-auto inline-flex items-center gap-2 pt-5 text-sm font-bold" style="color: var(--site-primary, #2563eb);">
+                            {{ $buttonText }} <span aria-hidden="true">&rarr;</span>
+                        </span>
+                    @endif
+                </div>
+            </a>
+        @endforeach
+    </div>
+    @if($catalogMode && $destinations->hasPages())
+        <div class="mt-10">{{ $destinations->onEachSide(1)->links() }}</div>
+    @endif
+    </div>
+</section>
