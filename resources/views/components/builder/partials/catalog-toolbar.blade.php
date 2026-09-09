@@ -129,7 +129,21 @@
 <div class="site-catalog-toolbar mb-8">
     <div><div class="site-eyebrow">{{ $items->total() }} RESULTS</div><p class="site-copy mt-2 text-sm" style="color: var(--site-muted);">Showing {{ $items->firstItem() ?? 0 }}–{{ $items->lastItem() ?? 0 }} of {{ $items->total() }}</p></div>
     <div class="inline-flex rounded-md border bg-white p-1" role="group" aria-label="Results view" style="border-color: var(--site-border);">
-        <a href="{{ $isEditor ? '#' : $viewUrl('grid') }}" @if($isEditor) onclick="return false" @endif aria-label="Grid view" @if($catalog['view'] === 'grid') aria-current="true" @endif class="rounded px-4 py-2 text-sm font-bold no-underline {{ $catalog['view'] === 'grid' ? 'bg-[var(--site-secondary)] text-white' : 'text-[var(--site-secondary)]' }}">Grid</a>
-        <a href="{{ $isEditor ? '#' : $viewUrl('list') }}" @if($isEditor) onclick="return false" @endif aria-label="List view" @if($catalog['view'] === 'list') aria-current="true" @endif class="rounded px-4 py-2 text-sm font-bold no-underline {{ $catalog['view'] === 'list' ? 'bg-[var(--site-secondary)] text-white' : 'text-[var(--site-secondary)]' }}">List</a>
+        <a href="{{ $isEditor ? '#' : $viewUrl('grid') }}" @if($isEditor) onclick="return false" @endif aria-label="Grid view" title="Grid view" @if($catalog['view'] === 'grid') aria-current="true" @endif class="grid h-9 w-10 place-items-center rounded no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--site-primary)] focus-visible:ring-offset-2 {{ $catalog['view'] === 'grid' ? 'bg-[var(--site-secondary)] text-white' : 'text-[var(--site-secondary)] hover:bg-[var(--site-surface)]' }}">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3.5" y="3.5" width="6.5" height="6.5" rx="1" />
+                <rect x="14" y="3.5" width="6.5" height="6.5" rx="1" />
+                <rect x="3.5" y="14" width="6.5" height="6.5" rx="1" />
+                <rect x="14" y="14" width="6.5" height="6.5" rx="1" />
+            </svg>
+            <span class="sr-only">Grid view</span>
+        </a>
+        <a href="{{ $isEditor ? '#' : $viewUrl('list') }}" @if($isEditor) onclick="return false" @endif aria-label="List view" title="List view" @if($catalog['view'] === 'list') aria-current="true" @endif class="grid h-9 w-10 place-items-center rounded no-underline transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--site-primary)] focus-visible:ring-offset-2 {{ $catalog['view'] === 'list' ? 'bg-[var(--site-secondary)] text-white' : 'text-[var(--site-secondary)] hover:bg-[var(--site-surface)]' }}">
+            <svg aria-hidden="true" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8">
+                <path d="M9 6h11.5M9 12h11.5M9 18h11.5" />
+                <path d="M4 6h.01M4 12h.01M4 18h.01" stroke-width="3" />
+            </svg>
+            <span class="sr-only">List view</span>
+        </a>
     </div>
 </div>
