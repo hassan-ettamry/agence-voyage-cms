@@ -8,7 +8,7 @@ content pages.
 ## Features
 
 - Visual page builder with reusable layout and content components
-- Page creation, editing, publishing, duplication, and version restoration
+- Page creation, editing, previewing, publishing, duplication, and builder Undo/Redo
 - Destination and travel offer management
 - Media library with reusable uploaded assets
 - Site templates and customizable themes
@@ -181,6 +181,22 @@ Or use the Composer test script:
 composer test
 ```
 
+Run the JavaScript regression tests:
+
+```bash
+npm test
+```
+
+An optional isolated Chromium scenario exercises the production builder
+modules against a mocked render endpoint. It is a frontend integration check,
+not a complete Laravel end-to-end test with authentication and a real
+database. Make a local Playwright module available through
+`PLAYWRIGHT_MODULE_PATH`, then run:
+
+```bash
+node tests/browser/builder-phase1.mjs
+```
+
 Validate the production frontend build:
 
 ```bash
@@ -221,6 +237,7 @@ resources/views/        Blade views and builder components
 public/images/          Version-controlled template preview assets
 storage/app/public/     Runtime uploads, excluded from Git
 tests/                  Unit and feature tests
+tests/browser/          Optional isolated Chromium frontend checks
 ```
 
 ## Security
