@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Models\Permission;
 use App\Models\Role;
 use App\Services\RoleIndexService;
 use App\Services\SecurityEventLogger;
@@ -34,7 +35,7 @@ class RoleController extends Controller
     {
         $this->authorize('create', Role::class);
 
-        return view('roles.create');
+        return view('roles.create', $this->formData());
     }
 
     /**
@@ -87,7 +88,12 @@ class RoleController extends Controller
     {
         $this->authorize('update', $role);
 
-        return view('roles.edit', compact('role'));
+        $role->load('permissions');
+
+        return view('roles.edit', [
+            'role' => $role,
+            ...$this->formData(),
+        ]);
     }
 
     /**
@@ -148,5 +154,15 @@ class RoleController extends Controller
 
         return redirect()->route('roles.index')
             ->with('success', 'Role deleted successfully');
+    }
+
+    private function formData(): array
+    {
+        return [
+            'permissionsByModule' => Permission::query()
+                ->orderBy('slug')
+                ->get()
+                ->groupBy('module_key'),
+        ];
     }
 }

@@ -78,6 +78,30 @@ class AdminAuthorizationTest extends TestCase
             ->assertRedirect();
     }
 
+    public function test_role_create_and_edit_pages_render_the_permission_form(): void
+    {
+        $agency = $this->agency();
+        $role = $this->role('Editor', $agency);
+        $viewPermission = $this->permission('View Pages', 'page.view');
+        $role->permissions()->attach($viewPermission);
+
+        $creator = $this->userWithPermissions(['role.create'], $agency);
+        $this->actingAs($creator)
+            ->get(route('roles.create'))
+            ->assertOk()
+            ->assertSee('Create a role')
+            ->assertSee('View');
+
+        $editor = $this->userWithPermissions(['role.update'], $agency);
+        $this->actingAs($editor)
+            ->get(route('roles.edit', $role))
+            ->assertOk()
+            ->assertSee('Role information')
+            ->assertSee('Editor')
+            ->assertSee('value="'.$viewPermission->id.'"', false)
+            ->assertSee('checked', false);
+    }
+
     public function test_permission_administration_requires_matching_permissions(): void
     {
         $actor = $this->userWithPermissions();
