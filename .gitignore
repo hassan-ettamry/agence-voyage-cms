@@ -10,9 +10,6 @@
 /public/hot
 /public/storage
 /coverage
-/storage/framework/sessions
-/storage/framework/cache
-/storage/framework/views
 /.codex-review
 /.tmp-psysh
 /.tools
