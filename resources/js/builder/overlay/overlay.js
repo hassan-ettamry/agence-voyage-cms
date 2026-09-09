@@ -1,254 +1,140 @@
 window.BuilderOverlay = {
-
     currentElement: null,
-
     currentNodeId: null,
-
     mode: null,
-
-    align: null,
-
-    height: null,
-
     currentItems: [],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Init
-    |--------------------------------------------------------------------------
-    */
+    signature: null,
+    frame: null,
+    initialized: false,
+    observer: null,
 
     init() {
-
-        window.addEventListener(
-
-            'resize',
-
-            () => {
-
-                if (this.currentItems.length) {
-
-                    this.showGroup(
-                        this.currentItems
-                    );
-
-                    return;
-
-                }
-
-                if (
-
-                    this.currentElement
-                    &&
-                    this.currentNodeId
-
-                ) {
-
-                    this.show(
-
-                        this.currentElement,
-                        this.currentNodeId,
-                        {
-                            mode: this.mode || 'selected',
-                            align: this.align || 'left',
-                            offsetY: 0
-                        }
-
-                    );
-
-                }
-
-            }
-
-        );
-
-        console.log(
-            'Overlay Initialized'
-        );
-
+        if (this.initialized) return;
+        this.initialized = true;
+        this.schedulePosition = this.schedulePosition.bind(this);
+        window.addEventListener('resize', this.schedulePosition);
+        // Capture also receives scrolling from nested scrollable components.
+        document.addEventListener('scroll', this.schedulePosition, true);
+        if (window.ResizeObserver) {
+            this.observer = new ResizeObserver(this.schedulePosition);
+        }
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Show Overlay
-    |--------------------------------------------------------------------------
-    */
+    labelFor(node) {
+        const label = window.BuilderSidebar?.componentLabel(node.type) || node.type || 'Component';
+        if (node.type === 'container' && node.props?.containerRole && window.BuilderContainerRoles) {
+            return `${label}: ${BuilderContainerRoles.label(node.props.containerRole)}`;
+        }
+        return label;
+    },
 
     show(element, nodeId, options = {}) {
-
-        if (!element || !nodeId) {
+        this.init();
+        const selectedId = window.BuilderStore?.selectedNodeId;
+        if (!selectedId) {
+            this.hide();
+            return;
+        }
+        // Legacy hover callers cannot change the target of the selected toolbar.
+        const target = selectedId === nodeId && element?.isConnected
+            ? element : BuilderOverlayElements.getElement(selectedId);
+        const root = BuilderOverlayElements.getRoot();
+        const capabilities = window.BuilderOverlayActions?.capabilities(selectedId);
+        if (!target || !root || !capabilities?.node) {
+            this.hide();
             return;
         }
 
-        const {
-            mode = 'selected'
-        } = options;
-
-        this.currentElement = element;
-        this.currentNodeId = nodeId;
-        this.mode = mode;
-        this.align = options.align || 'left';
-        this.height = options.height || 24;
+        const label = this.labelFor(capabilities.node);
+        const signature = JSON.stringify([
+            selectedId, label, capabilities.parent?.id,
+            capabilities.canMoveUp, capabilities.canMoveDown, capabilities.canDrag,
+            capabilities.canDelete, capabilities.canDuplicate,
+            BuilderOverlayUI.canSpan(capabilities), capabilities.node.props?.gridSpan
+        ]);
+        const targetChanged = this.currentElement !== target;
+        this.currentElement = target;
+        this.currentNodeId = selectedId;
+        this.mode = 'selected';
         this.currentItems = [];
 
-        const root =
-
-            BuilderOverlayElements
-                .getRoot();
-
-        if (!root) return;
-
-        const position =
-
-            BuilderOverlayPosition
-                .calculate(
-                    element,
-                    {
-                        align: options.align || 'left',
-                        offsetY: options.offsetY || 0
-                    }
-                );
-
-        const node =
-
-            Builder.findNodeById(
-                nodeId
-            );
-
-        const label =
-
-            node?.type?.toLowerCase()
-            || 'element';
-
-        root.innerHTML =
-
-            BuilderOverlayUI.render(
-
-                nodeId,
-                label,
-                position,
-                mode
-
-            );
-
+        // Scrolling and resizing never replace focused buttons or a native drag handle.
+        if (signature !== this.signature || !root.firstElementChild) {
+            root.innerHTML = BuilderOverlayUI.render(selectedId, label, {}, 'selected', capabilities);
+            this.signature = signature;
+        }
+        if (targetChanged) this.observeTargets();
+        this.schedulePosition();
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Show Multiple Overlays
-    |--------------------------------------------------------------------------
-    */
 
     showGroup(items = []) {
-
-        const root =
-
-            BuilderOverlayElements
-                .getRoot();
-
-        if (!root) return;
-
-        const validItems =
-
-            items
-                .filter(item => item?.element && item?.nodeId);
-
-        const overlays =
-
-            validItems
-                .map(item => {
-
-                    const position =
-
-                        BuilderOverlayPosition
-                            .calculate(
-                                item.element,
-                                {
-                                    align: item.align || 'left',
-                                    offsetY: item.offsetY || 0
-                                }
-                            );
-
-                    const node =
-
-                        Builder.findNodeById(
-                            item.nodeId
-                        );
-
-                    const label =
-
-                        node?.type?.toLowerCase()
-                        || 'element';
-
-                    return BuilderOverlayUI.render(
-
-                        item.nodeId,
-                        label,
-                        position,
-                        item.mode || 'hover'
-
-                    );
-
-                });
-
-        const active =
-            validItems[validItems.length - 1];
-
-        this.currentElement =
-            active?.element || null;
-
-        this.currentNodeId =
-            active?.nodeId || null;
-
-        this.mode =
-            active?.mode || null;
-
-        this.align =
-            active?.align || null;
-
-        this.height =
-            active?.height || null;
-
-        this.currentItems =
-            validItems;
-
-        root.innerHTML =
-            overlays.join('');
-
+        const selectedId = window.BuilderStore?.selectedNodeId;
+        const selected = items.find(item => item?.nodeId === selectedId);
+        this.show(selected?.element || null, selectedId);
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Hide
-    |--------------------------------------------------------------------------
-    */
+    observeTargets() {
+        if (!this.observer) return;
+        this.observer.disconnect();
+        [document.getElementById('builder-workspace'), BuilderOverlayElements.getWrapper(), this.currentElement]
+            .filter(Boolean).forEach(element => this.observer.observe(element));
+    },
 
-    hide(options = {}) {
+    schedulePosition() {
+        if (!this.currentNodeId || this.frame !== null) return;
+        this.frame = requestAnimationFrame(() => {
+            this.frame = null;
+            this.reposition();
+        });
+    },
 
-        const {
-            hoverOnly = false
-        } = options;
-
-        if (hoverOnly && this.mode === 'selected') {
+    reposition() {
+        if (!this.currentNodeId) return;
+        const root = BuilderOverlayElements.getRoot();
+        const toolbar = root?.firstElementChild;
+        const wrapper = BuilderOverlayElements.getWrapper();
+        if (!toolbar || !wrapper) return;
+        if (this.currentNodeId !== window.BuilderStore?.selectedNodeId) {
+            this.show(null, window.BuilderStore?.selectedNodeId);
+            return;
+        }
+        if (!this.currentElement?.isConnected) {
+            this.currentElement = BuilderOverlayElements.getElement(this.currentNodeId);
+            this.observeTargets();
+        }
+        if (!this.currentElement) {
+            toolbar.style.visibility = 'hidden';
+            toolbar.inert = true;
             return;
         }
 
-        const root =
+        const bounds = BuilderOverlayPosition.visibleBounds(wrapper, document.getElementById('builder-workspace'));
+        const availableWidth = Math.max(0, bounds.right - bounds.left - 16);
+        toolbar.style.maxWidth = `${availableWidth}px`;
+        toolbar.dataset.compact = String(availableWidth < 400);
+        const size = toolbar.getBoundingClientRect();
+        const position = BuilderOverlayPosition.calculate(this.currentElement, {
+            bounds, toolbarSize: { width: size.width, height: size.height }
+        });
+        toolbar.style.visibility = position.visible ? 'visible' : 'hidden';
+        toolbar.inert = !position.visible;
+        if (!position.visible) return;
+        toolbar.style.left = `${position.left}px`;
+        toolbar.style.top = `${position.top}px`;
+        toolbar.style.maxHeight = `${position.maxHeight}px`;
+    },
 
-            BuilderOverlayElements
-                .getRoot();
-
+    hide(options = {}) {
+        if (options.hoverOnly && window.BuilderStore?.selectedNodeId) return;
+        if (this.frame !== null) cancelAnimationFrame(this.frame);
+        this.frame = null;
+        this.observer?.disconnect();
         this.currentElement = null;
         this.currentNodeId = null;
         this.mode = null;
-        this.align = null;
-        this.height = null;
+        this.signature = null;
         this.currentItems = [];
-
-        if (!root) return;
-
-        root.innerHTML = '';
-
+        const root = BuilderOverlayElements.getRoot();
+        if (root) root.replaceChildren();
     }
-
 };

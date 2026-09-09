@@ -1,298 +1,65 @@
 window.BuilderOverlayUI = {
-
     icons: {
-
-        move: `
-            <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 3v18M3 12h18M7 7l-4 5 4 5M17 7l4 5-4 5"/>
-            </svg>
-        `,
-
-        up: `
-            <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M5 15l7-7 7 7"/>
-            </svg>
-        `,
-
-        down: `
-            <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M19 9l-7 7-7-7"/>
-            </svg>
-        `,
-
-        duplicate: `
-            <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <rect x="9" y="9" width="13" height="13" rx="2" stroke-width="2"/>
-                <rect x="2" y="2" width="13" height="13" rx="2" stroke-width="2"/>
-            </svg>
-        `,
-
-        edit: `
-            <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M15.232 5.232l3.536 3.536M9 13l6.768-6.768a2.5 2.5 0 113.536 3.536L12.536 16.536a4 4 0 01-1.414.95L7 19l1.514-4.122A4 4 0 019 13z"/>
-            </svg>
-        `,
-
-        delete: `
-            <svg class="w-[13px] h-[13px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M6 7h12M9 7V4h6v3M10 11v6M14 11v6M5 7l1 13h12l1-13"/>
-            </svg>
-        `
-
+        move: '<path d="M12 3v18M3 12h18M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>',
+        parent: '<path d="M18 18H9a3 3 0 0 1-3-3V4m-4 4 4-4 4 4"/>',
+        up: '<path d="m6 15 6-6 6 6"/>',
+        down: '<path d="m6 9 6 6 6-6"/>',
+        duplicate: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V4H4v12h4"/>',
+        edit: '<path d="m15 5 4 4M4 20l5-1L20 8a2.8 2.8 0 0 0-4-4L5 15z"/>',
+        delete: '<path d="M4 7h16M9 7V4h6v3M10 11v6M14 11v6M6 7l1 13h10l1-13"/>'
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Render Toolbar
-    |--------------------------------------------------------------------------
-    */
-
-    render(nodeId, label, position, mode = 'selected') {
-
-        const isParent =
-            mode === 'parent-hover';
-
-        const isCentered =
-            position.align === 'center';
-
-        const background =
-            BuilderOverlayTheme.toolbarBackground(
-                mode
-            );
-
-        const transform =
-            isCentered
-                ? 'transform:translateX(-50%);'
-                : '';
-
+    render(nodeId, label, position = {}, mode = 'selected', capabilities = {}) {
+        const escape = value => BuilderHtmlEscape.attribute(value);
         return `
-
-            <div
-
-                data-builder-overlay-toolbar="true"
-                data-builder-overlay-mode="${BuilderHtmlEscape.attribute(mode)}"
-                class="
-                    absolute
-                    flex
-                    items-center
-                    rounded-[2px]
-                    shadow-[0_8px_18px_rgba(15,23,42,0.16)]
-                    pointer-events-auto
-                    z-[99999]
-                    overflow-hidden
-                    font-sans
-                "
-
-                style="
-                    top:${position.top}px;
-                    left:${position.left}px;
-                    height:24px;
-                    background:${background};
-                    ${transform}
-                "
-            >
-                ${isParent
-                    ? this.parentControls(nodeId)
-                    : this.activeControls(nodeId)}
-
-            </div>
-
-        `;
-
+            <div data-builder-overlay-toolbar="true" data-builder-overlay-mode="selected"
+                class="builder-component-toolbar" role="toolbar"
+                aria-label="${escape(`${label} actions`)}" style="visibility:hidden">
+                <span class="builder-component-toolbar__label" title="${escape(label)}">
+                    ${BuilderHtmlEscape.html(label)}
+                </span>
+                <div class="builder-component-toolbar__actions">
+                    ${capabilities.parent ? this.button('parent', 'overlay-select-parent', nodeId, 'Select parent') : ''}
+                    ${this.button('move', null, nodeId, 'Drag to move component', !capabilities.canDrag, { drag: true })}
+                    ${this.button('up', 'overlay-move-up', nodeId, 'Move component up', !capabilities.canMoveUp)}
+                    ${this.button('down', 'overlay-move-down', nodeId, 'Move component down', !capabilities.canMoveDown)}
+                    ${this.button('edit', 'overlay-edit', nodeId, 'Edit component')}
+                    ${this.button('duplicate', 'overlay-duplicate', nodeId, 'Duplicate component', !capabilities.canDuplicate)}
+                    ${this.canSpan(capabilities) ? this.gridSpanSelect(nodeId, capabilities.node.props?.gridSpan ?? 12) : ''}
+                    ${this.button('delete', 'overlay-delete', nodeId, 'Delete component', !capabilities.canDelete, { destructive: true })}
+                </div>
+            </div>`;
     },
 
-    activeControls(nodeId) {
-
-        const node =
-            window.Builder?.findNodeById
-                ? Builder.findNodeById(nodeId)
-                : null;
-
-        const parent =
-            window.BuilderNodeTraversal?.findParent
-                ? BuilderNodeTraversal.findParent(nodeId)
-                : null;
-
-        const parentIsGrid =
-            parent?.type === 'container'
+    canSpan({ node, parent } = {}) {
+        return node?.type === 'container' && parent?.type === 'container'
             && (parent.props?.display || 'block') === 'grid';
-
-        const canSpan =
-            node?.type === 'container'
-            && parentIsGrid;
-
-        return `
-
-            <div class="flex items-center h-full">
-
-                ${this.button(this.icons.move, null, nodeId)}
-
-                ${canSpan ? this.gridSpanSelect(nodeId, node?.props?.gridSpan ?? 12) : ''}
-
-                ${this.button(this.icons.down, 'overlay-move-down', nodeId)}
-                ${this.button(this.icons.edit, 'overlay-edit', nodeId)}
-                ${this.button(this.icons.delete, 'overlay-delete', nodeId)}
-                ${this.button(this.icons.duplicate, 'overlay-duplicate', nodeId)}
-
-            </div>
-
-        `;
-
     },
 
     gridSpanSelect(nodeId, value = 12) {
-
-        const safeNodeId =
-            BuilderHtmlEscape.attribute(nodeId);
-
-        const selectedValue =
-            String(value || '12');
-
-        const options = [
-            ...Array.from({ length: 12 }, (_, index) => String(index + 1))
-        ];
-
-        return `
-
-            <select
-                data-target-node-id="${safeNodeId}"
-                data-setting-field="gridSpan"
-                title="Grid span"
-                class="
-                    h-6
-                    w-12
-                    border-0
-                    border-l
-                    border-white/20
-                    bg-transparent
-                    px-1
-                    text-[11px]
-                    font-bold
-                    leading-none
-                    text-white
-                    outline-none
-                    cursor-pointer
-                    hover:bg-white/20
-                    [&>option]:bg-slate-800
-                    [&>option]:text-white
-                "
-            >
-                ${options.map(option => `
-                    <option
-                        value="${BuilderHtmlEscape.attribute(option)}"
-                        ${selectedValue === option ? 'selected' : ''}
-                    >
-                        ${BuilderHtmlEscape.html(option)}
-                    </option>
-                `).join('')}
-            </select>
-
-        `;
-
+        const selectedValue = String(value || 12);
+        return `<select data-target-node-id="${BuilderHtmlEscape.attribute(nodeId)}"
+            data-setting-field="gridSpan" title="Grid span" aria-label="Grid span"
+            class="builder-component-toolbar__span">
+            ${Array.from({ length: 12 }, (_, index) => {
+                const option = String(index + 1);
+                return `<option value="${option}" ${selectedValue === option ? 'selected' : ''}>${option}</option>`;
+            }).join('')}
+        </select>`;
     },
 
-    parentControls(nodeId) {
-
-        return `
-
-            <div class="flex items-center h-full">
-
-                ${this.button(this.icons.move, null, nodeId)}
-                ${this.button(this.icons.edit, 'overlay-edit', nodeId)}
-                ${this.button(this.icons.delete, 'overlay-delete', nodeId)}
-                ${this.button(this.icons.up, 'overlay-move-up', nodeId)}
-                ${this.button(this.icons.down, 'overlay-move-down', nodeId)}
-                ${this.button(this.icons.duplicate, 'overlay-duplicate', nodeId)}
-
-            </div>
-
-        `;
-
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Button
-    |--------------------------------------------------------------------------
-    */
-
-    button(icon, action, nodeId) {
-
-        const labels = {
-            'overlay-edit': 'Edit component',
-            'overlay-delete': 'Delete component',
-            'overlay-move-up': 'Move component up',
-            'overlay-move-down': 'Move component down',
-            'overlay-duplicate': 'Duplicate component'
-        };
-
-        const label = labels[action] || 'Move component';
-
-        const safeAction =
-            BuilderHtmlEscape.attribute(action);
-
-        const safeNodeId =
-            BuilderHtmlEscape.attribute(nodeId);
-
-        return `
-
-            <button
-
-                ${action ? `data-action="${safeAction}"` : ''}
-
-                data-target-node-id="${safeNodeId}"
-
-                title="${BuilderHtmlEscape.attribute(label)}"
-                aria-label="${BuilderHtmlEscape.attribute(label)}"
-
-                class="
-                    w-6
-                    h-6
-                    min-w-6
-                    flex
-                    items-center
-                    justify-center
-                    text-white
-                    hover:bg-white/20
-                    transition
-                    border-0
-                    p-0
-                "
-            >
-
-                ${icon}
-
-            </button>
-
-        `;
-
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Divider
-    |--------------------------------------------------------------------------
-    */
-
-    divider() {
-
-        return `
-
-            <div
-                class="
-                    w-px
-                    h-4
-                    bg-white/20
-                "
-            ></div>
-
-        `;
-
+    button(icon, action, nodeId, label, disabled = false, options = {}) {
+        const escape = value => BuilderHtmlEscape.attribute(value);
+        return `<button type="button" data-target-node-id="${escape(nodeId)}"
+            ${action ? `data-action="${escape(action)}"` : ''}
+            ${options.drag ? `data-builder-drag-handle data-drag-action="reorder" draggable="${!disabled}"` : ''}
+            ${disabled ? 'disabled aria-disabled="true"' : ''}
+            title="${escape(label)}" aria-label="${escape(label)}"
+            class="builder-component-toolbar__button${options.destructive ? ' builder-component-toolbar__button--delete' : ''}">
+            <svg width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor"
+                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                ${this.icons[icon]}
+            </svg>
+        </button>`;
     }
-
 };

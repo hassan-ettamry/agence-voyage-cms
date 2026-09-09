@@ -101,19 +101,10 @@ window.BuilderOverlayTheme = {
 
         if (!element) return;
 
-        element.style.outline =
-            this.outline(mode, options);
-
-        element.style.outlineOffset =
-            this.outlineOffset(
-                options.offset
-                ??
-                -2
-            );
-
-        if (options.cursor) {
-            element.style.cursor = options.cursor;
-        }
+        // Editor state must never replace component-authored inline styles.
+        element.dataset.builderOutline = mode;
+        element.dataset.builderOutlineWidth = String(options.width ?? 2);
+        element.dataset.builderOutlineOffset = String(options.offset ?? -2);
 
     },
 
@@ -121,9 +112,9 @@ window.BuilderOverlayTheme = {
 
         if (!element) return;
 
-        element.style.outline = '';
-        element.style.outlineOffset = '';
-        element.style.cursor = '';
+        delete element.dataset.builderOutline;
+        delete element.dataset.builderOutlineWidth;
+        delete element.dataset.builderOutlineOffset;
 
     },
 
@@ -131,22 +122,10 @@ window.BuilderOverlayTheme = {
 
         if (!element) return;
 
-        if (position === 'before') {
-            element.style.borderTop =
-                `4px solid ${this.colors.drag}`;
-        }
-
-        if (position === 'after') {
-            element.style.borderBottom =
-                `4px solid ${this.colors.drag}`;
-        }
-
-        if (position === 'inside') {
-            element.style.outline =
-                `2px solid ${this.colors.drag}`;
-
-            element.style.backgroundColor =
-                this.colors.dragSurface;
+        if (['before', 'after', 'inside'].includes(position)) {
+            element.dataset.builderDragPreview = position;
+        } else {
+            this.clearDragPreview(element);
         }
 
     },
@@ -155,11 +134,8 @@ window.BuilderOverlayTheme = {
 
         if (!element) return;
 
-        element.style.borderTop = '';
-        element.style.borderBottom = '';
-        element.style.backgroundColor = '';
-
-        this.clearOutline(element);
+        // Removing a drop preview reveals the existing selection unchanged.
+        delete element.dataset.builderDragPreview;
 
     }
 

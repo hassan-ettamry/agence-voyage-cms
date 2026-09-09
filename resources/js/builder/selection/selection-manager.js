@@ -1,473 +1,107 @@
 window.BuilderSelectionManager = {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Select Node
-    |--------------------------------------------------------------------------
-    */
+    settingsNodeId: null,
 
     select(nodeId, element = null, options = {}) {
+        const node = Builder.findNodeById(nodeId);
+        const target = element || this.findElement(nodeId);
+        if (!node || !target) return false;
 
-        if (!nodeId) {
-            return false;
-        }
-
-        const {
-            source = 'unknown',
-            scroll = false
-        } = options;
-
-        const selectedElement =
-            element
-            ||
-            this.findElement(nodeId);
-
-        if (!selectedElement) {
-            return false;
-        }
-
-        BuilderLogger.group(
-            'SELECTION',
-            BuilderLogger.colors.info
-        );
-
-        BuilderLogger.log(
-            'SELECTED NODE',
-            nodeId
-        );
-
-        const node =
-            Builder.findNodeById(
-                nodeId
-            );
-
-        if (!node) {
-
-            BuilderLogger.warn(
-                'NODE NOT FOUND'
-            );
-
-            BuilderLogger.end();
-
-            return false;
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Save Selection
-        |--------------------------------------------------------------------------
-        */
-
-        BuilderStore.setSelection(
-            nodeId,
-            selectedElement
-        );
-
-        if (
-            BuilderLogger.shouldLog('selection')
-            ||
-            BuilderLogger.shouldLog('interaction')
-        ) {
-
-            BuilderLogger.log(
-                'SELECTION APPLIED SOURCE',
-                {
-                    source,
-                    nodeId
-                }
-            );
-
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Selection Styles
-        |--------------------------------------------------------------------------
-        */
-
-        this.applyVisuals(
-            BuilderStore.selectedNodeId,
-            selectedElement
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Controls And Settings
-        |--------------------------------------------------------------------------
-        */
-
-        BuilderSidebar.switchTab(
-            'controls'
-        );
-
-        BuilderSidebar.setTitle(
-            BuilderSidebar.componentLabel(
-                node.type
-            )
-        );
-
-        const schema =
-            BuilderSchema.get(
-                node.type
-            );
-
-        BuilderSettingsPanel.render(
-
-            node,
-            schema,
-            BuilderStore.selectedNodeId
-
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Overlay
-        |--------------------------------------------------------------------------
-        */
-
-        this.showSelectionToolbar(
-            BuilderStore.selectedNodeId,
-            selectedElement
-        );
-
-        if (scroll) {
-
-            selectedElement.scrollIntoView({
-
-                behavior: 'smooth',
-
-                block: 'center'
-
-            });
-
-        }
-
-        BuilderLogger.end();
-
+        const changed = BuilderStore.selectedNodeId !== nodeId;
+        BuilderStore.setSelection(nodeId, target);
+        this.applyVisuals(nodeId, target);
+        this.syncSettings(node, changed || options.forceSettings);
+        BuilderSidebar.switchTab('controls');
+        this.showSelectionToolbar(nodeId, target);
+        if (options.scroll) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return true;
-
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Apply Selection Visuals
-    |--------------------------------------------------------------------------
-    */
-
-    applyVisuals(nodeId, selectedElement = null) {
-
-        const element =
-            selectedElement
-            ||
-            this.findElement(nodeId);
-
-        if (!nodeId || !element) {
+    // State can reference a copied node before its canvas response arrives.
+    // Never leave controls bound to the previous node while waiting for it.
+    queue(nodeId, { forceSettings = false } = {}) {
+        if (!nodeId || !Builder.findNodeById(nodeId)) {
+            this.clear();
             return false;
         }
-
-        BuilderCanvasUtils
-            .clearSelectionStyles();
-
-        this.applyAncestorVisuals(
-            nodeId
-        );
-
-        this.applyChildContainerVisuals(
-            nodeId
-        );
-
-        BuilderCanvasUtils
-            .applySelectionStyles(
-                element
-            );
-
+        if (this.settingsNodeId !== nodeId || forceSettings) this.clearSettingsPanel();
+        BuilderStore.setSelection(nodeId, null);
+        BuilderCanvasUtils.clearSelectionStyles();
+        BuilderSidebar.setTitle(BuilderSidebar.componentLabel(Builder.findNodeById(nodeId).type));
+        BuilderOverlay.hide();
         return true;
-
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Apply Ancestor Visuals
-    |--------------------------------------------------------------------------
-    */
-
-    applyAncestorVisuals(nodeId) {
-
-        const ancestors =
-            BuilderNodeTraversal.findAncestors(
-                nodeId
-            )
-            ||
-            [];
-
-        ancestors.forEach((ancestor, index) => {
-
-            const element =
-                this.findElement(
-                    ancestor.id
-                );
-
-            if (!element) {
-                return;
-            }
-
-            const isImmediateParent =
-                index === ancestors.length - 1;
-
-            const distanceFromSelected =
-                ancestors.length - index;
-
-            BuilderOverlayTheme.applyOutline(
-                element,
-                isImmediateParent ? 'parent' : 'ancestor',
-                BuilderOverlayTheme.pathOutlineOptions(
-                    distanceFromSelected
-                )
-            );
-
-            element.dataset.builderHoverState =
-                isImmediateParent
-                    ? 'parent'
-                    : 'ancestor';
-
-        });
-
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Apply Child Container Visuals
-    |--------------------------------------------------------------------------
-    */
-
-    applyChildContainerVisuals(nodeId) {
-
-        BuilderNodeTraversal
-            .directChildrenByType(
-                nodeId,
-                'container'
-            )
-            .forEach(child => {
-
-                const element =
-                    this.findElement(
-                        child.id
-                    );
-
-                if (!element) {
-                    return;
-                }
-
-                BuilderOverlayTheme.applyOutline(
-                    element,
-                    'child',
-                    BuilderOverlayTheme.childOutlineOptions()
-                );
-
-                element.dataset.builderHoverState =
-                    'child';
-
-            });
-
-    },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Show Selection Toolbar
-    |--------------------------------------------------------------------------
-    */
-
-    showSelectionToolbar(nodeId, selectedElement = null) {
-
-        const element =
-            selectedElement
-            ||
-            this.findElement(nodeId);
-
-        if (!nodeId || !element) {
-            return false;
+    syncSettings(node, force = false) {
+        if (!force && this.settingsNodeId === node.id) return;
+        BuilderSidebar.setTitle(BuilderSidebar.componentLabel(node.type));
+        const schema = BuilderSchema.get(node.type);
+        const tabs = Object.keys(schema?.tabs || {});
+        const hasTabPreference = tabs.some(tab => Object.prototype.hasOwnProperty.call(
+            BuilderSettingsPanel.openSettingTabs,
+            BuilderSettingsPanel.settingTabStateKey(node.id, tab)
+        ));
+        if (!hasTabPreference && tabs.length) {
+            BuilderSettingsPanel.openSettingTabs[
+                BuilderSettingsPanel.settingTabStateKey(node.id, tabs[0])
+            ] = true;
         }
+        BuilderSettingsPanel.render(node, schema, node.id);
+        this.settingsNodeId = node.id;
+    },
 
-        const ancestors =
-            BuilderNodeTraversal.findAncestors(
-                nodeId
-            )
-            ||
-            [];
+    selectParent(nodeId = BuilderStore.selectedNodeId) {
+        const parent = BuilderNodeTraversal.findParent(nodeId);
+        return parent ? this.select(parent.id, null, { source: 'parent' }) : false;
+    },
 
-        const parent =
-            ancestors[ancestors.length - 1];
-
-        const parentElement =
-            parent?.id
-                ? this.findElement(parent.id)
-                : null;
-
-        if (parentElement) {
-
-            BuilderOverlay.showGroup([
-                {
-                    element: parentElement,
-                    nodeId: parent.id,
-                    mode: 'parent-hover',
-                    align: 'left',
-                    height: 24
-                },
-                {
-                    element,
-                    nodeId,
-                    mode: 'selected',
-                    align: 'center',
-                    height: 24
-                }
-            ]);
-
-            return true;
-
+    applyVisuals(nodeId, element = null) {
+        const target = element || this.findElement(nodeId);
+        if (!target) return false;
+        BuilderCanvasUtils.clearSelectionStyles();
+        const parent = BuilderNodeTraversal.findParent(nodeId);
+        if (parent) {
+            BuilderOverlayTheme.applyOutline(this.findElement(parent.id), 'parent',
+                BuilderOverlayTheme.pathOutlineOptions(1));
         }
-
-        BuilderOverlay.show(
-            element,
-            nodeId,
-            {
-                mode: 'selected',
-                align: 'center',
-                height: 24
-            }
-        );
-
+        BuilderCanvasUtils.applySelectionStyles(target);
         return true;
-
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Restore Current Visual State
-    |--------------------------------------------------------------------------
-    */
+    showSelectionToolbar(nodeId, element = null) {
+        const target = element || this.findElement(nodeId);
+        if (!target || nodeId !== BuilderStore.selectedNodeId) return false;
+        BuilderOverlay.show(target, nodeId, { mode: 'selected' });
+        return true;
+    },
 
     restoreVisuals() {
-
-        if (!BuilderStore.selectedNodeId) {
-            return false;
-        }
-
-        const selectedElement =
-            this.findElement(
-                BuilderStore.selectedNodeId
-            );
-
-        if (!selectedElement) {
-            return false;
-        }
-
-        this.applyVisuals(
-            BuilderStore.selectedNodeId,
-            selectedElement
-        );
-
-        this.showSelectionToolbar(
-            BuilderStore.selectedNodeId,
-            selectedElement
-        );
-
+        const nodeId = BuilderStore.selectedNodeId;
+        const node = nodeId && Builder.findNodeById(nodeId);
+        const target = node && this.findElement(nodeId);
+        if (!target) return false;
+        BuilderStore.selectedElement = target;
+        this.applyVisuals(nodeId, target);
+        this.syncSettings(node);
+        this.showSelectionToolbar(nodeId, target);
         return true;
-
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Find Element
-    |--------------------------------------------------------------------------
-    */
 
     findElement(nodeId) {
-
-        return document.querySelector(
-            `[data-node-id="${CSS.escape(nodeId)}"]`
-        );
-
+        if (!nodeId) return null;
+        return document.querySelector(`#canvas [data-node-id="${CSS.escape(nodeId)}"]`);
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Clear Selection
-    |--------------------------------------------------------------------------
-    */
-
-    clear(options = {}) {
-
-        const {
-            settings = false
-        } = options;
-
+    clear() {
         BuilderStore.clearSelection();
-
-        /*
-        |--------------------------------------------------------------------------
-        | Remove Selection Styles
-        |--------------------------------------------------------------------------
-        */
-
-        document
-            .querySelectorAll(
-                '[data-node-id]'
-            )
-            .forEach(el => {
-
-                el.classList.remove(
-
-                    'relative',
-                    'z-[1]'
-
-                );
-
-                delete el.dataset.builderHoverState;
-
-                BuilderOverlayTheme.clearOutline(
-                    el
-                );
-
-            });
-
-        /*
-        |--------------------------------------------------------------------------
-        | Hide Overlay
-        |--------------------------------------------------------------------------
-        */
-
+        BuilderCanvasUtils.clearSelectionStyles();
         BuilderOverlay.hide();
-
-        if (settings) {
-
-            BuilderSidebar.setTitle();
-
-            this.clearSettingsPanel();
-
-        }
-
+        BuilderSidebar.setTitle();
+        this.clearSettingsPanel();
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Clear Settings Panel
-    |--------------------------------------------------------------------------
-    */
 
     clearSettingsPanel() {
-
-        const panel =
-            document.getElementById(
-                'settings-panel'
-            );
-
-        if (panel) {
-
-            panel.innerHTML = '';
-
-        }
-
+        this.settingsNodeId = null;
+        const panel = document.getElementById('settings-panel');
+        if (panel) panel.innerHTML = '';
     }
-
 };

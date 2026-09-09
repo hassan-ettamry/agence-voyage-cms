@@ -52,6 +52,18 @@ window.BuilderRuntimeActions = {
 
         },
 
+        'retry-canvas-render'() {
+
+            BuilderCanvas.retryRender();
+
+        },
+
+        'reload-builder'() {
+
+            window.location.reload();
+
+        },
+
         'template-library-tab'(target) {
 
             BuilderTemplateLibrary.setTab(
@@ -304,6 +316,10 @@ window.BuilderRuntimeActions = {
 
         },
 
+        'overlay-select-parent'(target) {
+            BuilderSelectionManager.selectParent(target.dataset.targetNodeId);
+        },
+
         'select-layer'(target) {
 
             BuilderRightSidebar.select(
@@ -330,6 +346,10 @@ window.BuilderRuntimeActions = {
         }
 
         this.bound = true;
+
+        document.addEventListener('pointerdown', event => {
+            this.dragOrigin = event.target;
+        }, true);
 
         document.addEventListener(
             'click',
@@ -375,7 +395,7 @@ window.BuilderRuntimeActions = {
                 '[data-action]'
             );
 
-        if (!target) {
+        if (!target || target.disabled || target.getAttribute('aria-disabled') === 'true') {
             return;
         }
 
@@ -510,6 +530,11 @@ window.BuilderRuntimeActions = {
 
     handleDragStart(event) {
 
+        if (BuilderHistory.isRestoring) {
+            event.preventDefault();
+            return;
+        }
+
         const target =
             event.target.closest(
                 '[data-drag-action]'
@@ -536,9 +561,16 @@ window.BuilderRuntimeActions = {
             target.dataset.dragAction === 'reorder'
         ) {
 
+            const origin = this.dragOrigin || event.target;
+            const isHandle = !!origin.closest('[data-builder-drag-handle]');
+            if (!isHandle && origin.closest('input, textarea, select, button, a, [contenteditable="true"]')) {
+                event.preventDefault();
+                return;
+            }
+
             BuilderDragReorder.start(
                 event,
-                target.dataset.nodeId
+                target.dataset.targetNodeId || target.dataset.nodeId
             );
 
         }
@@ -546,19 +578,10 @@ window.BuilderRuntimeActions = {
     },
 
     handleDragEnd(event) {
-
-        const target =
-            event.target.closest(
-                '[data-drag-action="reorder"]'
-            );
-
-        if (!target) {
-            return;
+        this.dragOrigin = null;
+        if (BuilderDragState.getDraggedNode() || BuilderDragState.componentType || BuilderDragReorder.activeElement) {
+            BuilderDragReorder.end(event);
         }
-
-        BuilderDragReorder.end(
-            event
-        );
 
     },
 

@@ -8,6 +8,8 @@ window.BuilderCanvas = {
 
     renderVersion: 0,
 
+    lastRenderError: null,
+
     /*
     |--------------------------------------------------------------------------
     | Invalidate Current Render
@@ -17,6 +19,164 @@ window.BuilderCanvas = {
     invalidateCurrentRender() {
 
         this.renderVersion++;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Render Feedback
+    |--------------------------------------------------------------------------
+    */
+
+    showRenderFeedback(error = {}) {
+
+        const feedback =
+            document.getElementById(
+                'builder-render-feedback'
+            );
+
+        if (!feedback) {
+            return;
+        }
+
+        const status =
+            Number(error?.status) || null;
+
+        const sessionExpired =
+            status === 401
+            || status === 419;
+
+        const message =
+            feedback.querySelector(
+                '[data-builder-render-message]'
+            );
+
+        const retryButton =
+            feedback.querySelector(
+                '[data-action="retry-canvas-render"]'
+            );
+
+        const reloadButton =
+            feedback.querySelector(
+                '[data-action="reload-builder"]'
+            );
+
+        if (message) {
+
+            message.textContent = sessionExpired
+                ? 'Your session has expired. Reload the page to continue.'
+                : 'The canvas could not be updated. Your changes are still preserved.';
+
+        }
+
+        retryButton?.classList.toggle(
+            'hidden',
+            sessionExpired
+        );
+
+        reloadButton?.classList.toggle(
+            'hidden',
+            !sessionExpired
+        );
+
+        feedback.dataset.renderStatus =
+            status ? String(status) : 'network';
+
+        feedback.classList.remove('hidden');
+        feedback.classList.add('flex');
+
+    },
+
+    clearRenderFeedback() {
+
+        this.lastRenderError = null;
+
+        const feedback =
+            document.getElementById(
+                'builder-render-feedback'
+            );
+
+        if (!feedback) {
+            return;
+        }
+
+        feedback.classList.add('hidden');
+        feedback.classList.remove('flex');
+        delete feedback.dataset.renderStatus;
+
+    },
+
+    async retryRender() {
+
+        const rendered =
+            await BuilderRenderManager.requestRender(
+                'canvas.retry',
+                this.lastRenderError?.status || null
+            );
+
+        if (!rendered) {
+            return false;
+        }
+
+        return this.revealNode(
+            BuilderStore.selectedNodeId,
+            {
+                source: 'canvas.retry',
+                scroll: true
+            }
+        );
+
+    },
+
+    revealNode(nodeId, options = {}) {
+
+        if (!nodeId) {
+            return false;
+        }
+
+        const element =
+            document.querySelector(
+                `#canvas [data-node-id="${CSS.escape(nodeId)}"]`
+            );
+
+        if (!element) {
+            return false;
+        }
+
+        if (window.BuilderSelectionManager) {
+
+            return BuilderSelectionManager.select(
+                nodeId,
+                element,
+                options
+            );
+
+        }
+
+        BuilderStore.setSelection(
+            nodeId,
+            element
+        );
+
+        BuilderCanvasUtils.applySelectionStyles(
+            element
+        );
+
+        BuilderOverlay.show(
+            element,
+            nodeId
+        );
+
+        if (options.scroll) {
+
+            element.scrollIntoView({
+                behavior: 'smooth',
+                block: 'center'
+            });
+
+        }
+
+        return true;
 
     },
 
@@ -197,6 +357,7 @@ window.BuilderCanvas = {
             `;
 
             this.clearStaleSelection();
+            this.clearRenderFeedback();
 
             BuilderLogger.success(
                 `RENDER ${version} COMPLETE`
@@ -275,9 +436,13 @@ window.BuilderCanvas = {
 
             if (!response.ok) {
 
-                throw new Error(
+                const renderError = new Error(
                     `Builder render failed with status ${response.status}`
                 );
+
+                renderError.status = response.status;
+
+                throw renderError;
 
             }
 
@@ -351,6 +516,7 @@ window.BuilderCanvas = {
             */
 
             this.restoreSelection();
+            this.clearRenderFeedback();
 
             BuilderLogger.success(
                 `RENDER ${version} COMPLETE`
@@ -380,6 +546,15 @@ window.BuilderCanvas = {
 
         } catch (error) {
 
+            this.lastRenderError = {
+                status: Number(error?.status) || null,
+                message: error?.message || String(error)
+            };
+
+            this.showRenderFeedback(
+                this.lastRenderError
+            );
+
             console.error(
                 'Canvas render error:',
                 error
@@ -405,6 +580,7 @@ window.BuilderCanvas = {
                 {
                     ...context,
                     error: error?.message || String(error),
+                    status: Number(error?.status) || null,
                     duration: performance.now() - startedAt
                 }
             );
@@ -546,7 +722,6 @@ window.BuilderCanvas = {
                     event => {
 
                         event.preventDefault();
-                        event.stopPropagation();
 
                     },
                     true

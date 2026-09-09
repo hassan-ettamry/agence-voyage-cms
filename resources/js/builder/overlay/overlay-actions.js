@@ -1,213 +1,78 @@
 window.BuilderOverlayActions = {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Move Up
-    |--------------------------------------------------------------------------
-    */
-
-    moveUp(nodeId) {
-
-        const parent = BuilderNodeTraversal.findParent(nodeId);
+    capabilities(nodeId) {
+        const node = Builder.findNodeById(nodeId);
+        const parent = node ? BuilderNodeTraversal.findParent(nodeId) : null;
         const siblings = parent ? parent.children : BuilderStore.structure;
-
-        const index = BuilderNodeTraversal.findNodeIndex(nodeId, siblings);
-
-        if (index <= 0) return;
-
-        // Swap with previous sibling
-        const temp = siblings[index - 1];
-        siblings[index - 1] = siblings[index];
-        siblings[index] = temp;
-
-        BuilderStructureRules.normalizeStore();
-
-        BuilderEventBus.emit(
-            BuilderEvents.STRUCTURE_UPDATED
-        );
-
-        BuilderDebugValidator.validateTree();
-
-        BuilderHistory.push();
-        BuilderRenderManager.requestRender(
-            'overlay.moveUp'
-        );
-
+        const index = siblings.findIndex(child => child.id === nodeId);
+        return {
+            node, parent,
+            canMoveUp: !!node && index > 0,
+            canMoveDown: !!node && index >= 0 && index < siblings.length - 1,
+            canDrag: !!node, canDelete: !!node, canDuplicate: !!node
+        };
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Move Down
-    |--------------------------------------------------------------------------
-    */
+    moveUp(nodeId) { return this.reorder(nodeId, -1); },
+    moveDown(nodeId) { return this.reorder(nodeId, 1); },
 
-    moveDown(nodeId) {
-
-        const parent = BuilderNodeTraversal.findParent(nodeId);
-        const siblings = parent ? parent.children : BuilderStore.structure;
-
-        const index = BuilderNodeTraversal.findNodeIndex(nodeId, siblings);
-
-        if (index < 0 || index >= siblings.length - 1) return;
-
-        // Swap with next sibling
-        const temp = siblings[index + 1];
-        siblings[index + 1] = siblings[index];
-        siblings[index] = temp;
-
-        BuilderStructureRules.normalizeStore();
-
-        BuilderEventBus.emit(
-            BuilderEvents.STRUCTURE_UPDATED
-        );
-
-        BuilderDebugValidator.validateTree();
-
-        BuilderHistory.push();
-        BuilderRenderManager.requestRender(
-            'overlay.moveDown'
-        );
-
+    reorder(nodeId, direction) {
+        const capabilities = this.capabilities(nodeId);
+        if (!(direction < 0 ? capabilities.canMoveUp : capabilities.canMoveDown)) return false;
+        const siblings = capabilities.parent?.children || BuilderStore.structure;
+        const index = siblings.findIndex(node => node.id === nodeId);
+        return BuilderNodeMove.move({
+            nodeId, targetId: siblings[index + direction].id,
+            position: direction < 0 ? 'before' : 'after'
+        });
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Duplicate
-    |--------------------------------------------------------------------------
-    */
 
     duplicate(nodeId) {
-
+        if (BuilderHistory.isRestoring) return false;
+        BuilderHistory.flushPending();
         const node = Builder.findNodeById(nodeId);
-
-        if (!node) return;
-
-        // Deep clone with new IDs
-        const cloned = this.cloneWithNewIds(
-            BuilderComponentUtils.clone(node)
-        );
-
-        const placement =
-            BuilderStructureRules.insertNode(
-                cloned,
-                nodeId,
-                'after'
-            );
-
-        if (!placement) {
-            return;
-        }
-
+        if (!node) return false;
+        const cloned = this.cloneWithNewIds(BuilderComponentUtils.clone(node));
+        const placement = BuilderStructureRules.findPlacement(cloned, nodeId, 'after');
+        if (!placement) return false;
+        BuilderHistory.captureSelection();
+        placement.collection.splice(placement.index, 0, cloned);
         BuilderStructureRules.normalizeStore();
-
-        BuilderStore.setSelection(cloned.id, null);
-
-        BuilderEventBus.emit(
-            BuilderEvents.STRUCTURE_UPDATED
-        );
-
-        BuilderDebugValidator.validateTree();
-
+        BuilderSelectionManager.queue(cloned.id);
+        BuilderEventBus.emit(BuilderEvents.STRUCTURE_UPDATED);
         BuilderHistory.push();
-        BuilderRenderManager.requestRender(
-            'overlay.duplicate'
-        );
-
+        BuilderRenderManager.requestRender('overlay.duplicate');
+        return true;
     },
-
-    /*
-    |--------------------------------------------------------------------------
-    | Clone With New IDs (recursive)
-    |--------------------------------------------------------------------------
-    */
 
     cloneWithNewIds(node) {
-
         node.id = BuilderComponentUtils.generateId();
-
-        if (node.children && node.children.length) {
-            node.children = node.children.map(
-                child => this.cloneWithNewIds(child)
-            );
-        }
-
+        node.children = (node.children || []).map(child => this.cloneWithNewIds(child));
         return node;
-
     },
 
-    /*
-    |--------------------------------------------------------------------------
-    | Edit
-    |--------------------------------------------------------------------------
-    */
-
     edit(nodeId) {
-
-        const element =
-            BuilderOverlayElements.getElement(nodeId);
-
-        if (!element) return;
-
-        if (
-            BuilderLogger.shouldLog('selection')
-            ||
-            BuilderLogger.shouldLog('interaction')
-        ) {
-
-            BuilderLogger.log(
-                'SELECTION REQUEST SOURCE',
-                {
-                    source: 'overlay-edit',
-                    nodeId
-                }
-            );
-
-        }
-
-        BuilderSelectionManager.select(
-            nodeId,
-            element,
-            {
-                source: 'overlay-edit'
-            }
-        );
-
-    }
-
-    ,
-
-    /*
-    |--------------------------------------------------------------------------
-    | Delete
-    |--------------------------------------------------------------------------
-    */
+        return BuilderSelectionManager.select(nodeId, null, { source: 'overlay-edit', forceSettings: true });
+    },
 
     delete(nodeId) {
-
-        if (!nodeId) {
-            return;
-        }
-
+        if (BuilderHistory.isRestoring) return false;
         const node = Builder.findNodeById(nodeId);
-        if (!node) return;
+        if (!node) return false;
+        if (node.children?.length && !window.confirm(
+            `Delete this ${BuilderSidebar.componentLabel(node.type)} and all its child elements?`
+        )) return false;
 
-        if (node.children?.length && !window.confirm(`Delete this ${node.type} and its ${node.children.length} child element(s)?`)) {
-            return;
-        }
-
-        if (!BuilderNodes.remove(nodeId)) return;
-
-        if (BuilderStore.selectedNodeId === nodeId) {
-            BuilderSelectionManager.clear({
-                settings: true
-            });
-        }
-
+        const parent = BuilderNodeTraversal.findParent(nodeId);
+        const siblings = parent?.children || BuilderStore.structure;
+        const index = siblings.findIndex(child => child.id === nodeId);
+        const fallbackId = siblings[index + 1]?.id || siblings[index - 1]?.id || parent?.id || null;
+        BuilderHistory.flushPending();
+        BuilderHistory.captureSelection();
+        if (!BuilderNodes.remove(nodeId)) return false;
+        if (fallbackId) BuilderSelectionManager.queue(fallbackId);
+        else BuilderSelectionManager.clear();
         BuilderHistory.push();
-        BuilderRenderManager.requestRender(
-            'overlay.delete'
-        );
-
+        BuilderRenderManager.requestRender('overlay.delete');
+        return true;
     }
-
 };

@@ -14,6 +14,54 @@
 >
 
     <div
+        id="builder-render-feedback"
+        data-builder-floating-ui="true"
+        role="alert"
+        class="
+            sticky
+            top-2
+            z-[70]
+            mb-3
+            hidden
+            w-full
+            max-w-2xl
+            items-center
+            justify-between
+            gap-4
+            border
+            border-red-200
+            bg-red-50
+            px-4
+            py-3
+            text-sm
+            text-red-800
+            shadow-lg
+        "
+    >
+        <span data-builder-render-message>
+            The canvas could not be updated. Your changes are still preserved.
+        </span>
+
+        <div class="flex shrink-0 items-center gap-2">
+            <button
+                type="button"
+                data-action="retry-canvas-render"
+                class="border border-red-300 bg-white px-3 py-1.5 font-semibold text-red-800 hover:bg-red-100"
+            >
+                Retry
+            </button>
+
+            <button
+                type="button"
+                data-action="reload-builder"
+                class="hidden border border-red-300 bg-white px-3 py-1.5 font-semibold text-red-800 hover:bg-red-100"
+            >
+                Reload
+            </button>
+        </div>
+    </div>
+
+    <div
         id="canvas-wrapper"
         class="
             w-full

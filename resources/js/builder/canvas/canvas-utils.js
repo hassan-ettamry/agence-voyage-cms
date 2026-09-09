@@ -22,7 +22,7 @@ window.BuilderCanvasUtils = {
 
     getNodeElement(target) {
 
-        return target.closest(
+        return (target?.closest ? target : target?.parentElement)?.closest(
             '[data-node-id]'
         );
 
@@ -36,18 +36,11 @@ window.BuilderCanvasUtils = {
 
     clearSelectionStyles() {
 
-        document
-            .querySelectorAll(
+        this.getCanvas()
+            ?.querySelectorAll(
                 '[data-node-id]'
             )
             .forEach(el => {
-
-                el.classList.remove(
-
-                    'relative',
-                    'z-[1]'
-
-                );
 
                 delete el.dataset.builderHoverState;
 
@@ -73,13 +66,6 @@ window.BuilderCanvasUtils = {
             element,
             'active',
             BuilderOverlayTheme.pathOutlineOptions(0)
-        );
-
-        element.classList.add(
-
-            'relative',
-            'z-[1]'
-
         );
 
     }

@@ -94,7 +94,7 @@ function templateSection(props = {}, children = []) {
             paddingLeft: 20,
             paddingRight: 20,
             backgroundColor: '#ffffff',
-            maxWidth: '100%',
+            maxWidth: 1200,
             ...props
         },
         children
@@ -849,27 +849,61 @@ window.BuilderTemplateLibrary = {
         this.render();
     },
 
-    insert(id) {
+    async insert(id) {
         if (String(id).startsWith('saved:')) {
             BuilderSavedBlocks.insert(String(id).slice(6));
-            return;
+            return false;
         }
 
         const template = this.templates.find(item => item.id === id);
 
         if (!template) {
-            return;
+            return false;
         }
 
         const nodes = this.cloneNodes(template.nodes);
+
+        if (!nodes.length) {
+            return false;
+        }
 
         nodes.forEach(node => {
             BuilderStore.addRootComponent(node);
         });
 
+        const selectedNode = nodes[0];
+
+        if (window.BuilderSelectionManager) {
+            BuilderSelectionManager.queue(
+                selectedNode.id,
+                {
+                    forceSettings: true
+                }
+            );
+        } else {
+            BuilderStore.setSelection(selectedNode.id, null);
+        }
+
         BuilderHistory.push();
-        BuilderRenderManager.requestRender('template.insert');
         this.close();
+
+        const rendered =
+            await BuilderRenderManager.requestRender(
+                'template.insert',
+                id
+            );
+
+        if (!rendered) {
+            return false;
+        }
+
+        return BuilderCanvas.revealNode(
+            selectedNode.id,
+            {
+                source: 'template-library',
+                scroll: true
+            }
+        );
     },
 
     addBlankSection() {
@@ -894,29 +928,48 @@ window.BuilderTemplateLibrary = {
         }
     },
 
-    insertSectionLayout(layout = 'normal') {
+    async insertSectionLayout(layout = 'normal') {
         const node = this.createSectionLayout(layout);
 
+        if (!node) {
+            return false;
+        }
+
         BuilderStore.addRootComponent(node);
-        BuilderStore.setSelection(node.id, null);
+
+        if (window.BuilderSelectionManager) {
+            BuilderSelectionManager.queue(
+                node.id,
+                {
+                    forceSettings: true
+                }
+            );
+        } else {
+            BuilderStore.setSelection(node.id, null);
+        }
+
         BuilderHistory.push();
-        BuilderRenderManager.requestRender('section-layout.insert', layout);
 
         this.closeSectionLayoutPicker();
         this.close();
 
-        window.setTimeout(() => {
-            const element = document.querySelector(
-                `[data-node-id="${CSS.escape(node.id)}"]`
+        const rendered =
+            await BuilderRenderManager.requestRender(
+                'section-layout.insert',
+                layout
             );
 
-            if (element && window.BuilderSelectionManager) {
-                BuilderSelectionManager.select(node.id, element, {
-                    source: 'section-layout',
-                    scroll: true
-                });
+        if (!rendered) {
+            return false;
+        }
+
+        return BuilderCanvas.revealNode(
+            node.id,
+            {
+                source: 'section-layout',
+                scroll: true
             }
-        }, 350);
+        );
     },
 
     createSectionLayout(layout = 'normal') {

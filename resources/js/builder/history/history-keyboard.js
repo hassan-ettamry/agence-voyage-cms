@@ -1,112 +1,31 @@
 window.BuilderHistoryKeyboard = {
-
-    /*
-    |--------------------------------------------------------------------------
-    | Bind Keyboard Shortcuts
-    |--------------------------------------------------------------------------
-    */
-
+    bound: false,
     bind() {
+        if (this.bound) return;
+        this.bound = true;
+        document.addEventListener('keydown', event => this.handle(event));
+    },
 
-        document.addEventListener(
-
-            'keydown',
-
-            (event) => {
-
-                /*
-                |--------------------------------------------------------------------------
-                | Ignore Editable Elements
-                |--------------------------------------------------------------------------
-                */
-
-                const active =
-                    document.activeElement;
-
-                const isTyping =
-
-                    active?.tagName === 'INPUT'
-
-                    ||
-
-                    active?.tagName === 'TEXTAREA'
-
-                    ||
-
-                    active?.isContentEditable;
-
-                if (isTyping) {
-                    return;
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | CTRL + Z
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-
-                    event.ctrlKey
-                    &&
-
-                    event.key === 'z'
-
-                ) {
-
-                    event.preventDefault();
-
-                    BuilderHistory.undo();
-
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | CTRL + Y
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-
-                    event.ctrlKey
-                    &&
-
-                    event.key === 'y'
-
-                ) {
-
-                    event.preventDefault();
-
-                    BuilderHistory.redo();
-
-                }
-
-                /*
-                |--------------------------------------------------------------------------
-                | DELETE / BACKSPACE
-                |--------------------------------------------------------------------------
-                */
-
-                if (
-
-                    event.key === 'Delete'
-
-                    ||
-
-                    event.key === 'Backspace'
-
-                ) {
-
-                    event.preventDefault();
-
-                    BuilderSelection.delete();
-
-                }
-
+    handle(event) {
+        const active = document.activeElement;
+        if (event.defaultPrevented || active?.closest?.(
+            'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="dialog"], [aria-modal="true"]'
+        )) return;
+        const key = event.key.toLowerCase();
+        if (event.ctrlKey || event.metaKey) {
+            if (key === 'z') {
+                event.preventDefault();
+                return event.shiftKey ? BuilderHistory.redo() : BuilderHistory.undo();
             }
-
-        );
-
+            if (key === 'y') {
+                event.preventDefault();
+                return BuilderHistory.redo();
+            }
+            return;
+        }
+        if ((key === 'delete' || key === 'backspace') && BuilderStore.selectedNodeId) {
+            event.preventDefault();
+            return BuilderSelection.delete();
+        }
     }
-
 };

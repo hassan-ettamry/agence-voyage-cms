@@ -14,6 +14,8 @@ window.BuilderRenderManager = {
 
     pendingAfterCurrent: false,
 
+    completionWaiters: [],
+
     /*
     |--------------------------------------------------------------------------
     | Request Render
@@ -21,6 +23,13 @@ window.BuilderRenderManager = {
     */
 
     requestRender(source = 'unknown', reason = null) {
+
+        const completion =
+            new Promise(resolve => {
+
+                this.completionWaiters.push(resolve);
+
+            });
 
         this.lastRenderRequest = {
             source,
@@ -64,10 +73,31 @@ window.BuilderRenderManager = {
 
             }
 
-            return;
+            return completion;
         }
 
         this.schedule();
+
+        return completion;
+
+    },
+
+    /*
+    |--------------------------------------------------------------------------
+    | Complete Grouped Requests
+    |--------------------------------------------------------------------------
+    */
+
+    settleRequests(result) {
+
+        const waiters =
+            this.completionWaiters.splice(0);
+
+        waiters.forEach(resolve => {
+
+            resolve(result === true);
+
+        });
 
     },
 
@@ -92,6 +122,8 @@ window.BuilderRenderManager = {
             const request =
                 this.lastRenderRequest;
 
+            let rendered = false;
+
             /*
             |--------------------------------------------------------------------------
             | Render
@@ -106,10 +138,10 @@ window.BuilderRenderManager = {
 
                 try {
 
-                    await BuilderCanvas.render(
+                    rendered = await BuilderCanvas.render(
                         request?.source,
                         request?.reason
-                    );
+                    ) === true;
 
                 } catch (error) {
 
@@ -138,7 +170,11 @@ window.BuilderRenderManager = {
 
                 this.schedule();
 
+                return;
+
             }
+
+            this.settleRequests(rendered);
 
         });
 

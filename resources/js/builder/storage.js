@@ -34,7 +34,9 @@ window.BuilderStorage = {
     },
 
     refreshDirtyState() {
+        if (this.savePromise) return;
         if (this.isDirty()) this.setStatus('Unsaved changes', 'neutral');
+        else this.setStatus('All changes saved', 'success');
     },
 
     pageChanged(field, value) {
